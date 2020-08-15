@@ -73,11 +73,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Study\\LHZ.FastJson\\src\\LHZ.FastJson.Test\\LHZ.FastJson.Test.csproj",
+      "projectUniqueName": "D:\\Study\\GitHub\\LHZ.FastJson\\src\\LHZ.FastJson.Test\\LHZ.FastJson.Test.csproj",
       "projectName": "LHZ.FastJson.Test",
-      "projectPath": "D:\\Study\\LHZ.FastJson\\src\\LHZ.FastJson.Test\\LHZ.FastJson.Test.csproj",
+      "projectPath": "D:\\Study\\GitHub\\LHZ.FastJson\\src\\LHZ.FastJson.Test\\LHZ.FastJson.Test.csproj",
       "packagesPath": "C:\\Users\\LHZ\\.nuget\\packages\\",
-      "outputPath": "D:\\Study\\LHZ.FastJson\\src\\LHZ.FastJson.Test\\obj\\",
+      "outputPath": "D:\\Study\\GitHub\\LHZ.FastJson\\src\\LHZ.FastJson.Test\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\LHZ\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -94,8 +94,8 @@
       "frameworks": {
         "netcoreapp3.1": {
           "projectReferences": {
-            "D:\\Study\\LHZ.FastJson\\src\\LHZ.FastJson\\LHZ.FastJson.csproj": {
-              "projectPath": "D:\\Study\\LHZ.FastJson\\src\\LHZ.FastJson\\LHZ.FastJson.csproj"
+            "D:\\Study\\GitHub\\LHZ.FastJson\\src\\LHZ.FastJson\\LHZ.FastJson.csproj": {
+              "projectPath": "D:\\Study\\GitHub\\LHZ.FastJson\\src\\LHZ.FastJson\\LHZ.FastJson.csproj"
             }
           }
         }

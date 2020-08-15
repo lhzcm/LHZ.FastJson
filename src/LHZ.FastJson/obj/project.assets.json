@@ -193,11 +193,11 @@
   "project": {
     "version": "1.3.3",
     "restore": {
-      "projectUniqueName": "D:\\Study\\LHZ.FastJson\\src\\LHZ.FastJson\\LHZ.FastJson.csproj",
+      "projectUniqueName": "D:\\Study\\GitHub\\LHZ.FastJson\\src\\LHZ.FastJson\\LHZ.FastJson.csproj",
       "projectName": "LHZ.FastJson",
-      "projectPath": "D:\\Study\\LHZ.FastJson\\src\\LHZ.FastJson\\LHZ.FastJson.csproj",
+      "projectPath": "D:\\Study\\GitHub\\LHZ.FastJson\\src\\LHZ.FastJson\\LHZ.FastJson.csproj",
       "packagesPath": "C:\\Users\\LHZ\\.nuget\\packages\\",
-      "outputPath": "D:\\Study\\LHZ.FastJson\\src\\LHZ.FastJson\\obj\\",
+      "outputPath": "D:\\Study\\GitHub\\LHZ.FastJson\\src\\LHZ.FastJson\\obj\\",
       "projectStyle": "PackageReference",
       "crossTargeting": true,
       "configFilePaths": [
