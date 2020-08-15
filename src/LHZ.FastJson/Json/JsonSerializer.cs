@@ -1,0 +1,306 @@
+﻿using LHZ.FastJson.Enum;
+using LHZ.FastJson.Interface;
+using LHZ.FastJson.Json.Format;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.Serialization;
+using System.Text;
+
+namespace LHZ.FastJson.Json
+{
+    /// <summary>
+    /// Json序列化类
+    /// </summary>
+    public class JsonSerializer
+    {
+        private StringBuilder _jsonStrBuilder = new StringBuilder(128);
+        private Stack<object> _objStack = new Stack<object>();
+        private JsonFormatter _formater = null;
+        private object _obj;
+
+        public JsonSerializer(object obj)
+        {
+            this._obj = obj;
+            this._formater = new JsonFormatter();
+        }
+        public JsonSerializer(object obj, IJsonFormat[] formats)
+        {
+            this._obj = obj;
+            this._formater = new JsonFormatter(formats);
+        }
+
+        /// <summary>
+        /// 序列化方法
+        /// </summary>
+        /// <returns>Json字符串</returns>
+        public string Serialize()
+        {
+            SwitchSerializationMethod(_obj);
+            return _jsonStrBuilder.ToString();
+        }
+
+        /// <summary>
+        /// 对序列化类型进行对应的序列化操作
+        /// </summary>
+        /// <param name="type">序列化对象类型</param>
+        private void SwitchSerializationMethod(object obj)
+        {
+            if (obj == null)
+            {
+                _jsonStrBuilder.Append("null");
+                return;
+            }
+            Type type = obj.GetType();
+
+            //针对jsonobject类型的序列化
+            IJsonObject jsonObject = obj as IJsonObject;
+            if (jsonObject != null)
+            {
+                _jsonStrBuilder.Append(jsonObject.ToJsonString());
+                return;
+            }
+
+            bool isValueType = type.IsValueType;
+            if (!isValueType)
+            {
+                if (_objStack.Contains(obj))
+                {
+                    throw new Exception("循环引用");
+                }
+                _objStack.Push(obj);
+            }
+            ObjectType objectType = GetObjectType(type);
+            switch (objectType)
+            {
+                case ObjectType.Boolean:  SerializeBoolean(obj); break ;
+                case ObjectType.Int: SerializeInt(obj); break;
+                case ObjectType.Long: SerializeLong( obj); break;
+                case ObjectType.Float: SerializeFloat( obj); break;
+                case ObjectType.Double: SerializeDouble( obj); break;
+                case ObjectType.Decimal: SerializeDecimal(obj); break;
+                case ObjectType.DateTime: SerializeDateTime(obj); break;
+                case ObjectType.Enum: SerializeEnum(obj); break;
+                case ObjectType.String: SerializeString(obj); break;
+                case ObjectType.Dictionary: SerializeDictionary(obj); break;
+                case ObjectType.Enumerable: SerializeEnumerable(obj); break;
+                case ObjectType.Object: SerializeObject(obj); break;
+                default: throw new Exception("未知转换类型");
+            }
+            if (!isValueType)
+            {
+                _objStack.Pop();
+            }
+            return;
+        }
+
+        /// <summary>
+        /// 获取对象的类型
+        /// </summary>
+        /// <param name="type">序列化对象类型</param>
+        /// <returns>对象类型</returns>
+        private ObjectType GetObjectType(Type type)
+        {
+            if (type == typeof(Boolean))
+                return ObjectType.Boolean;
+            if (type == typeof(int))
+                return ObjectType.Int;
+            else if (type == typeof(long))
+                return ObjectType.Long;
+            else if (type == typeof(float))
+                return ObjectType.Float;
+            else if (type == typeof(double))
+                return ObjectType.Double;
+            else if (type == typeof(decimal))
+                return ObjectType.Decimal;
+            else if (type == typeof(DateTime))
+                return ObjectType.DateTime;
+            else if (type.IsEnum)
+                return ObjectType.Enum;
+            else if (type == typeof(string))
+                return ObjectType.String;
+            else if (typeof(IDictionary).IsAssignableFrom(type))
+                return ObjectType.Dictionary;
+            else if (typeof(IEnumerable).IsAssignableFrom(type))
+                return ObjectType.Enumerable;
+            else
+                return ObjectType.Object;
+
+        }
+
+        /// <summary>
+        /// bool类型序列化
+        /// </summary>
+        /// <param name="obj">需要序列化的对象</param>
+        private void SerializeBoolean(object obj)
+        {
+            if ((bool)obj)
+                _jsonStrBuilder.Append("true");
+            else
+                _jsonStrBuilder.Append("false");
+        }
+
+        /// <summary>
+        /// int类型序列化
+        /// </summary>
+        /// <param name="obj">需要序列化的对象</param>
+        private void SerializeInt(object obj)
+        {
+            _jsonStrBuilder.Append(obj.ToString());
+        }
+
+        /// <summary>
+        /// long类型序列化
+        /// </summary>
+        /// <param name="obj">需要序列化的对象</param>
+        private void SerializeLong(object obj)
+        {
+            _jsonStrBuilder.Append(obj.ToString());
+        }
+        private void SerializeFloat(object obj)
+        {
+            _jsonStrBuilder.Append(obj.ToString());
+        }
+
+        /// <summary>
+        /// double类型序列
+        /// </summary>
+        /// <param name="obj">需要序列化的对象</param>
+        private void SerializeDouble(object obj)
+        {
+            _jsonStrBuilder.Append(obj.ToString());
+        }
+        private void SerializeDecimal(object obj)
+        {
+            _jsonStrBuilder.Append(obj.ToString());
+        }
+        /// <summary>
+        /// DateTime类型序列化
+        /// </summary>
+        /// <param name="obj">需要序列化的对象</param>
+        private void SerializeDateTime(object obj)
+        {
+            _jsonStrBuilder.Append("\"" + _formater.DateTimeFormat((DateTime)obj) + "\"");
+        }
+        /// <summary>
+        /// Enum类型序列化
+        /// </summary>
+        /// <param name="obj">需要序列化的对象</param>
+        private void SerializeEnum(object obj)
+        {
+            _jsonStrBuilder.Append("\"" + obj.ToString() + "\"");
+        }
+        /// <summary>
+        /// String类型序列化
+        /// </summary>
+        /// <param name="obj">需要序列化的对象</param>
+        private void SerializeString(object obj)
+        {
+            string str = obj as string;
+            if (str == null)
+            {
+                throw new Exception("当前对象不能转化成string类型");
+            }
+            _jsonStrBuilder.Append('"');
+            foreach (char item in str)
+            {
+                if (item > '"')
+                    _jsonStrBuilder.Append(item);
+                else
+                    _jsonStrBuilder.Append(CharParaphrase(item));
+            }
+            _jsonStrBuilder.Append('"');
+        }
+        /// <summary>
+        /// Dictionary类型序列化
+        /// </summary>
+        /// <param name="obj">需要序列化的对象</param>
+        private void SerializeDictionary(object obj)
+        {
+            IDictionary dictionary = obj as IDictionary;
+            _jsonStrBuilder.Append("{");
+            int i = 0;
+            foreach (DictionaryEntry item in dictionary)
+            {
+                if (i == 0)
+                    _jsonStrBuilder.Append("\"" + item.Key.ToString() + "\":");
+                else
+                    _jsonStrBuilder.Append(",\"" + item.Key.ToString() + "\":");
+                SwitchSerializationMethod(item.Value);
+                i++;
+            }
+            _jsonStrBuilder.Append("}");
+        }
+        /// <summary>
+        /// Enumerable类型序列化
+        /// </summary>
+        /// <param name="obj">需要序列化的对象</param>
+        private void SerializeEnumerable(object obj)
+        {
+            IEnumerable enumerable = obj as IEnumerable;
+            _jsonStrBuilder.Append("[");
+            int i = 0;
+            foreach (var item in enumerable)
+            {
+                if (i != 0)
+                    _jsonStrBuilder.Append(",");
+                SwitchSerializationMethod(item);
+                i++;
+            }
+            _jsonStrBuilder.Append("]");
+        }
+        /// <summary>
+        /// object类型序列化
+        /// </summary>
+        /// <param name="obj">需要序列化的对象</param>
+        private void SerializeObject(object obj)
+        {
+            _jsonStrBuilder.Append("{");
+            List<PropertyInfo> propertyInfos = obj.GetType().GetProperties().Where(n => n.CanRead).ToList();
+
+            for (int i = 0; i < propertyInfos.Count; i++)
+            {
+                if (i == 0)
+                    _jsonStrBuilder.Append("\"" + propertyInfos[i].Name + "\":");
+                else
+                    _jsonStrBuilder.Append(",\"" + propertyInfos[i].Name + "\":");
+#if NET35 || NET40
+                SwitchSerializationMethod(propertyInfos[i].GetValue(obj, null));
+#else
+                 SwitchSerializationMethod(propertyInfos[i].GetValue(obj));
+#endif
+            }
+            _jsonStrBuilder.Append("}");
+        }
+
+        /// <summary>
+        /// 字符转义
+        /// </summary>
+        /// <param name="paraphrase">需要转义的字符</param>
+        /// <returns>转义好的字符串</returns>
+        private string CharParaphrase(char paraphrase)
+        {
+            if (paraphrase == '"')
+                return "\\\"";
+            else if (paraphrase == '\\')
+                return "\\\\";
+            else if (paraphrase == '\n')
+                return "\\n";
+            else if (paraphrase == '\t')
+                return "\\t";
+            else if (paraphrase == '\a')
+                return "\\a";
+            else if (paraphrase == '\b')
+                return "\\b";
+            else if (paraphrase == '\f')
+                return "\\f";
+            else if (paraphrase == '\r')
+                return "\\r";
+            else if (paraphrase == '\v')
+                return "\\v";
+            return paraphrase.ToString();
+        }
+    }
+}

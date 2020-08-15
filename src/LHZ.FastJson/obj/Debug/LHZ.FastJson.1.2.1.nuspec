@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>LHZ.FastJson</id>
+    <version>1.2.1</version>
+    <authors>LHZ</authors>
+    <owners>LHZ</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <icon>logo.png</icon>
+    <description>轻巧便利的Json序列化和反序列化工具
+Lightweight and convenient tool for JSON serialization and deserialization</description>
+    <dependencies>
+      <group targetFramework=".NETFramework4.0" />
+      <group targetFramework=".NETStandard2.1" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="D:\Study\LHZ.FastJson\LHZ.FastJson\bin\Debug\net40\LHZ.FastJson.dll" target="lib\net40\LHZ.FastJson.dll" />
+    <file src="D:\Study\LHZ.FastJson\LHZ.FastJson\bin\Debug\netstandard2.1\LHZ.FastJson.dll" target="lib\netstandard2.1\LHZ.FastJson.dll" />
+    <file src="D:\Study\LHZ.FastJson\LHZ.FastJson\logo.png" target="logo.png" />
+  </files>
+</package>

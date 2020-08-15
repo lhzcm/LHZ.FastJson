@@ -1,0 +1,40 @@
+﻿using LHZ.FastJson.Enum;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace LHZ.FastJson.Json.Format
+{
+    /// <summary>
+    /// 格式化类
+    /// </summary>
+    public class JsonFormatter
+    {
+        private DateTimeJsonFormat _dateTimeFormat = null;
+        public JsonFormatter() { }
+        public JsonFormatter(IJsonFormat[] jsonFormats)
+        {
+
+            for (int i = 0; i < jsonFormats.Length; i++)
+            {
+                if (_dateTimeFormat == null && jsonFormats[i].Type==ObjectType.DateTime)
+                {
+                    _dateTimeFormat = jsonFormats[i] as DateTimeJsonFormat;
+                    continue;
+                }
+            }
+        }
+        /// <summary>
+        /// DateTime类型格式化转化
+        /// </summary>
+        /// <param name="dateTime">日期时间对象</param>
+        /// <returns>格式化日期时间字符串</returns>
+        public string DateTimeFormat(DateTime dateTime)
+        {
+            if (_dateTimeFormat != null)
+                return dateTime.ToString(_dateTimeFormat.FormatString);
+            return dateTime.ToString();
+        }
+    }
+}
