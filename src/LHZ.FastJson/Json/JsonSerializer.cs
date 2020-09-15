@@ -19,8 +19,39 @@ namespace LHZ.FastJson.Json
         private StringBuilder _jsonStrBuilder = new StringBuilder(128);
         private Stack<object> _objStack = new Stack<object>();
         private JsonFormatter _formater = null;
+
+        private static readonly Type[] _objectType;
+        private static readonly int _objectCount;
+
         private object _obj;
 
+        static JsonSerializer()
+        {
+            _objectCount = System.Enum.GetValues(typeof(Enum.ObjectType)).Length;
+            _objectType = new Type[_objectCount];
+
+            _objectType[(int)ObjectType.Boolean] = typeof(Boolean);
+            _objectType[(int)ObjectType.Byte] = typeof(Byte);
+            _objectType[(int)ObjectType.Char] = typeof(Char);
+            _objectType[(int)ObjectType.Int16] = typeof(Int16);
+            _objectType[(int)ObjectType.UInt16] = typeof(UInt16);
+            _objectType[(int)ObjectType.Int32] = typeof(Int32);
+            _objectType[(int)ObjectType.UInt32] = typeof(UInt32);
+            _objectType[(int)ObjectType.Int64] = typeof(Int64);
+            _objectType[(int)ObjectType.UInt64] = typeof(UInt64);
+            _objectType[(int)ObjectType.Float] = typeof(Single);
+            _objectType[(int)ObjectType.Double] = typeof(Double);
+            _objectType[(int)ObjectType.Decimal] = typeof(Decimal);
+            _objectType[(int)ObjectType.DateTime] = typeof(DateTime);
+            _objectType[(int)ObjectType.String] = typeof(String);
+            _objectType[(int)ObjectType.Enum] = typeof(System.Enum);
+            _objectType[(int)ObjectType.Dictionary] = typeof(IDictionary);
+            _objectType[(int)ObjectType.List] = typeof(IList);
+            _objectType[(int)ObjectType.Enumerable] = typeof(IEnumerable);
+            _objectType[(int)ObjectType.Object] = typeof(Object);
+            _objectType[(int)ObjectType.Array] = typeof(Array);
+
+        }
         public JsonSerializer(object obj)
         {
             this._obj = obj;
@@ -76,8 +107,14 @@ namespace LHZ.FastJson.Json
             switch (objectType)
             {
                 case ObjectType.Boolean:  SerializeBoolean(obj); break ;
-                case ObjectType.Int: SerializeInt(obj); break;
-                case ObjectType.Long: SerializeLong( obj); break;
+                case ObjectType.Int32: SerializeInt32(obj); break;
+                case ObjectType.Int64: SerializeInt64( obj); break;
+                case ObjectType.UInt32: SerializeUInt32(obj); break;
+                case ObjectType.UInt64: SerializeUInt64(obj); break;
+                case ObjectType.Int16: SerializeInt16(obj); break;
+                case ObjectType.UInt16: SerializeUInt16(obj); break;
+                case ObjectType.Byte: SerializeByte(obj); break;
+                case ObjectType.Char: SerializeChar(obj); break;
                 case ObjectType.Float: SerializeFloat( obj); break;
                 case ObjectType.Double: SerializeDouble( obj); break;
                 case ObjectType.Decimal: SerializeDecimal(obj); break;
@@ -85,8 +122,10 @@ namespace LHZ.FastJson.Json
                 case ObjectType.Enum: SerializeEnum(obj); break;
                 case ObjectType.String: SerializeString(obj); break;
                 case ObjectType.Dictionary: SerializeDictionary(obj); break;
+                case ObjectType.List: SerializeEnumerable(obj); break;
                 case ObjectType.Enumerable: SerializeEnumerable(obj); break;
                 case ObjectType.Object: SerializeObject(obj); break;
+                case ObjectType.Array: SerializeEnumerable(obj); break;
                 default: throw new Exception("未知转换类型");
             }
             if (!isValueType)
@@ -97,37 +136,35 @@ namespace LHZ.FastJson.Json
         }
 
         /// <summary>
+        /// 序列化对象
+        /// </summary>
+        /// <param name="objectType"></param>
+        private void Serialize(ObjectType objectType, object obj)
+        {
+            
+        }
+
+        /// <summary>
         /// 获取对象的类型
         /// </summary>
         /// <param name="type">序列化对象类型</param>
         /// <returns>对象类型</returns>
         private ObjectType GetObjectType(Type type)
         {
-            if (type == typeof(Boolean))
-                return ObjectType.Boolean;
-            if (type == typeof(int))
-                return ObjectType.Int;
-            else if (type == typeof(long))
-                return ObjectType.Long;
-            else if (type == typeof(float))
-                return ObjectType.Float;
-            else if (type == typeof(double))
-                return ObjectType.Double;
-            else if (type == typeof(decimal))
-                return ObjectType.Decimal;
-            else if (type == typeof(DateTime))
-                return ObjectType.DateTime;
-            else if (type.IsEnum)
+            for (int i = 0; i < _objectCount; i++)
+            {
+                if (type == _objectType[i])
+                    return (ObjectType)i;
+            }
+
+            if (type.IsEnum)
                 return ObjectType.Enum;
-            else if (type == typeof(string))
-                return ObjectType.String;
-            else if (typeof(IDictionary).IsAssignableFrom(type))
+            else if (_objectType[(int)ObjectType.Dictionary].IsAssignableFrom(type))
                 return ObjectType.Dictionary;
-            else if (typeof(IEnumerable).IsAssignableFrom(type))
+            else if (_objectType[(int)ObjectType.Enumerable].IsAssignableFrom(type))
                 return ObjectType.Enumerable;
             else
                 return ObjectType.Object;
-
         }
 
         /// <summary>
@@ -143,22 +180,82 @@ namespace LHZ.FastJson.Json
         }
 
         /// <summary>
-        /// int类型序列化
+        /// byte类型序列化
         /// </summary>
         /// <param name="obj">需要序列化的对象</param>
-        private void SerializeInt(object obj)
+        private void SerializeByte(object obj)
         {
             _jsonStrBuilder.Append(obj.ToString());
         }
 
         /// <summary>
-        /// long类型序列化
+        /// char类型序列化
         /// </summary>
         /// <param name="obj">需要序列化的对象</param>
-        private void SerializeLong(object obj)
+        private void SerializeChar(object obj)
+        {
+            _jsonStrBuilder.Append("\"" + obj.ToString() + "\"");
+        }
+
+        /// <summary>
+        /// int16类型序列化
+        /// </summary>
+        /// <param name="obj">需要序列化的对象</param>
+        private void SerializeInt16(object obj)
         {
             _jsonStrBuilder.Append(obj.ToString());
         }
+
+        /// <summary>
+        /// uint16类型序列化
+        /// </summary>
+        /// <param name="obj">需要序列化的对象</param>
+        private void SerializeUInt16(object obj)
+        {
+            _jsonStrBuilder.Append(obj.ToString());
+        }
+
+
+        /// <summary>
+        /// int32类型序列化
+        /// </summary>
+        /// <param name="obj">需要序列化的对象</param>
+        private void SerializeInt32(object obj)
+        {
+            _jsonStrBuilder.Append(obj.ToString());
+        }
+
+        /// <summary>
+        /// uint32类型序列化
+        /// </summary>
+        /// <param name="obj">需要序列化的对象</param>
+        private void SerializeUInt32(object obj)
+        {
+            _jsonStrBuilder.Append(obj.ToString());
+        }
+
+        /// <summary>
+        /// int64类型序列化
+        /// </summary>
+        /// <param name="obj">需要序列化的对象</param>
+        private void SerializeInt64(object obj)
+        {
+            _jsonStrBuilder.Append(obj.ToString());
+        }
+
+        /// <summary>
+        /// uint64类型序列化
+        /// </summary>
+        /// <param name="obj">需要序列化的对象</param>
+        private void SerializeUInt64(object obj)
+        {
+            _jsonStrBuilder.Append(obj.ToString());
+        }
+
+        /// <summary>
+        /// float类型序列化
+        /// </summary>
+        /// <param name="obj"></param>
         private void SerializeFloat(object obj)
         {
             _jsonStrBuilder.Append(obj.ToString());

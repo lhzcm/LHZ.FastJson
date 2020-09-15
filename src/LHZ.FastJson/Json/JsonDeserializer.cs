@@ -22,6 +22,37 @@ namespace LHZ.FastJson.Json
     {
         private static readonly Dictionary<Type, List<PropertyInfo>> _proPertyInfos = new Dictionary<Type, List<PropertyInfo>>(4096);
 
+        private static readonly Type[] _objectType;
+        private static readonly int _objectCount;
+
+        static JsonDeserializer()
+        {
+            _objectCount = System.Enum.GetValues(typeof(Enum.ObjectType)).Length;
+            _objectType = new Type[_objectCount];
+
+            _objectType[(int)ObjectType.Boolean] = typeof(Boolean);
+            _objectType[(int)ObjectType.Byte] = typeof(Byte);
+            _objectType[(int)ObjectType.Char] = typeof(Char);
+            _objectType[(int)ObjectType.Int16] = typeof(Int16);
+            _objectType[(int)ObjectType.UInt16] = typeof(UInt16);
+            _objectType[(int)ObjectType.Int32] = typeof(Int32);
+            _objectType[(int)ObjectType.UInt32] = typeof(UInt32);
+            _objectType[(int)ObjectType.Int64] = typeof(Int64);
+            _objectType[(int)ObjectType.UInt64] = typeof(UInt64);
+            _objectType[(int)ObjectType.Float] = typeof(Single);
+            _objectType[(int)ObjectType.Double] = typeof(Double);
+            _objectType[(int)ObjectType.Decimal] = typeof(Decimal);
+            _objectType[(int)ObjectType.DateTime] = typeof(DateTime);
+            _objectType[(int)ObjectType.String] = typeof(String);
+            _objectType[(int)ObjectType.Enum] = typeof(System.Enum);
+            _objectType[(int)ObjectType.Dictionary] = typeof(IDictionary);
+            _objectType[(int)ObjectType.List] = typeof(IList);
+            _objectType[(int)ObjectType.Enumerable] = typeof(Enumerable);
+            _objectType[(int)ObjectType.Object] = typeof(Object);
+            _objectType[(int)ObjectType.Array] = typeof(Array);
+
+        }
+
         private JsonObject _obj;
         public JsonDeserializer(JsonObject obj)
         {
@@ -67,8 +98,14 @@ namespace LHZ.FastJson.Json
             switch (objectType)
             {
                 case ObjectType.Boolean: return ConvertToBoolean(jsonObject);
-                case ObjectType.Int: return ConvertToInt(jsonObject);
-                case ObjectType.Long: return ConvertToLong(jsonObject);
+                case ObjectType.Byte: return ConvertToByte(jsonObject);
+                case ObjectType.Char: return ConvertToChar(jsonObject);
+                case ObjectType.Int16: return ConvertToInt16(jsonObject);
+                case ObjectType.UInt16: return ConvertToUInt16(jsonObject);
+                case ObjectType.Int32: return ConvertToInt32(jsonObject);
+                case ObjectType.UInt32: return ConvertToUInt32(jsonObject);
+                case ObjectType.Int64: return ConvertToInt64(jsonObject);
+                case ObjectType.UInt64: return ConvertToUInt64(jsonObject);
                 case ObjectType.Float: return ConvertToFloat(jsonObject);
                 case ObjectType.Double: return ConvertToDouble(jsonObject);
                 case ObjectType.Decimal: return ConvertToDecimal(jsonObject);
@@ -91,24 +128,23 @@ namespace LHZ.FastJson.Json
         /// <returns></returns>
         private ObjectType GetObjectType(Type type)
         {
-            if (type == typeof(bool) || type == typeof(bool?))
-                return ObjectType.Boolean;
-            if (type == typeof(int) || type == typeof(int?))
-                return ObjectType.Int;
-            else if (type == typeof(long) || type == typeof(long?))
-                return ObjectType.Long;
-            else if (type == typeof(float) || type == typeof(float?))
-                return ObjectType.Float;
-            else if (type == typeof(double) || type == typeof(double?))
-                return ObjectType.Double;
-            else if (type == typeof(decimal) || type == typeof(decimal?))
-                return ObjectType.Decimal;
-            else if (type == typeof(DateTime) || type == typeof(DateTime?))
-                return ObjectType.DateTime;
+            for (int i = 0; i < _objectCount; i++)
+            {
+                if (type == _objectType[i])
+                    return (ObjectType)i;
+            }
+
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
+            {
+#if NET35 || NET40
+
+                return GetObjectType(type.GetGenericArguments()[0]);
+#else
+                return GetObjectType(type.GenericTypeArguments[0]);
+#endif
+            }
             else if (type.IsEnum)
                 return ObjectType.Enum;
-            else if (type == typeof(string))
-                return ObjectType.String;
             else if (typeof(IDictionary).IsAssignableFrom(type))
                 return ObjectType.Dictionary;
             else if (type.IsArray)
@@ -135,40 +171,151 @@ namespace LHZ.FastJson.Json
             }
             return Boolean.Parse((string)jsonObject.Value);
         }
+
         /// <summary>
-        /// 解析成int类型
+        /// 解析成byte类型
         /// </summary>
         /// <param name="jsonObject">Json对象</param>
         /// <returns></returns>
-        private object ConvertToInt(JsonObject jsonObject)
+        private object ConvertToByte(JsonObject jsonObject)
         {
             if (jsonObject.Type != JsonType.Number)
             {
-                throw new JsonDeserializationException(jsonObject, typeof(int), "Json对象不为Number类型不能解析成Int类型");
+                throw new JsonDeserializationException(jsonObject, typeof(Byte), "Json对象不为Number类型不能解析成Byte类型");
             }
             if (((JsonNumber)jsonObject).NumberType != NumberType.Long)
             {
-                throw new JsonDeserializationException(jsonObject, typeof(int), "Json对象Number类型不为Long不能解析成Int类型");
+                throw new JsonDeserializationException(jsonObject, typeof(Byte), "Json对象Number类型不为Long不能解析成Byte类型");
+            }
+            return Byte.Parse((string)jsonObject.Value);
+        }
+
+        /// <summary>
+        /// 解析成char类型
+        /// </summary>
+        /// <param name="jsonObject">Json对象</param>
+        /// <returns></returns>
+        private object ConvertToChar(JsonObject jsonObject)
+        {
+            if (jsonObject.Type != JsonType.String)
+            {
+                throw new JsonDeserializationException(jsonObject, typeof(Char), "Json对象不为String类型不能解析成Char类型");
+            }
+            if (((string)jsonObject.Value).Length != 1 )
+            {
+                throw new JsonDeserializationException(jsonObject, typeof(Char), "Json对象字符串长度不等于1，不能解析成Char类型");
+            }
+            return ((string)jsonObject.Value)[0];
+        }
+
+        /// <summary>
+        /// 解析成int16类型
+        /// </summary>
+        /// <param name="jsonObject">Json对象</param>
+        /// <returns></returns>
+        private object ConvertToInt16(JsonObject jsonObject)
+        {
+            if (jsonObject.Type != JsonType.Number)
+            {
+                throw new JsonDeserializationException(jsonObject, typeof(Int16), "Json对象不为Number类型不能解析成Int16类型");
+            }
+            if (((JsonNumber)jsonObject).NumberType != NumberType.Long)
+            {
+                throw new JsonDeserializationException(jsonObject, typeof(Int16), "Json对象Number类型不为Long不能解析成Int16类型");
+            }
+            return Int16.Parse((string)jsonObject.Value);
+        }
+
+        /// <summary>
+        /// 解析成int16类型
+        /// </summary>
+        /// <param name="jsonObject">Json对象</param>
+        /// <returns></returns>
+        private object ConvertToUInt16(JsonObject jsonObject)
+        {
+            if (jsonObject.Type != JsonType.Number)
+            {
+                throw new JsonDeserializationException(jsonObject, typeof(UInt16), "Json对象不为Number类型不能解析成UInt16类型");
+            }
+            if (((JsonNumber)jsonObject).NumberType != NumberType.Long)
+            {
+                throw new JsonDeserializationException(jsonObject, typeof(UInt16), "Json对象Number类型不为Long不能解析成UInt16类型");
+            }
+            return UInt16.Parse((string)jsonObject.Value);
+        }
+
+
+        /// <summary>
+        /// 解析成int32类型
+        /// </summary>
+        /// <param name="jsonObject">Json对象</param>
+        /// <returns></returns>
+        private object ConvertToInt32(JsonObject jsonObject)
+        {
+            if (jsonObject.Type != JsonType.Number)
+            {
+                throw new JsonDeserializationException(jsonObject, typeof(int), "Json对象不为Number类型不能解析成Int32类型");
+            }
+            if (((JsonNumber)jsonObject).NumberType != NumberType.Long)
+            {
+                throw new JsonDeserializationException(jsonObject, typeof(int), "Json对象Number类型不为Long不能解析成Int32类型");
             }
             return int.Parse((string)jsonObject.Value);
         }
         /// <summary>
-        /// 解析成long类型
+        /// 解析成uint32类型
         /// </summary>
         /// <param name="jsonObject">Json对象</param>
         /// <returns></returns>
-        private long ConvertToLong(JsonObject jsonObject)
+        private object ConvertToUInt32(JsonObject jsonObject)
         {
             if (jsonObject.Type != JsonType.Number)
             {
-                throw new JsonDeserializationException(jsonObject, typeof(long), "Json对象不为Number类型不能解析成Long类型");
+                throw new JsonDeserializationException(jsonObject, typeof(uint), "Json对象不为Number类型不能解析成UInt32类型");
             }
             if (((JsonNumber)jsonObject).NumberType != NumberType.Long)
             {
-                throw new JsonDeserializationException(jsonObject, typeof(long), "Json对象Number类型不为Long不能解析成Long类型");
+                throw new JsonDeserializationException(jsonObject, typeof(uint), "Json对象Number类型不为Long不能解析成UInt32类型");
+            }
+            return uint.Parse((string)jsonObject.Value);
+        }
+
+        /// <summary>
+        /// 解析成int64类型
+        /// </summary>
+        /// <param name="jsonObject">Json对象</param>
+        /// <returns></returns>
+        private object ConvertToInt64(JsonObject jsonObject)
+        {
+            if (jsonObject.Type != JsonType.Number)
+            {
+                throw new JsonDeserializationException(jsonObject, typeof(long), "Json对象不为Number类型不能解析成Int64类型");
+            }
+            if (((JsonNumber)jsonObject).NumberType != NumberType.Long)
+            {
+                throw new JsonDeserializationException(jsonObject, typeof(long), "Json对象Number类型不为Long不能解析成Int64类型");
             }
             return long.Parse((string)jsonObject.Value);
         }
+
+        /// <summary>
+        /// 解析成uint64类型
+        /// </summary>
+        /// <param name="jsonObject">Json对象</param>
+        /// <returns></returns>
+        private object ConvertToUInt64(JsonObject jsonObject)
+        {
+            if (jsonObject.Type != JsonType.Number)
+            {
+                throw new JsonDeserializationException(jsonObject, typeof(ulong), "Json对象不为Number类型不能解析成UInt64类型");
+            }
+            if (((JsonNumber)jsonObject).NumberType != NumberType.Long)
+            {
+                throw new JsonDeserializationException(jsonObject, typeof(ulong), "Json对象Number类型不为Long不能解析成UInt64类型");
+            }
+            return ulong.Parse((string)jsonObject.Value);
+        }
+
         /// <summary>
         /// 解析成单精度浮点类型
         /// </summary>

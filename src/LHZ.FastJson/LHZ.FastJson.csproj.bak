@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <!-- <TARGETFRAMEWORKS>NET35;NET40;NET45;NET46;NETSTANDARD2.0</TARGETFRAMEWORKS> -->
-    <TargetFramework>NET40</TargetFramework>
+    <targetframeworks>net35;net40;net45;net46;netstandard2.0</targetframeworks>
+    <!-- <TargetFramework>netstandard1.0</TargetFramework> -->
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <Version>1.3.3</Version>

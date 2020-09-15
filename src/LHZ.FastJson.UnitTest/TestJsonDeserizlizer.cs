@@ -82,11 +82,14 @@ namespace LHZ.FastJson.UnitTest
         [Test]
         public void TestArray()
         {
-            string testStr = "[1,2,3,4,5,6,7,8,9,10]";
-            int[] obj = (new JsonDeserializer<int[]>(testStr)).Deserialize();
+            string testStr = "[1,2,3,4,null,6,7,8,9,10]";
+            int?[] obj = (new JsonDeserializer<int?[]>(testStr)).Deserialize();
             for (int i = 0; i < obj.Length; i++)
             {
-                Assert.IsTrue(i+1==obj[i]);
+                if (i == 4)
+                    Assert.IsNull(obj[i]);
+                else
+                    Assert.IsTrue(i + 1 == obj[i]);
             }
         }
 
@@ -136,6 +139,16 @@ namespace LHZ.FastJson.UnitTest
             Test1,
             Test2,
             Test3
+        }
+
+        [Test]
+        public void TestInt32()
+        {
+            int testint32 = 0;
+            string testStr = "1234";
+            
+            testint32 = (new JsonDeserializer<Int32>(testStr)).Deserialize();
+            Assert.AreEqual(testint32, 1234);
         }
     }
 }

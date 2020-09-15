@@ -30,7 +30,7 @@ namespace LHZ.FastJson.UnitTest
             testObj.Add(new TestObj() { Name = "test8", Age = 24, Height = 230.453f }); 
             testObj.Add(new TestObj() { Name = "test9", Age = 11, Height = 20.443f });
             string obj = (new JsonSerializer(testObj)).Serialize();
-            Assert.IsTrue(obj == "null");
+            Assert.IsTrue(obj != null);
         }
 
         [Test]
@@ -50,7 +50,7 @@ namespace LHZ.FastJson.UnitTest
             testObj.Add("test1", new { Name = "test1", Age = 18 });
             testObj.Add("test2", new { Name = "test2", IsTeacher = true});
             string obj = (new JsonSerializer(testObj)).Serialize();
-            Assert.IsTrue(obj == "null");
+            Assert.IsTrue(obj != null);
         }
         [Test]
         public void TestDateTime()
@@ -63,9 +63,9 @@ namespace LHZ.FastJson.UnitTest
         [Test]
         public void TestString()
         {
-            string testObj = "test\"\tal";
+            string testObj = "test\\\"\\\\tal";
             string obj = (new JsonSerializer(testObj)).Serialize();
-            Assert.IsTrue("test\\\"\\tal" == obj);
+            Assert.IsTrue("\"test\\\\\"\\\\tal\"" == obj);
         }
 
         [Test]
