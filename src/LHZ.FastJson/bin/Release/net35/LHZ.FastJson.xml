@@ -4,6 +4,11 @@
         <name>LHZ.FastJson</name>
     </assembly>
     <members>
+        <member name="T:LHZ.FastJson.Enum.ObjectType">
+            <summary>
+            可序列化和反序列化的类的枚举
+            </summary>
+        </member>
         <member name="T:LHZ.FastJson.Interface.IJsonObject">
             <summary>
             Json对象类
@@ -303,16 +308,58 @@
             <param name="jsonObject">Json对象</param>
             <returns></returns>
         </member>
-        <member name="M:LHZ.FastJson.Json.JsonDeserializer`1.ConvertToInt(LHZ.FastJson.JsonClass.JsonObject)">
+        <member name="M:LHZ.FastJson.Json.JsonDeserializer`1.ConvertToByte(LHZ.FastJson.JsonClass.JsonObject)">
             <summary>
-            解析成int类型
+            解析成byte类型
             </summary>
             <param name="jsonObject">Json对象</param>
             <returns></returns>
         </member>
-        <member name="M:LHZ.FastJson.Json.JsonDeserializer`1.ConvertToLong(LHZ.FastJson.JsonClass.JsonObject)">
+        <member name="M:LHZ.FastJson.Json.JsonDeserializer`1.ConvertToChar(LHZ.FastJson.JsonClass.JsonObject)">
             <summary>
-            解析成long类型
+            解析成char类型
+            </summary>
+            <param name="jsonObject">Json对象</param>
+            <returns></returns>
+        </member>
+        <member name="M:LHZ.FastJson.Json.JsonDeserializer`1.ConvertToInt16(LHZ.FastJson.JsonClass.JsonObject)">
+            <summary>
+            解析成int16类型
+            </summary>
+            <param name="jsonObject">Json对象</param>
+            <returns></returns>
+        </member>
+        <member name="M:LHZ.FastJson.Json.JsonDeserializer`1.ConvertToUInt16(LHZ.FastJson.JsonClass.JsonObject)">
+            <summary>
+            解析成int16类型
+            </summary>
+            <param name="jsonObject">Json对象</param>
+            <returns></returns>
+        </member>
+        <member name="M:LHZ.FastJson.Json.JsonDeserializer`1.ConvertToInt32(LHZ.FastJson.JsonClass.JsonObject)">
+            <summary>
+            解析成int32类型
+            </summary>
+            <param name="jsonObject">Json对象</param>
+            <returns></returns>
+        </member>
+        <member name="M:LHZ.FastJson.Json.JsonDeserializer`1.ConvertToUInt32(LHZ.FastJson.JsonClass.JsonObject)">
+            <summary>
+            解析成uint32类型
+            </summary>
+            <param name="jsonObject">Json对象</param>
+            <returns></returns>
+        </member>
+        <member name="M:LHZ.FastJson.Json.JsonDeserializer`1.ConvertToInt64(LHZ.FastJson.JsonClass.JsonObject)">
+            <summary>
+            解析成int64类型
+            </summary>
+            <param name="jsonObject">Json对象</param>
+            <returns></returns>
+        </member>
+        <member name="M:LHZ.FastJson.Json.JsonDeserializer`1.ConvertToUInt64(LHZ.FastJson.JsonClass.JsonObject)">
+            <summary>
+            解析成uint64类型
             </summary>
             <param name="jsonObject">Json对象</param>
             <returns></returns>
@@ -417,6 +464,12 @@
             </summary>
             <param name="type">序列化对象类型</param>
         </member>
+        <member name="M:LHZ.FastJson.Json.JsonSerializer.Serialize(LHZ.FastJson.Enum.ObjectType,System.Object)">
+            <summary>
+            序列化对象
+            </summary>
+            <param name="objectType"></param>
+        </member>
         <member name="M:LHZ.FastJson.Json.JsonSerializer.GetObjectType(System.Type)">
             <summary>
             获取对象的类型
@@ -430,17 +483,59 @@
             </summary>
             <param name="obj">需要序列化的对象</param>
         </member>
-        <member name="M:LHZ.FastJson.Json.JsonSerializer.SerializeInt(System.Object)">
+        <member name="M:LHZ.FastJson.Json.JsonSerializer.SerializeByte(System.Object)">
             <summary>
-            int类型序列化
+            byte类型序列化
             </summary>
             <param name="obj">需要序列化的对象</param>
         </member>
-        <member name="M:LHZ.FastJson.Json.JsonSerializer.SerializeLong(System.Object)">
+        <member name="M:LHZ.FastJson.Json.JsonSerializer.SerializeChar(System.Object)">
             <summary>
-            long类型序列化
+            char类型序列化
             </summary>
             <param name="obj">需要序列化的对象</param>
+        </member>
+        <member name="M:LHZ.FastJson.Json.JsonSerializer.SerializeInt16(System.Object)">
+            <summary>
+            int16类型序列化
+            </summary>
+            <param name="obj">需要序列化的对象</param>
+        </member>
+        <member name="M:LHZ.FastJson.Json.JsonSerializer.SerializeUInt16(System.Object)">
+            <summary>
+            uint16类型序列化
+            </summary>
+            <param name="obj">需要序列化的对象</param>
+        </member>
+        <member name="M:LHZ.FastJson.Json.JsonSerializer.SerializeInt32(System.Object)">
+            <summary>
+            int32类型序列化
+            </summary>
+            <param name="obj">需要序列化的对象</param>
+        </member>
+        <member name="M:LHZ.FastJson.Json.JsonSerializer.SerializeUInt32(System.Object)">
+            <summary>
+            uint32类型序列化
+            </summary>
+            <param name="obj">需要序列化的对象</param>
+        </member>
+        <member name="M:LHZ.FastJson.Json.JsonSerializer.SerializeInt64(System.Object)">
+            <summary>
+            int64类型序列化
+            </summary>
+            <param name="obj">需要序列化的对象</param>
+        </member>
+        <member name="M:LHZ.FastJson.Json.JsonSerializer.SerializeUInt64(System.Object)">
+            <summary>
+            uint64类型序列化
+            </summary>
+            <param name="obj">需要序列化的对象</param>
+        </member>
+        <member name="M:LHZ.FastJson.Json.JsonSerializer.SerializeFloat(System.Object)">
+            <summary>
+            float类型序列化
+            </summary>
+            <param name="obj"></param>
         </member>
         <member name="M:LHZ.FastJson.Json.JsonSerializer.SerializeDouble(System.Object)">
             <summary>

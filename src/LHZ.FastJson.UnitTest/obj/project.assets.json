@@ -1226,9 +1226,9 @@
           "lib/netstandard1.3/System.Xml.XPath.XmlDocument.dll": {}
         }
       },
-      "LHZ.FastJson/1.3.3": {
+      "LHZ.FastJson/1.3.4": {
         "type": "project",
-        "framework": ".NETFramework,Version=v4.0",
+        "framework": ".NETStandard,Version=v2.0",
         "compile": {
           "bin/placeholder/LHZ.FastJson.dll": {}
         },
@@ -4629,7 +4629,7 @@
         "system.xml.xpath.xmldocument.nuspec"
       ]
     },
-    "LHZ.FastJson/1.3.3": {
+    "LHZ.FastJson/1.3.4": {
       "type": "project",
       "path": "../LHZ.FastJson/LHZ.FastJson.csproj",
       "msbuildProject": "../LHZ.FastJson/LHZ.FastJson.csproj"
@@ -4637,30 +4637,26 @@
   },
   "projectFileDependencyGroups": {
     ".NETCoreApp,Version=v3.1": [
-      "LHZ.FastJson >= 1.3.3",
+      "LHZ.FastJson >= 1.3.4",
       "Microsoft.NET.Test.Sdk >= 16.4.0",
       "NUnit3TestAdapter >= 3.15.1",
       "nunit >= 3.12.0"
     ]
   },
   "packageFolders": {
-    "C:\\Users\\admin\\.nuget\\packages\\": {},
-    "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
+    "C:\\Users\\LHZ\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "G:\\Study\\LHZ.FastJson\\src\\LHZ.FastJson.UnitTest\\LHZ.FastJson.UnitTest.csproj",
+      "projectUniqueName": "D:\\Study\\GitHub\\LHZ.FastJson\\src\\LHZ.FastJson.UnitTest\\LHZ.FastJson.UnitTest.csproj",
       "projectName": "LHZ.FastJson.UnitTest",
-      "projectPath": "G:\\Study\\LHZ.FastJson\\src\\LHZ.FastJson.UnitTest\\LHZ.FastJson.UnitTest.csproj",
-      "packagesPath": "C:\\Users\\admin\\.nuget\\packages\\",
-      "outputPath": "G:\\Study\\LHZ.FastJson\\src\\LHZ.FastJson.UnitTest\\obj\\",
+      "projectPath": "D:\\Study\\GitHub\\LHZ.FastJson\\src\\LHZ.FastJson.UnitTest\\LHZ.FastJson.UnitTest.csproj",
+      "packagesPath": "C:\\Users\\LHZ\\.nuget\\packages\\",
+      "outputPath": "D:\\Study\\GitHub\\LHZ.FastJson\\src\\LHZ.FastJson.UnitTest\\obj\\",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-      ],
       "configFilePaths": [
-        "C:\\Users\\admin\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\LHZ\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -4669,13 +4665,13 @@
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "http://nuget.lexun.com/nuget": {},
-        "https://www.nuget.org/api/v2/": {}
+        "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
         "netcoreapp3.1": {
           "projectReferences": {
-            "G:\\Study\\LHZ.FastJson\\src\\LHZ.FastJson\\LHZ.FastJson.csproj": {
-              "projectPath": "G:\\Study\\LHZ.FastJson\\src\\LHZ.FastJson\\LHZ.FastJson.csproj"
+            "D:\\Study\\GitHub\\LHZ.FastJson\\src\\LHZ.FastJson\\LHZ.FastJson.csproj": {
+              "projectPath": "D:\\Study\\GitHub\\LHZ.FastJson\\src\\LHZ.FastJson\\LHZ.FastJson.csproj"
             }
           }
         }
@@ -4717,7 +4713,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.301\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.302\\RuntimeIdentifierGraph.json"
       }
     }
   }

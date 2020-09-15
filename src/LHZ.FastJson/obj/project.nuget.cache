@@ -1,8 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "paClBuuRuRTKOA6sYjyBbUi3K8VCMVINbPDth0U+nbvy65WhaU7nRrKnyvT0pNQegQEjdXu3wwqXR4JOedud5w==",
+  "dgSpecHash": "6gNxblUsW7PJMgfcGY8az6/9E3zEOE0Fk/Hrvialf3Tr5glt5fKjelHbtYGjNQBpfeUum8FwyV0/lwNu+E3QgA==",
   "success": true,
-  "projectFilePath": "G:\\Study\\LHZ.FastJson\\src\\LHZ.FastJson\\LHZ.FastJson.csproj",
-  "expectedPackageFiles": [],
+  "projectFilePath": "D:\\Study\\GitHub\\LHZ.FastJson\\src\\LHZ.FastJson\\LHZ.FastJson.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\LHZ\\.nuget\\packages\\microsoft.netcore.platforms\\1.1.0\\microsoft.netcore.platforms.1.1.0.nupkg.sha512",
+    "C:\\Users\\LHZ\\.nuget\\packages\\netstandard.library\\2.0.3\\netstandard.library.2.0.3.nupkg.sha512"
+  ],
   "logs": []
 }

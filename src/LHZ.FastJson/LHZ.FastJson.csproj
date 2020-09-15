@@ -1,15 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <!-- <TARGETFRAMEWORKS>NET35;NET40;NET45;NET46;NETSTANDARD2.0</TARGETFRAMEWORKS> -->
-    <TargetFramework>NET40</TargetFramework>
+    <TARGETFRAMEWORKS>NET35;NET40;NET45;NET46;NETSTANDARD2.0</TARGETFRAMEWORKS>
+    <!-- <TargetFramework>NET40</TargetFramework> -->
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <Version>1.3.3</Version>
+    <Version>1.3.4</Version>
     <Authors>LHZ</Authors>
     <Description>轻巧便利的Json序列化和反序列化工具
 Lightweight and convenient tool for JSON serialization and deserialization</Description>
     <PackageIcon>logo.png</PackageIcon>
+    <RepositoryType>Git</RepositoryType>
+    <RepositoryUrl>https://github.com/lhzcm/LHZ.FastJson</RepositoryUrl>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
