@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace LHZ.FastJson.Interface
+namespace LHZ.FastJson
 {
     /// <summary>
     /// Json对象类
@@ -26,7 +26,10 @@ namespace LHZ.FastJson.Interface
         /// <summary>
         /// 把Json对象转化成Json字符串
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Json字符串</returns>
         string ToJsonString();
+
+        int Position { get; }
+
     }
 }

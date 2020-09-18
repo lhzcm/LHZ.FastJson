@@ -1,5 +1,4 @@
 ﻿using LHZ.FastJson.Exceptions;
-using LHZ.FastJson.Interface;
 using LHZ.FastJson.JsonClass;
 using System;
 using System.Collections.Generic;

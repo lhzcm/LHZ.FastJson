@@ -31,3 +31,6 @@ G:\Study\LHZ.FastJson\src\LHZ.FastJson.Test\bin\Release\netcoreapp3.1\LHZ.FastJs
 G:\Study\LHZ.FastJson\src\LHZ.FastJson.Test\bin\Release\netcoreapp3.1\Newtonsoft.Json.dll
 G:\Study\LHZ.FastJson\src\LHZ.FastJson.Test\obj\Release\netcoreapp3.1\LHZ.FastJson.Test.csproj.CopyComplete
 G:\Study\LHZ.FastJson\src\LHZ.FastJson.Test\obj\Release\netcoreapp3.1\LHZ.FastJson.Test.genruntimeconfig.cache
+G:\Study\LHZ.FastJson\src\LHZ.FastJson.Test\bin\Release\netcoreapp3.1\LHZ.FastJson.dll
+G:\Study\LHZ.FastJson\src\LHZ.FastJson.Test\bin\Release\netcoreapp3.1\LHZ.FastJson.pdb
+G:\Study\LHZ.FastJson\src\LHZ.FastJson.Test\bin\Release\netcoreapp3.1\LHZ.FastJson.xml

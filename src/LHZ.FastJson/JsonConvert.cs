@@ -19,7 +19,7 @@ namespace LHZ.FastJson
         /// </summary>
         /// <param name="jsonString">Json字符串</param>
         /// <returns>JsonObject类型对象</returns>
-        public static JsonObject Deserialize(string jsonString)
+        public static IJsonObject Deserialize(string jsonString)
         {
             JsonReader reader = new JsonReader(jsonString);
             return reader.JsonRead();

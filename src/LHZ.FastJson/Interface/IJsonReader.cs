@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace LHZ.FastJson.Interface
+namespace LHZ.FastJson
 {
     public interface IJsonReader
     {

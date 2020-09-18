@@ -1,10 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "5kjQG7pQBIC6TRy9XddjIp0sTte3rmYdUXPvhg/GWf5P3a2Ctuq85rP5C8EH8g5L8okjYEsI6JhPPYcIc+cFmA==",
+  "dgSpecHash": "6g8Stn0sUyFpv7BhQE6a8l7I6RLF4sZ/NAap897P2YcqFUltg58b4sOnyLChucEeqL5sr3CUxmZAL5uSyhGSLg==",
   "success": true,
-  "projectFilePath": "D:\\Study\\GitHub\\LHZ.FastJson\\src\\LHZ.FastJson.Test\\LHZ.FastJson.Test.csproj",
+  "projectFilePath": "G:\\Study\\LHZ.FastJson\\src\\LHZ.FastJson.Test\\LHZ.FastJson.Test.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\LHZ\\.nuget\\packages\\newtonsoft.json\\12.0.3\\newtonsoft.json.12.0.3.nupkg.sha512"
+    "C:\\Users\\admin\\.nuget\\packages\\newtonsoft.json\\12.0.3\\newtonsoft.json.12.0.3.nupkg.sha512"
   ],
   "logs": []
 }

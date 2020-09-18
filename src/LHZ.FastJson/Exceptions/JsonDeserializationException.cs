@@ -11,7 +11,7 @@ namespace LHZ.FastJson.Exceptions
         private JsonType _jsonType;
         //private ObjectType _objType;
         private Type _targetType;
-        public JsonDeserializationException(JsonObject jsonObject, Type targetType, string msg) : base(jsonObject.Position, msg)
+        public JsonDeserializationException(IJsonObject jsonObject, Type targetType, string msg) : base(jsonObject.Position, msg)
         {
             this._jsonType = jsonObject.Type;
             this._targetType = targetType;

@@ -47,14 +47,14 @@ namespace LHZ.FastJson.Json
             _objectType[(int)ObjectType.Enum] = typeof(System.Enum);
             _objectType[(int)ObjectType.Dictionary] = typeof(IDictionary);
             _objectType[(int)ObjectType.List] = typeof(IList);
-            _objectType[(int)ObjectType.Enumerable] = typeof(Enumerable);
+            _objectType[(int)ObjectType.Enumerable] = typeof(IEnumerable);
             _objectType[(int)ObjectType.Object] = typeof(Object);
             _objectType[(int)ObjectType.Array] = typeof(Array);
 
         }
 
-        private JsonObject _obj;
-        public JsonDeserializer(JsonObject obj)
+        private IJsonObject _obj;
+        public JsonDeserializer(IJsonObject obj)
         {
             this._obj = obj;
         }
@@ -84,7 +84,7 @@ namespace LHZ.FastJson.Json
         /// <param name="jsonObject">Json对象类型</param>
         /// <param name="propertyInfos">反序列属性列表</param>
         /// <returns></returns>
-        private object SwitchDeserializationMethod(Type type, JsonObject jsonObject, List<PropertyInfo> propertyInfos = null)
+        private object SwitchDeserializationMethod(Type type, IJsonObject jsonObject, List<PropertyInfo> propertyInfos = null)
         {
             if (jsonObject.Type == JsonType.Null)
             {
@@ -145,13 +145,13 @@ namespace LHZ.FastJson.Json
             }
             else if (type.IsEnum)
                 return ObjectType.Enum;
-            else if (typeof(IDictionary).IsAssignableFrom(type))
+            else if (_objectType[(int)ObjectType.Dictionary].IsAssignableFrom(type))
                 return ObjectType.Dictionary;
             else if (type.IsArray)
                 return ObjectType.Array;
-            else if (typeof(IList).IsAssignableFrom(type))
+            else if (_objectType[(int)ObjectType.List].IsAssignableFrom(type))
                 return ObjectType.List;
-            else if (typeof(IEnumerable).IsAssignableFrom(type))
+            else if (_objectType[(int)ObjectType.Enumerable].IsAssignableFrom(type))
                 return ObjectType.Enumerable;
             else
                 return ObjectType.Object;
@@ -163,7 +163,7 @@ namespace LHZ.FastJson.Json
         /// </summary>
         /// <param name="jsonObject">Json对象</param>
         /// <returns></returns>
-        private object ConvertToBoolean(JsonObject jsonObject)
+        private object ConvertToBoolean(IJsonObject jsonObject)
         {
             if (jsonObject.Type != JsonType.Boolean)
             {
@@ -177,7 +177,7 @@ namespace LHZ.FastJson.Json
         /// </summary>
         /// <param name="jsonObject">Json对象</param>
         /// <returns></returns>
-        private object ConvertToByte(JsonObject jsonObject)
+        private object ConvertToByte(IJsonObject jsonObject)
         {
             if (jsonObject.Type != JsonType.Number)
             {
@@ -195,7 +195,7 @@ namespace LHZ.FastJson.Json
         /// </summary>
         /// <param name="jsonObject">Json对象</param>
         /// <returns></returns>
-        private object ConvertToChar(JsonObject jsonObject)
+        private object ConvertToChar(IJsonObject jsonObject)
         {
             if (jsonObject.Type != JsonType.String)
             {
@@ -213,7 +213,7 @@ namespace LHZ.FastJson.Json
         /// </summary>
         /// <param name="jsonObject">Json对象</param>
         /// <returns></returns>
-        private object ConvertToInt16(JsonObject jsonObject)
+        private object ConvertToInt16(IJsonObject jsonObject)
         {
             if (jsonObject.Type != JsonType.Number)
             {
@@ -227,11 +227,11 @@ namespace LHZ.FastJson.Json
         }
 
         /// <summary>
-        /// 解析成int16类型
+        /// 解析成uint16类型
         /// </summary>
         /// <param name="jsonObject">Json对象</param>
         /// <returns></returns>
-        private object ConvertToUInt16(JsonObject jsonObject)
+        private object ConvertToUInt16(IJsonObject jsonObject)
         {
             if (jsonObject.Type != JsonType.Number)
             {
@@ -250,7 +250,7 @@ namespace LHZ.FastJson.Json
         /// </summary>
         /// <param name="jsonObject">Json对象</param>
         /// <returns></returns>
-        private object ConvertToInt32(JsonObject jsonObject)
+        private object ConvertToInt32(IJsonObject jsonObject)
         {
             if (jsonObject.Type != JsonType.Number)
             {
@@ -267,7 +267,7 @@ namespace LHZ.FastJson.Json
         /// </summary>
         /// <param name="jsonObject">Json对象</param>
         /// <returns></returns>
-        private object ConvertToUInt32(JsonObject jsonObject)
+        private object ConvertToUInt32(IJsonObject jsonObject)
         {
             if (jsonObject.Type != JsonType.Number)
             {
@@ -285,7 +285,7 @@ namespace LHZ.FastJson.Json
         /// </summary>
         /// <param name="jsonObject">Json对象</param>
         /// <returns></returns>
-        private object ConvertToInt64(JsonObject jsonObject)
+        private object ConvertToInt64(IJsonObject jsonObject)
         {
             if (jsonObject.Type != JsonType.Number)
             {
@@ -303,7 +303,7 @@ namespace LHZ.FastJson.Json
         /// </summary>
         /// <param name="jsonObject">Json对象</param>
         /// <returns></returns>
-        private object ConvertToUInt64(JsonObject jsonObject)
+        private object ConvertToUInt64(IJsonObject jsonObject)
         {
             if (jsonObject.Type != JsonType.Number)
             {
@@ -321,7 +321,7 @@ namespace LHZ.FastJson.Json
         /// </summary>
         /// <param name="jsonObject">Json对象</param>
         /// <returns></returns>
-        private object ConvertToFloat(JsonObject jsonObject)
+        private object ConvertToFloat(IJsonObject jsonObject)
         {
             if (jsonObject.Type != JsonType.Number)
             {
@@ -334,7 +334,7 @@ namespace LHZ.FastJson.Json
         /// </summary>
         /// <param name="jsonObject">Json对象</param>
         /// <returns></returns>
-        private object ConvertToDouble(JsonObject jsonObject)
+        private object ConvertToDouble(IJsonObject jsonObject)
         {
             if (jsonObject.Type != JsonType.Number)
             {
@@ -347,7 +347,7 @@ namespace LHZ.FastJson.Json
         /// </summary>
         /// <param name="jsonObject">Json对象</param>
         /// <returns></returns>
-        private object ConvertToDecimal(JsonObject jsonObject)
+        private object ConvertToDecimal(IJsonObject jsonObject)
         {
             if (jsonObject.Type != JsonType.Number)
             {
@@ -361,7 +361,7 @@ namespace LHZ.FastJson.Json
         /// </summary>
         /// <param name="jsonObject">Json对象</param>
         /// <returns></returns>
-        private object ConvertToDateTime(JsonObject jsonObject)
+        private object ConvertToDateTime(IJsonObject jsonObject)
         {
             if (jsonObject.Type != JsonType.String)
             {
@@ -376,7 +376,7 @@ namespace LHZ.FastJson.Json
         /// <param name="type"></param>
         /// <param name="jsonObject">Json对象</param>
         /// <returns></returns>
-        private object ConvertToEnum(Type type, JsonObject jsonObject)
+        private object ConvertToEnum(Type type, IJsonObject jsonObject)
         {
             if (jsonObject.Type == JsonType.String)
             {
@@ -403,7 +403,7 @@ namespace LHZ.FastJson.Json
         /// </summary>
         /// <param name="jsonObject">Json对象</param>
         /// <returns></returns>
-        private object ConvertToString(JsonObject jsonObject)
+        private object ConvertToString(IJsonObject jsonObject)
         {
             if (jsonObject.Type == JsonType.String)
             {
@@ -418,7 +418,7 @@ namespace LHZ.FastJson.Json
         /// <param name="type">类型</param>
         /// <param name="jsonObject">Json对象</param>
         /// <returns></returns>
-        private object ConvertToDictionary(Type type, JsonObject jsonObject)
+        private object ConvertToDictionary(Type type, IJsonObject jsonObject)
         {
             JsonContent jsonContent = jsonObject as JsonContent;
             if (jsonContent == null)
@@ -455,7 +455,7 @@ namespace LHZ.FastJson.Json
         /// <param name="type">数组对象类型</param>
         /// <param name="jsonObject">Json类型</param>
         /// <returns></returns>
-        private object ConvertToArray(Type type, JsonObject jsonObject)
+        private object ConvertToArray(Type type, IJsonObject jsonObject)
         {
             if (jsonObject.Type != JsonType.Array)
             {
@@ -485,7 +485,7 @@ namespace LHZ.FastJson.Json
         /// <param name="type">列表集合对象类型</param>
         /// <param name="jsonObject">Json类型</param>
         /// <returns></returns>
-        private object ConvertToList(Type type, JsonObject jsonObject)
+        private object ConvertToList(Type type, IJsonObject jsonObject)
         {
             JsonArray jsonArray = jsonObject as JsonArray;
             if (jsonArray == null)
@@ -521,7 +521,7 @@ namespace LHZ.FastJson.Json
         /// <param name="properties">对象属性列表</param>
         /// <param name="jsonObject">Json对象</param>
         /// <returns></returns>
-        public object ConvertToObject(Type type, List<PropertyInfo> properties, JsonObject jsonObject)
+        public object ConvertToObject(Type type, List<PropertyInfo> properties, IJsonObject jsonObject)
         {
             if (jsonObject.Type != JsonType.Content)
             {
