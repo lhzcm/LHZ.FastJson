@@ -25,3 +25,12 @@ G:\Study\LHZ.FastJson\src\LHZ.FastJson\obj\Release\net46\LHZ.FastJson.AssemblyIn
 G:\Study\LHZ.FastJson\src\LHZ.FastJson\obj\Release\net46\LHZ.FastJson.csproj.CoreCompileInputs.cache
 G:\Study\LHZ.FastJson\src\LHZ.FastJson\obj\Release\net46\LHZ.FastJson.dll
 G:\Study\LHZ.FastJson\src\LHZ.FastJson\obj\Release\net46\LHZ.FastJson.pdb
+G:\Study\dotnet\LHZ.FastJson\src\LHZ.FastJson\bin\Release\net46\LHZ.FastJson.dll
+G:\Study\dotnet\LHZ.FastJson\src\LHZ.FastJson\bin\Release\net46\LHZ.FastJson.pdb
+G:\Study\dotnet\LHZ.FastJson\src\LHZ.FastJson\bin\Release\net46\LHZ.FastJson.xml
+G:\Study\dotnet\LHZ.FastJson\src\LHZ.FastJson\obj\Release\net46\LHZ.FastJson.csprojAssemblyReference.cache
+G:\Study\dotnet\LHZ.FastJson\src\LHZ.FastJson\obj\Release\net46\LHZ.FastJson.AssemblyInfoInputs.cache
+G:\Study\dotnet\LHZ.FastJson\src\LHZ.FastJson\obj\Release\net46\LHZ.FastJson.AssemblyInfo.cs
+G:\Study\dotnet\LHZ.FastJson\src\LHZ.FastJson\obj\Release\net46\LHZ.FastJson.csproj.CoreCompileInputs.cache
+G:\Study\dotnet\LHZ.FastJson\src\LHZ.FastJson\obj\Release\net46\LHZ.FastJson.dll
+G:\Study\dotnet\LHZ.FastJson\src\LHZ.FastJson\obj\Release\net46\LHZ.FastJson.pdb

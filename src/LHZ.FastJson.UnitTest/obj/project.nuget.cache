@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "bw+mBe5hXYVQT3BLt+JbyS+GA2KmHvkICkZxqfwIFIl60TbsaF1BFierpO6G5TgFIjEzbVnW++4vF4zN9YxVyQ==",
+  "dgSpecHash": "aeStWAp8dZZL/QHSTTHvRjOQcdboXwY+fXbVRcwHQcbOXK/5CFC0QS/BBaYTTNMR4lKBZYLuVs8O4k1lew2vxA==",
   "success": true,
-  "projectFilePath": "G:\\Study\\LHZ.FastJson\\src\\LHZ.FastJson.UnitTest\\LHZ.FastJson.UnitTest.csproj",
+  "projectFilePath": "G:\\Study\\dotnet\\LHZ.FastJson\\src\\LHZ.FastJson.UnitTest\\LHZ.FastJson.UnitTest.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\admin\\.nuget\\packages\\microsoft.codecoverage\\16.4.0\\microsoft.codecoverage.16.4.0.nupkg.sha512",
     "C:\\Users\\admin\\.nuget\\packages\\microsoft.csharp\\4.0.1\\microsoft.csharp.4.0.1.nupkg.sha512",
