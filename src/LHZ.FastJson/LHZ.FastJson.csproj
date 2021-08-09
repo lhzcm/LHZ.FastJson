@@ -5,7 +5,7 @@
     <!-- <TargetFramework>NET40</TargetFramework> -->
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <Version>1.3.4</Version>
+    <Version>1.3.6</Version>
     <Authors>LHZ</Authors>
     <Description>轻巧便利的Json序列化和反序列化工具
 Lightweight and convenient tool for JSON serialization and deserialization</Description>

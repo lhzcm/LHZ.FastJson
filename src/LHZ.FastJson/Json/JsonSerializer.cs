@@ -302,10 +302,11 @@ namespace LHZ.FastJson.Json
             _jsonStrBuilder.Append('"');
             foreach (char item in str)
             {
-                if (item > '"')
-                    _jsonStrBuilder.Append(item);
-                else
+                if (item < 0x20 || item == '"' || item == '\\')
                     _jsonStrBuilder.Append(CharParaphrase(item));
+                else
+                    _jsonStrBuilder.Append(item);
+
             }
             _jsonStrBuilder.Append('"');
         }

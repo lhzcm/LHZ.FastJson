@@ -64,8 +64,11 @@ namespace LHZ.FastJson.UnitTest
         public void TestString()
         {
             string testObj = "test\\\"\\\\tal";
+            
             string obj = (new JsonSerializer(testObj)).Serialize();
-            Assert.IsTrue("\"test\\\\\"\\\\tal\"" == obj);
+            Assert.IsTrue("\"test\\\\\\\"\\\\\\\\tal\"" == obj);
+
+
         }
 
         [Test]
