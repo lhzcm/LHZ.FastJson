@@ -26,6 +26,28 @@ namespace LHZ.FastJson
         }
 
         /// <summary>
+        ///  尝试Json字符串反序列化成T类型
+        /// </summary>
+        /// <typeparam name="T">反序列化目标类型</typeparam>
+        /// <param name="jsonString">Json字符串</param>
+        /// <param name="dist">反序列化目标对象</param>
+        /// <returns>是否反序列化成功</returns>
+        public static bool TryDeserialize(string jsonString, out IJsonObject dist)
+        {
+            try
+            {
+                JsonReader reader = new JsonReader(jsonString);
+                dist = reader.JsonRead();
+            }
+            catch
+            {
+                dist = null;
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>
         /// Json字符串反序列化成T类型
         /// </summary>
         /// <typeparam name="T">反序列化目标类型</typeparam>
@@ -35,6 +57,28 @@ namespace LHZ.FastJson
         {
             JsonDeserializer<T> deserializer = new JsonDeserializer<T>(jsonString);
             return deserializer.Deserialize();
+        }
+
+        /// <summary>
+        ///  尝试Json字符串反序列化成T类型
+        /// </summary>
+        /// <typeparam name="T">反序列化目标类型</typeparam>
+        /// <param name="jsonString">Json字符串</param>
+        /// <param name="dist">反序列化目标对象</param>
+        /// <returns>是否反序列化成功</returns>
+        public static bool TryDeserialize<T>(string jsonString, out T dist)
+        {
+            try
+            {
+                JsonDeserializer<T> deserializer = new JsonDeserializer<T>(jsonString);
+                dist = deserializer.Deserialize();
+            }
+            catch 
+            {
+                dist = default(T);
+                return false;
+            }
+            return true;
         }
 
         /// <summary>

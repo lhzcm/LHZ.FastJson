@@ -5,9 +5,7 @@ VisualStudioVersion = 16.0.30204.135
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LHZ.FastJson", "LHZ.FastJson\LHZ.FastJson.csproj", "{1554ACF5-8B21-4CE2-A19D-E6C2E2931DB6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LHZ.FastJson.Test", "LHZ.FastJson.Test\LHZ.FastJson.Test.csproj", "{6B44EFF8-C44A-46A1-BD37-BA32330BE291}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LHZ.FastJson.UnitTest", "LHZ.FastJson.UnitTest\LHZ.FastJson.UnitTest.csproj", "{918190E8-2B87-4120-B66E-389ED8CFFDF9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LHZ.FastJson.UnitTest", "LHZ.FastJson.UnitTest\LHZ.FastJson.UnitTest.csproj", "{918190E8-2B87-4120-B66E-389ED8CFFDF9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,10 +17,6 @@ Global
 		{1554ACF5-8B21-4CE2-A19D-E6C2E2931DB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1554ACF5-8B21-4CE2-A19D-E6C2E2931DB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1554ACF5-8B21-4CE2-A19D-E6C2E2931DB6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6B44EFF8-C44A-46A1-BD37-BA32330BE291}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6B44EFF8-C44A-46A1-BD37-BA32330BE291}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6B44EFF8-C44A-46A1-BD37-BA32330BE291}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6B44EFF8-C44A-46A1-BD37-BA32330BE291}.Release|Any CPU.Build.0 = Release|Any CPU
 		{918190E8-2B87-4120-B66E-389ED8CFFDF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{918190E8-2B87-4120-B66E-389ED8CFFDF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{918190E8-2B87-4120-B66E-389ED8CFFDF9}.Release|Any CPU.ActiveCfg = Release|Any CPU

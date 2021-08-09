@@ -20,6 +20,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyProductAttribute("LHZ.FastJson")]
 [assembly: System.Reflection.AssemblyTitleAttribute("LHZ.FastJson")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.3.4.0")]
+[assembly: System.Reflection.AssemblyMetadataAttribute("RepositoryUrl", "https://github.com/lhzcm/LHZ.FastJson")]
 
 // 由 MSBuild WriteCodeFragment 类生成。
 

@@ -1692,7 +1692,6 @@
       "path": "netstandard.library/2.0.0",
       "files": [
         ".nupkg.metadata",
-        ".signature.p7s",
         "LICENSE.TXT",
         "THIRD-PARTY-NOTICES.TXT",
         "build/NETStandard.Library.targets",
@@ -1823,7 +1822,6 @@
       "hasTools": true,
       "files": [
         ".nupkg.metadata",
-        ".signature.p7s",
         "lib/net20/Newtonsoft.Json.dll",
         "lib/net20/Newtonsoft.Json.xml",
         "lib/net35/Newtonsoft.Json.dll",
@@ -3035,7 +3033,6 @@
       "path": "system.objectmodel/4.0.12",
       "files": [
         ".nupkg.metadata",
-        ".signature.p7s",
         "ThirdPartyNotices.txt",
         "dotnet_library_license.txt",
         "lib/MonoAndroid10/_._",
@@ -3848,7 +3845,6 @@
       "path": "system.runtime.serialization.primitives/4.1.1",
       "files": [
         ".nupkg.metadata",
-        ".signature.p7s",
         "ThirdPartyNotices.txt",
         "dotnet_library_license.txt",
         "lib/MonoAndroid10/_._",
@@ -4667,12 +4663,12 @@
         "netcoreapp3.1"
       ],
       "sources": {
-        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "http://nuget.lexun.com/nuget": {},
-        "https://www.nuget.org/api/v2/": {}
+        "https://nuget.cnblogs.com/v3/index.json": {}
       },
       "frameworks": {
         "netcoreapp3.1": {
+          "targetAlias": "netcoreapp3.1",
           "projectReferences": {
             "G:\\Study\\LHZ.FastJson\\src\\LHZ.FastJson\\LHZ.FastJson.csproj": {
               "projectPath": "G:\\Study\\LHZ.FastJson\\src\\LHZ.FastJson\\LHZ.FastJson.csproj"
@@ -4688,6 +4684,7 @@
     },
     "frameworks": {
       "netcoreapp3.1": {
+        "targetAlias": "netcoreapp3.1",
         "dependencies": {
           "Microsoft.NET.Test.Sdk": {
             "target": "Package",
@@ -4717,7 +4714,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.301\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.201\\RuntimeIdentifierGraph.json"
       }
     }
   }
