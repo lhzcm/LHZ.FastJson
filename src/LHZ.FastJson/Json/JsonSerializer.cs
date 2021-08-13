@@ -19,37 +19,34 @@ namespace LHZ.FastJson.Json
         private Stack<object> _objStack = new Stack<object>();
         private JsonFormatter _formater = null;
 
-        private static readonly Type[] _objectType;
-        private static readonly int _objectCount;
+        private static readonly Dictionary<Type, ObjectType> _objectType;
 
         private object _obj;
 
         static JsonSerializer()
         {
-            _objectCount = System.Enum.GetValues(typeof(Enum.ObjectType)).Length;
-            _objectType = new Type[_objectCount];
+            int count = System.Enum.GetValues(typeof(Enum.ObjectType)).Length;
+            _objectType = new Dictionary<Type, ObjectType>(count);
 
-            _objectType[(int)ObjectType.Boolean] = typeof(Boolean);
-            _objectType[(int)ObjectType.Byte] = typeof(Byte);
-            _objectType[(int)ObjectType.Char] = typeof(Char);
-            _objectType[(int)ObjectType.Int16] = typeof(Int16);
-            _objectType[(int)ObjectType.UInt16] = typeof(UInt16);
-            _objectType[(int)ObjectType.Int32] = typeof(Int32);
-            _objectType[(int)ObjectType.UInt32] = typeof(UInt32);
-            _objectType[(int)ObjectType.Int64] = typeof(Int64);
-            _objectType[(int)ObjectType.UInt64] = typeof(UInt64);
-            _objectType[(int)ObjectType.Float] = typeof(Single);
-            _objectType[(int)ObjectType.Double] = typeof(Double);
-            _objectType[(int)ObjectType.Decimal] = typeof(Decimal);
-            _objectType[(int)ObjectType.DateTime] = typeof(DateTime);
-            _objectType[(int)ObjectType.String] = typeof(String);
-            _objectType[(int)ObjectType.Enum] = typeof(System.Enum);
-            _objectType[(int)ObjectType.Dictionary] = typeof(IDictionary);
-            _objectType[(int)ObjectType.List] = typeof(IList);
-            _objectType[(int)ObjectType.Enumerable] = typeof(IEnumerable);
-            _objectType[(int)ObjectType.Object] = typeof(Object);
-            _objectType[(int)ObjectType.Array] = typeof(Array);
-
+            //可以去除与IEnumerable有继承关系的IList,Array类型
+            _objectType.Add(typeof(Boolean), ObjectType.Boolean);
+            _objectType.Add(typeof(Byte), ObjectType.Byte);
+            _objectType.Add(typeof(Char), ObjectType.Char);
+            _objectType.Add(typeof(Int16), ObjectType.Int16);
+            _objectType.Add(typeof(UInt16), ObjectType.UInt16);
+            _objectType.Add(typeof(Int32), ObjectType.Int32);
+            _objectType.Add(typeof(UInt32), ObjectType.UInt32);
+            _objectType.Add(typeof(Int64), ObjectType.Int64);
+            _objectType.Add(typeof(UInt64), ObjectType.UInt64);
+            _objectType.Add(typeof(Single), ObjectType.Float);
+            _objectType.Add(typeof(Double), ObjectType.Double);
+            _objectType.Add(typeof(Decimal), ObjectType.Decimal);
+            _objectType.Add(typeof(DateTime), ObjectType.DateTime);
+            _objectType.Add(typeof(String), ObjectType.String);
+            _objectType.Add(typeof(System.Enum), ObjectType.Enum);
+            _objectType.Add(typeof(IDictionary), ObjectType.Dictionary);
+            _objectType.Add(typeof(IEnumerable), ObjectType.Enumerable);
+            _objectType.Add(typeof(Object), ObjectType.Object);
         }
         public JsonSerializer(object obj)
         {
@@ -75,7 +72,7 @@ namespace LHZ.FastJson.Json
         /// <summary>
         /// 对序列化类型进行对应的序列化操作
         /// </summary>
-        /// <param name="type">序列化对象类型</param>
+        /// <param name="obj">序列化对象类型</param>
         private void SwitchSerializationMethod(object obj)
         {
             if (obj == null)
@@ -121,10 +118,8 @@ namespace LHZ.FastJson.Json
                 case ObjectType.Enum: SerializeEnum(obj); break;
                 case ObjectType.String: SerializeString(obj); break;
                 case ObjectType.Dictionary: SerializeDictionary(obj); break;
-                case ObjectType.List: SerializeEnumerable(obj); break;
                 case ObjectType.Enumerable: SerializeEnumerable(obj); break;
                 case ObjectType.Object: SerializeObject(obj); break;
-                case ObjectType.Array: SerializeEnumerable(obj); break;
                 default: throw new Exception("未知转换类型");
             }
             if (!isValueType)
@@ -150,17 +145,17 @@ namespace LHZ.FastJson.Json
         /// <returns>对象类型</returns>
         private ObjectType GetObjectType(Type type)
         {
-            for (int i = 0; i < _objectCount; i++)
+            ObjectType objType;
+            if (_objectType.TryGetValue(type, out objType))
             {
-                if (type == _objectType[i])
-                    return (ObjectType)i;
+                return objType;
             }
 
             if (type.IsEnum)
                 return ObjectType.Enum;
-            else if (_objectType[(int)ObjectType.Dictionary].IsAssignableFrom(type))
+            else if (typeof(IDictionary).IsAssignableFrom(type))
                 return ObjectType.Dictionary;
-            else if (_objectType[(int)ObjectType.Enumerable].IsAssignableFrom(type))
+            else if (typeof(IEnumerable).IsAssignableFrom(type))
                 return ObjectType.Enumerable;
             else
                 return ObjectType.Object;

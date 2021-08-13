@@ -84,6 +84,27 @@ namespace LHZ.FastJson.UnitTest
             obj = (new JsonSerializer(testObj)).Serialize();
             Assert.AreEqual(obj, "12");
         }
+
+        [Test]
+        public void TestEmptyObject()
+        {
+            object obj = new object();
+            string objson = (new JsonSerializer(obj)).Serialize();
+            Assert.AreEqual("{}", objson);
+        }
+
+
+        [Test]
+        public void TestEmptyArray()
+        {
+            List<object> list = new List<object>();
+            string listjson = (new JsonSerializer(list)).Serialize();
+            Assert.AreEqual("[]", listjson);
+
+            listjson = (new JsonSerializer(new int[0])).Serialize();
+            Assert.AreEqual("[]", listjson);
+        }
+
         public class TestObj
         {
             public string Name { get; set; }
