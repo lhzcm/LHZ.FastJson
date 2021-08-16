@@ -22,36 +22,7 @@ namespace LHZ.FastJson.Json
     {
         private static readonly Dictionary<Type, List<PropertyInfo>> _proPertyInfos = new Dictionary<Type, List<PropertyInfo>>(4096);
 
-        private static readonly Type[] _objectType;
-        private static readonly int _objectCount;
-
-        static JsonDeserializer()
-        {
-            _objectCount = System.Enum.GetValues(typeof(Enum.ObjectType)).Length;
-            _objectType = new Type[_objectCount];
-
-            _objectType[(int)ObjectType.Boolean] = typeof(Boolean);
-            _objectType[(int)ObjectType.Byte] = typeof(Byte);
-            _objectType[(int)ObjectType.Char] = typeof(Char);
-            _objectType[(int)ObjectType.Int16] = typeof(Int16);
-            _objectType[(int)ObjectType.UInt16] = typeof(UInt16);
-            _objectType[(int)ObjectType.Int32] = typeof(Int32);
-            _objectType[(int)ObjectType.UInt32] = typeof(UInt32);
-            _objectType[(int)ObjectType.Int64] = typeof(Int64);
-            _objectType[(int)ObjectType.UInt64] = typeof(UInt64);
-            _objectType[(int)ObjectType.Float] = typeof(Single);
-            _objectType[(int)ObjectType.Double] = typeof(Double);
-            _objectType[(int)ObjectType.Decimal] = typeof(Decimal);
-            _objectType[(int)ObjectType.DateTime] = typeof(DateTime);
-            _objectType[(int)ObjectType.String] = typeof(String);
-            _objectType[(int)ObjectType.Enum] = typeof(System.Enum);
-            _objectType[(int)ObjectType.Dictionary] = typeof(IDictionary);
-            _objectType[(int)ObjectType.List] = typeof(IList);
-            _objectType[(int)ObjectType.Enumerable] = typeof(IEnumerable);
-            _objectType[(int)ObjectType.Object] = typeof(Object);
-            _objectType[(int)ObjectType.Array] = typeof(Array);
-
-        }
+        private static readonly Dictionary<Type, ObjectType> _objectTypes = JsonObjectType.GetObjectTypes();
 
         private IJsonObject _obj;
         public JsonDeserializer(IJsonObject obj)
@@ -128,10 +99,10 @@ namespace LHZ.FastJson.Json
         /// <returns></returns>
         private ObjectType GetObjectType(Type type)
         {
-            for (int i = 0; i < _objectCount; i++)
+            ObjectType objType;
+            if (_objectTypes.TryGetValue(type, out objType))
             {
-                if (type == _objectType[i])
-                    return (ObjectType)i;
+                return objType;
             }
 
             if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
@@ -145,13 +116,13 @@ namespace LHZ.FastJson.Json
             }
             else if (type.IsEnum)
                 return ObjectType.Enum;
-            else if (_objectType[(int)ObjectType.Dictionary].IsAssignableFrom(type))
+            else if (typeof(IDictionary).IsAssignableFrom(type))
                 return ObjectType.Dictionary;
             else if (type.IsArray)
                 return ObjectType.Array;
-            else if (_objectType[(int)ObjectType.List].IsAssignableFrom(type))
+            else if (typeof(IList).IsAssignableFrom(type))
                 return ObjectType.List;
-            else if (_objectType[(int)ObjectType.Enumerable].IsAssignableFrom(type))
+            else if (typeof(IEnumerable).IsAssignableFrom(type))
                 return ObjectType.Enumerable;
             else
                 return ObjectType.Object;

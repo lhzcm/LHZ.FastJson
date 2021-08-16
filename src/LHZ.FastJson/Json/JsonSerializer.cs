@@ -19,35 +19,10 @@ namespace LHZ.FastJson.Json
         private Stack<object> _objStack = new Stack<object>();
         private JsonFormatter _formater = null;
 
-        private static readonly Dictionary<Type, ObjectType> _objectType;
+        private static readonly Dictionary<Type, ObjectType> _objectTypes = JsonObjectType.GetObjectTypes();
 
         private object _obj;
 
-        static JsonSerializer()
-        {
-            int count = System.Enum.GetValues(typeof(Enum.ObjectType)).Length;
-            _objectType = new Dictionary<Type, ObjectType>(count);
-
-            //可以去除与IEnumerable有继承关系的IList,Array类型
-            _objectType.Add(typeof(Boolean), ObjectType.Boolean);
-            _objectType.Add(typeof(Byte), ObjectType.Byte);
-            _objectType.Add(typeof(Char), ObjectType.Char);
-            _objectType.Add(typeof(Int16), ObjectType.Int16);
-            _objectType.Add(typeof(UInt16), ObjectType.UInt16);
-            _objectType.Add(typeof(Int32), ObjectType.Int32);
-            _objectType.Add(typeof(UInt32), ObjectType.UInt32);
-            _objectType.Add(typeof(Int64), ObjectType.Int64);
-            _objectType.Add(typeof(UInt64), ObjectType.UInt64);
-            _objectType.Add(typeof(Single), ObjectType.Float);
-            _objectType.Add(typeof(Double), ObjectType.Double);
-            _objectType.Add(typeof(Decimal), ObjectType.Decimal);
-            _objectType.Add(typeof(DateTime), ObjectType.DateTime);
-            _objectType.Add(typeof(String), ObjectType.String);
-            _objectType.Add(typeof(System.Enum), ObjectType.Enum);
-            _objectType.Add(typeof(IDictionary), ObjectType.Dictionary);
-            _objectType.Add(typeof(IEnumerable), ObjectType.Enumerable);
-            _objectType.Add(typeof(Object), ObjectType.Object);
-        }
         public JsonSerializer(object obj)
         {
             this._obj = obj;
@@ -146,7 +121,7 @@ namespace LHZ.FastJson.Json
         private ObjectType GetObjectType(Type type)
         {
             ObjectType objType;
-            if (_objectType.TryGetValue(type, out objType))
+            if (_objectTypes.TryGetValue(type, out objType))
             {
                 return objType;
             }
