@@ -158,5 +158,12 @@ namespace LHZ.FastJson.UnitTest
             var testDistStr = (new JsonDeserializer<string>(testStr)).Deserialize();
             Assert.AreEqual("c:\\ds\\dfe\\test.test", testDistStr);
         }
+
+        [Test]
+        public void TestCommonExtend()
+        {
+            var strObj = "\"test\"".FromJson<string>();
+            Assert.AreEqual(strObj, "test");
+        }
     }
 }

@@ -105,6 +105,14 @@ namespace LHZ.FastJson.UnitTest
             Assert.AreEqual("[]", listjson);
         }
 
+        [Test]
+        public void TestCommonExtend()
+        {
+            var jsonStr = new { Name = "test", Age = 20 }.ToJson();
+            Assert.AreEqual(jsonStr, "{\"Name\":\"test\",\"Age\":20}");
+        }
+
+
         public class TestObj
         {
             public string Name { get; set; }
