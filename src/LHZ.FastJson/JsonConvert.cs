@@ -28,7 +28,6 @@ namespace LHZ.FastJson
         /// <summary>
         ///  尝试Json字符串反序列化成T类型
         /// </summary>
-        /// <typeparam name="T">反序列化目标类型</typeparam>
         /// <param name="jsonString">Json字符串</param>
         /// <param name="dist">反序列化目标对象</param>
         /// <returns>是否反序列化成功</returns>

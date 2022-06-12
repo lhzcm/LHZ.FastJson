@@ -26,6 +26,7 @@ namespace LHZ.FastJson.JsonClass
         /// <summary>
         /// 向Json容器里添加Json对象属性
         /// </summary>
+        /// <param name="attrName">属性名称</param>
         /// <param name="obj">Json对象</param>
         public void AddJsonAttr(string attrName, JsonObject obj)
         {

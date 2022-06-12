@@ -368,21 +368,58 @@ namespace LHZ.FastJson.Json
         /// <param name="obj">需要序列化的对象</param>
         private void SerializeString(string obj)
         {
-            string str = obj as string;
-            if (str == null)
+            if (obj == null)
             {
                 throw new Exception("当前对象不能转化成string类型");
             }
             _jsonStrBuilder.Append('"');
-            foreach (char item in str)
+            unsafe
             {
-                if (item < 0x20 || item == '"' || item == '\\')
-                    _jsonStrBuilder.Append(CharParaphrase(item));
-                else
-                    _jsonStrBuilder.Append(item);
+                fixed (char* test = obj)
+                {
+                    char* start = test;
+                    char* cur = test;
 
+                    while (*cur != '\0')
+                    {
+                        if (*cur < 0x20 || *cur == '"' || *cur == '\\')
+                        {
+                            if (cur > start)
+                            {
+#if NET40 || NET45
+                                _jsonStrBuilder.Append(obj, (int)(start - test), (int)(cur - start));
+#else
+                                _jsonStrBuilder.Append(start, (int)(cur - start));
+#endif
+                            }
+                            _jsonStrBuilder.Append(CharParaphrase(*cur));
+                            start = cur + 1;
+                        }
+                        cur++;
+                    }
+                    if (cur > start)
+                    {
+#if NET40 || NET45
+                        _jsonStrBuilder.Append(obj, (int)(start - test), (int)(cur - start));
+#else
+                        _jsonStrBuilder.Append(start, (int)(cur - start));
+#endif
+                    }
+
+                }
             }
             _jsonStrBuilder.Append('"');
+
+            //_jsonStrBuilder.Append('"');
+
+            //foreach (char item in obj)
+            //{
+            //    if (item < 0x20 || item == '"' || item == '\\')
+            //        _jsonStrBuilder.Append(CharParaphrase(item));
+            //    else
+            //        _jsonStrBuilder.Append(item);
+            //}
+            //_jsonStrBuilder.Append('"');
         }
         /// <summary>
         /// Dictionary类型序列化
@@ -454,25 +491,19 @@ namespace LHZ.FastJson.Json
         /// <returns>转义好的字符串</returns>
         private string CharParaphrase(char paraphrase)
         {
-            if (paraphrase == '"')
-                return "\\\"";
-            else if (paraphrase == '\\')
-                return "\\\\";
-            else if (paraphrase == '\n')
-                return "\\n";
-            else if (paraphrase == '\t')
-                return "\\t";
-            else if (paraphrase == '\a')
-                return "\\a";
-            else if (paraphrase == '\b')
-                return "\\b";
-            else if (paraphrase == '\f')
-                return "\\f";
-            else if (paraphrase == '\r')
-                return "\\r";
-            else if (paraphrase == '\v')
-                return "\\v";
-            return paraphrase.ToString();
+            switch (paraphrase)
+            {
+                case '"': return "\\\"";
+                case '\\': return "\\\\";
+                case '\n': return "\\n";
+                case '\t': return "\\t";
+                case '\a': return "\\a";
+                case '\b': return "\\b";
+                case '\f': return "\\f";
+                case '\r': return "\\r";
+                case '\v': return "\\v";
+                default : return paraphrase.ToString();
+            }
         }
     }
 }
