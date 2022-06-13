@@ -352,7 +352,16 @@ namespace LHZ.FastJson.Json
         /// <param name="obj">需要序列化的对象</param>
         private void SerializeDateTime(DateTime obj)
         {
-            _jsonStrBuilder.Append("\"" + _formater.DateTimeFormat((DateTime)obj) + "\"");
+            bool execCharParaphrase;
+            var dateStr = _formater.DateTimeFormat(obj, out execCharParaphrase);
+            if (execCharParaphrase)
+            {
+                SerializeString(dateStr);
+            }
+            else
+            {
+                _jsonStrBuilder.Append("\"" + dateStr + "\"");
+            }
         }
         /// <summary>
         /// Enum类型序列化

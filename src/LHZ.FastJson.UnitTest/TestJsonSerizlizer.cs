@@ -71,6 +71,11 @@ namespace LHZ.FastJson.UnitTest
             IJsonFormat[] formats = { new DateTimeJsonFormat("yyyy-MM-dd") };
             string obj = (new JsonSerializer(testObj, formats)).Serialize();
             Assert.AreEqual(obj, "\"2020-07-18\"");
+
+            formats[0] = new DateTimeJsonFormat((n)=>"test123");
+            obj = (new JsonSerializer(testObj, formats)).Serialize();
+            Assert.AreEqual(obj, "\"test123\"");
+
         }
         [Test]
         public void TestString()

@@ -12,10 +12,25 @@ namespace LHZ.FastJson.Json.Format
     public class DateTimeJsonFormat : IJsonFormat
     {
         private string _fromatstr = "yyyy-MM-dd HH:mm:ss";
+        private Func<DateTime, string> _formatFunc;
         public DateTimeJsonFormat() { }
+
+        /// <summary>
+        /// 日期格式化构造函数
+        /// </summary>
+        /// <param name="formatString">格式化字符串</param>
         public DateTimeJsonFormat(string formatString)
         {
             this._fromatstr = formatString;
+        }
+
+        /// <summary>
+        /// 日期格式化构造函数
+        /// </summary>
+        /// <param name="formatFunc">格式化方法委托</param>
+        public DateTimeJsonFormat(Func<DateTime, string> formatFunc)
+        {
+            this._formatFunc = formatFunc;
         }
         /// <summary>
         /// 格式化类型
@@ -25,7 +40,8 @@ namespace LHZ.FastJson.Json.Format
         /// <summary>
         /// 格式化字符串如（yyyy-MM-dd）
         /// </summary>
-        public string FormatString { get { return this._fromatstr; } set { this._fromatstr = value; } }
+        public string FormatString => _fromatstr;
+        public Func<DateTime, string> FormatFunc => _formatFunc;
 
     }
 }
