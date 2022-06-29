@@ -4,13 +4,13 @@
     <TARGETFRAMEWORKS>NET40;NET45;NET46;NETSTANDARD2.0</TARGETFRAMEWORKS> 
     <!--<TargetFramework>NET40</TargetFramework>-->
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>1.5.1</Version>
+    <Version>1.5.2</Version>
     <Authors>LHZ</Authors>
     <Description>轻巧便利的Json序列化和反序列化工具Lightweight and convenient tool for JSON serialization and deserialization</Description>
     <PackageIcon>logo.png</PackageIcon>
     <RepositoryType>Git</RepositoryType>
     <RepositoryUrl>https://github.com/lhzcm/LHZ.FastJson</RepositoryUrl>
-    <PackageReleaseNotes>优化了序列化的性能</PackageReleaseNotes>
+    <PackageReleaseNotes>添加了DateTime序列化委托</PackageReleaseNotes>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <PackageReadmeFile>README.md</PackageReadmeFile>
