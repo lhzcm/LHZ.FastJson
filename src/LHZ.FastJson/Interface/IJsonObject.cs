@@ -20,9 +20,10 @@ namespace LHZ.FastJson
         /// Json对象值
         /// </summary>
         object Value { get; }
-        JsonObject this[string index] { get; }
-        JsonObject this[int index] { get; }
+        IJsonObject this[string index] { get; }
+        IJsonObject this[int index] { get; }
 
+        bool HasChildrenNode(string name);
         /// <summary>
         /// 把Json对象转化成Json字符串
         /// </summary>

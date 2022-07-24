@@ -29,16 +29,16 @@ namespace LHZ.FastJson.JsonClass
         /// </summary>
         /// <param name="index">字符串索引</param>
         /// <returns>Json对象</returns>
-        public JsonObject this[string index]
+        public IJsonObject this[string index]
         {
             get
             {
-                JsonObject result = null;
+                IJsonObject result = null;
                 if (this.Type != JsonType.Content)
                 {
                     return result;
                 }
-               ((Dictionary<string, JsonObject>)this.Value).TryGetValue(index, out result);
+               ((Dictionary<string, IJsonObject>)this.Value).TryGetValue(index, out result);
                 return result;
             }
         }
@@ -47,18 +47,33 @@ namespace LHZ.FastJson.JsonClass
         /// </summary>
         /// <param name="index">下标串索引</param>
         /// <returns>Json对象</returns>
-        public JsonObject this[int index]
+        public IJsonObject this[int index]
         {
             get
             {
-                JsonObject result = null;
+                IJsonObject result = null;
                 if (this.Type != JsonType.Array)
                 {
                     return result;
                 }
-                result = ((List<JsonObject>)this.Value)[index];
+                result = ((List<IJsonObject>)this.Value)[index];
                 return result;
             }
+        }
+
+        /// <summary>
+        /// 判断是否存在指定名称的子节点
+        /// </summary>
+        /// <param name="name">节点名称</param>
+        /// <returns>是否存在</returns>
+        public bool HasChildrenNode(string name)
+        {
+            Dictionary<string, IJsonObject> obj = Value as Dictionary<string, IJsonObject>;
+            if (obj == null)
+            {
+                return false;
+            }
+            return obj.ContainsKey(name);
         }
 
         /// <summary>
