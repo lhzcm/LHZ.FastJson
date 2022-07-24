@@ -12,12 +12,10 @@ namespace LHZ.FastJson.JsonClass
     class JsonNull : JsonObject
     {
         private string _value;
-        public override object Value
+        public override object Value => _value;
+        public string GetValue()
         {
-            get
-            {
-                return this._value;
-            }
+            return this._value;
         }
         public JsonNull(string value, int position) : base(position)
         {

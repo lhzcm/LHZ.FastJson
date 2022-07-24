@@ -11,13 +11,7 @@ namespace LHZ.FastJson.JsonClass
     public class JsonBoolean : JsonObject
     {
         private string _value;
-        public override object Value
-        {
-            get
-            {
-                return this._value;
-            }
-        }
+        public new string Value => this._value;
         /// <summary>
         /// bool类型（true or false）
         /// </summary>

@@ -11,12 +11,10 @@ namespace LHZ.FastJson.JsonClass
     public class JsonNumber : JsonObject
     {
         private string _value;
-        public override object Value
+        public override object Value => _value;
+        public string GetValue()
         {
-            get
-            {
-                return this._value;
-            }
+            return this._value;
         }
         /// <summary>
         /// 数字类型

@@ -10,21 +10,21 @@ namespace LHZ.FastJson.JsonClass
     /// <summary>
     /// Json数组对象
     /// </summary>
-    public class JsonArray : JsonObject, IEnumerable<JsonObject>
+    public class JsonArray : JsonObject, IEnumerable<IJsonObject>
     {
-        private List<JsonObject> _value;
-        public override object Value
+        private List<IJsonObject> _value;
+        public override object Value => _value;
+        public List<IJsonObject> GetValue()
         {
-            get
-            {
-                return this._value;
-            }
+            return this._value;
         }
         public JsonArray(int position) : base(position)
         {
             this.Type = JsonType.Array;
-            this._value = new List<JsonObject>();
+            this._value = new List<IJsonObject>();
         }
+
+        public int Length => _value.Count;
 
         /// <summary>
         /// 像数组里添加Json对象
@@ -51,7 +51,7 @@ namespace LHZ.FastJson.JsonClass
             return strBuilder.ToString();
         }
 
-        public IEnumerator<JsonObject> GetEnumerator()
+        public IEnumerator<IJsonObject> GetEnumerator()
         {
             return _value.GetEnumerator();
         }

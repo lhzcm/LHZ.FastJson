@@ -38,7 +38,7 @@ namespace LHZ.FastJson.JsonClass
                 {
                     return result;
                 }
-               ((Dictionary<string,JsonObject>)this.Value).TryGetValue(index, out result);
+               ((Dictionary<string, JsonObject>)this.Value).TryGetValue(index, out result);
                 return result;
             }
         }
@@ -49,7 +49,7 @@ namespace LHZ.FastJson.JsonClass
         /// <returns>Json对象</returns>
         public JsonObject this[int index]
         {
-            get 
+            get
             {
                 JsonObject result = null;
                 if (this.Type != JsonType.Array)
@@ -64,13 +64,7 @@ namespace LHZ.FastJson.JsonClass
         /// <summary>
         /// Json对象值
         /// </summary>
-        public virtual object Value { 
-            get 
-            {
-                return this;
-            }
-        }
-
+        public virtual object Value => null;
         /// <summary>
         ///字符串位置
         /// </summary>
