@@ -10,12 +10,10 @@ namespace LHZ.FastJson.JsonClass
     public class JsonString : JsonObject
     {
         private string _value;
-        public override object Value
+        public override object Value => _value;
+        public string GetValue()
         {
-            get
-            {
-                return this._value;
-            }
+            return this._value;
         }
         public JsonString(string value, int position) : base(position)
         {
