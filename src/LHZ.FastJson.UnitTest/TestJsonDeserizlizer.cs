@@ -2,6 +2,8 @@
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 
 namespace LHZ.FastJson.UnitTest
@@ -82,7 +84,16 @@ namespace LHZ.FastJson.UnitTest
         [Test]
         public void TestArray()
         {
-            string testStr = "[1,2,3,4,null,6,7,8,9,10]";
+            string testStr = "[1,2,3,4,5,6,7,8,9,10]";
+            int[] array = (new JsonDeserializer<int[]>(testStr)).Deserialize();
+
+            Assert.AreEqual(array, new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
+
+            array = (new JsonDeserializer<int[]>("null")).Deserialize();
+            Assert.AreEqual(array, null);
+
+
+            testStr = "[1,2,3,4,null,6,7,8,9,10]";
             int?[] obj = (new JsonDeserializer<int?[]>(testStr)).Deserialize();
             for (int i = 0; i < obj.Length; i++)
             {
@@ -102,6 +113,9 @@ namespace LHZ.FastJson.UnitTest
             {
                 Assert.IsTrue(i + 1 == obj[i]);
             }
+            
+            obj = (new JsonDeserializer<List<int>>("null")).Deserialize();
+            Assert.IsNull(obj);
         }
 
         [Test]
@@ -120,6 +134,10 @@ namespace LHZ.FastJson.UnitTest
         {
             string testStr = "{}";
             object obj = (new JsonDeserializer<object>(testStr)).Deserialize();
+            Assert.IsNotNull(obj);
+
+            testStr = "{\"Id\":100, \"Name\":\"Test\"}";
+            obj = (new JsonDeserializer<TestObjClass>(testStr)).Deserialize();
             Assert.IsNotNull(obj);
         }
 
@@ -165,5 +183,11 @@ namespace LHZ.FastJson.UnitTest
             var strObj = "\"test\"".FromJson<string>();
             Assert.AreEqual(strObj, "test");
         }
+    }
+
+    public class TestObjClass
+    { 
+        public int Id { get; set; }
+        public string Name { get; set; }
     }
 }

@@ -55,6 +55,10 @@ namespace LHZ.FastJson.UnitTest
             str = "[]";
             reader = new JsonReader(str);
             Assert.AreEqual(JsonType.Array, reader.JsonRead().Type);
+
+            str = "\"sdfs";
+            reader = new JsonReader(str);
+            var result = reader.JsonRead();
         }
 
         [Test]
