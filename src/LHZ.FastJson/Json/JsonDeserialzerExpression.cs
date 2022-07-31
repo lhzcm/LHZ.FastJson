@@ -86,9 +86,7 @@ namespace LHZ.FastJson.Json
                 case ObjectType.String:
                     return Expression.Lambda<Func<IJsonObject, T>>(Expression.Call( 
                         ((Func<IJsonObject, string>)ConvertToString).Method, jsonObjectParameter),  jsonObjectParameter);
-                case ObjectType.Dictionary:
-                    return Expression.Lambda<Func<IJsonObject, T>>(Expression.Call(
-                        ((Func<IJsonObject, ushort>)ConvertToUInt16).Method, jsonObjectParameter),  jsonObjectParameter);
+                case ObjectType.Dictionary: return ConvertToDictionary();
                 case ObjectType.Array: return ConvertToArray();
                 case ObjectType.List: return ConvertToList();
                 case ObjectType.Enumerable:
@@ -395,38 +393,84 @@ namespace LHZ.FastJson.Json
         /// <summary>
         /// 解析成字典类型
         /// </summary>
-        /// <param name="type">类型</param>
-        /// <param name="jsonObject">Json对象</param>
-        /// <returns></returns>
-        private static object ConvertToDictionary(Type type, IJsonObject jsonObject)
+        /// <returns>解析数字典达式</returns>
+        private static Expression<Func<IJsonObject, T>> ConvertToDictionary()
         {
-            JsonContent jsonContent = jsonObject as JsonContent;
-            if (jsonContent == null)
-            {
-                throw new JsonDeserializationException(jsonObject, type, "当前字典类型不能够被转换");
-            }
-            Type[] genericTypes;
-#if NET35 || NET40
+            ParameterExpression jsonObjectParameter = Expression.Parameter(typeof(IJsonObject), "jsonObjectParameter");
+            var curType = typeof(T);
+            var genericType = typeof(object);
+#if NET40
 
-            genericTypes = type.GetGenericArguments();
+            Type[] genericTypes = curType.GetGenericArguments();
 #else
-            genericTypes = type.GenericTypeArguments;
+            Type[] genericTypes = curType.GenericTypeArguments;
 #endif
-            if (genericTypes.Length != 2 && typeof(string).IsAssignableFrom(genericTypes[0]))
+            if (genericTypes.Length == 2)
             {
-                throw new JsonDeserializationException(jsonObject, type, "当前字典类型不能够被转换");
-            }
-            IDictionary obj = Activator.CreateInstance(type) as IDictionary;
-            if (obj is null)
-            {
-                throw new JsonDeserializationException(jsonObject, type, "当前字典类型默认实例化出错");
+                genericType = genericTypes[1];
             }
 
-            foreach (var item in jsonContent)
+            var jsonDictionaryValue = Expression.Variable(typeof(Dictionary<string, IJsonObject>), "jsonDictionaryValue");
+            var result = Expression.Variable(curType, "result");
+
+            var enumerator = Expression.Variable(typeof(Dictionary<string, IJsonObject>.Enumerator), "enumerator");
+            var keyValue = Expression.Variable(typeof(KeyValuePair<string, IJsonObject>), "keyValue");
+            var returnLabel = Expression.Label("returnLable");
+            var loopLabel = Expression.Label("loopLabel");
+
+            List<Expression> expres = new List<Expression>();
+            List<Expression> loopexpres = new List<Expression>();
+
+            //判断json是否为null
+            expres.Add(Expression.IfThen(Expression.Equal(Expression.Property(jsonObjectParameter, "Type"), Expression.Constant(JsonType.Null)),
+                Expression.Return(returnLabel)));
+
+            //判断是否是JsonContent 如果不是抛出异常
+            expres.Add(Expression.IfThen(Expression.NotEqual(Expression.Property(jsonObjectParameter, "Type"), Expression.Constant(JsonType.Content)),
+                Expression.Throw(Expression.New(typeof(JsonDeserializationException).GetConstructor(new Type[] { typeof(IJsonObject), typeof(Type), typeof(string) }),
+                jsonObjectParameter, Expression.Constant(curType), Expression.Constant("Json对象不为Content类型不能解析成Dictionary类型")))));
+
+            //判断是否能够分配给Dictionary<string, IJsonObject>类型
+            if (curType.IsAssignableFrom(typeof(Dictionary<string, IJsonObject>)))
             {
-                //obj.Add(item.Key, SwitchDeserializationMethod(genericTypes[1], item.Value));
+                expres.Add(Expression.Assign(result, Expression.Call(Expression.Convert(jsonObjectParameter, typeof(JsonContent)), "GetValue", new Type[] { })));
+                expres.Add(Expression.Label(returnLabel));
+                expres.Add(result);
+                return Expression.Lambda<Func<IJsonObject, T>>(Expression.Block(new ParameterExpression[] { result }, expres), jsonObjectParameter);
             }
-            return obj;
+            //判断是否可以实例化对象
+            if (curType.GetConstructor(new Type[] { }) == null)
+            {
+                expres.Add(Expression.Throw(Expression.New(typeof(JsonDeserializationException).GetConstructor(new Type[] { typeof(IJsonObject), typeof(Type), typeof(string) }),
+                jsonObjectParameter, Expression.Constant(curType), Expression.Constant("反序列化类型没有默认的构造函数，无法创建该类型对象"))));
+                return Expression.Lambda<Func<IJsonObject, T>>(Expression.Block(expres), jsonObjectParameter);
+            }
+            expres.Add(Expression.Assign(result, Expression.New(curType)));
+            expres.Add(Expression.Assign(jsonDictionaryValue, Expression.Call(Expression.Convert(jsonObjectParameter, typeof(JsonContent)), "GetValue", new Type[] { })));
+            expres.Add(Expression.Assign(enumerator, Expression.Call(jsonDictionaryValue, "GetEnumerator", new Type[] { })));
+
+            loopexpres.Add(Expression.IfThen(Expression.IsFalse(Expression.Call(enumerator, "MoveNext", new Type[] { })), Expression.Break(loopLabel)));
+            loopexpres.Add(Expression.Assign(keyValue, Expression.Property(enumerator, "Current")));
+
+            //TODO 后期可以优化，如果是特殊类型如Dictionary类型，可直接调用Add<Tkey, Tvalue>()方法避免拆箱装箱和类型转换操作提升性能
+
+            //值类型需要装箱操作
+            if (genericType.IsValueType)
+            {
+                loopexpres.Add(Expression.Call(result, typeof(IDictionary).GetMethod("Add", new Type[] { typeof(object), typeof(object) }), Expression.Property(keyValue, "Key"),
+                    Expression.Convert(Expression.Call(typeof(JsonDeserialzerExpression<>).MakeGenericType(genericType).GetMethod("Deserialzer", new Type[] { typeof(IJsonObject) }), Expression.Property(keyValue, "Value")), typeof(object))));
+            }
+            else 
+            {
+                loopexpres.Add(Expression.Call(result, typeof(IDictionary).GetMethod("Add", new Type[] { typeof(object), typeof(object) }), Expression.Property(keyValue, "Key"),
+                    Expression.Call(typeof(JsonDeserialzerExpression<>).MakeGenericType(genericType).GetMethod("Deserialzer", new Type[] { typeof(IJsonObject) }), Expression.Property(keyValue, "Value"))));
+            }
+
+            expres.Add(Expression.Loop(Expression.Block(loopexpres), loopLabel));
+            expres.Add(Expression.Label(returnLabel));
+            expres.Add(result);
+
+            return Expression.Lambda<Func<IJsonObject, T>>(Expression.Block(new ParameterExpression[] { jsonDictionaryValue, result, enumerator, keyValue }, expres), jsonObjectParameter);
         }
 
         /// <summary>

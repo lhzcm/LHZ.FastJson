@@ -121,12 +121,19 @@ namespace LHZ.FastJson.UnitTest
         [Test]
         public void TestDictionary()
         {
-            string testStr = "{\"one\":1,\"two\":2,\"three\":3}";
-            Dictionary<string,int> obj = (new JsonDeserializer<Dictionary<string, int>>(testStr)).Deserialize();
+            string testStr = "{\"one\":\"1\",\"two\":\"2\",\"three\":\"3\"}";
+            Dictionary<string, string> obj = (new JsonDeserializer<Dictionary<string, string>>(testStr)).Deserialize();
 
-            int result;
-            obj.TryGetValue("three", out result);
-            Assert.IsTrue(result == 3);
+            string resut1;
+            obj.TryGetValue("three", out resut1);
+            Assert.IsTrue(resut1 == "3");
+
+            string testStr2 = "{\"one\":null,\"two\":2,\"three\":3}";
+            Dictionary<string,int> obj2 = (new JsonDeserializer<Dictionary<string, int>>(testStr2)).Deserialize();
+
+            int result2;
+            obj2.TryGetValue("three", out result2);
+            Assert.IsTrue(result2 == 3);
         }
 
         [Test]
