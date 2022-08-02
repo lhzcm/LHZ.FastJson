@@ -117,7 +117,6 @@ namespace LHZ.FastJson.UnitTest
             obj = (new JsonDeserializer<List<int>>("null")).Deserialize();
             Assert.IsNull(obj);
         }
-
         [Test]
         public void TestDictionary()
         {
@@ -129,9 +128,9 @@ namespace LHZ.FastJson.UnitTest
             Assert.IsTrue(resut1 == "3");
 
             string testStr2 = "{\"one\":null,\"two\":2,\"three\":3}";
-            Dictionary<string,int> obj2 = (new JsonDeserializer<Dictionary<string, int>>(testStr2)).Deserialize();
+            Dictionary<string,int?> obj2 = (new JsonDeserializer<Dictionary<string, int?>>(testStr2)).Deserialize();
 
-            int result2;
+            int? result2;
             obj2.TryGetValue("three", out result2);
             Assert.IsTrue(result2 == 3);
         }

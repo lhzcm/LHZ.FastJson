@@ -29,7 +29,6 @@ namespace LHZ.FastJson.Json
             return _funcDeserialize(jsonObject);
         }
 
-
         /// <summary>
         /// 获取反序列化表达树
         /// </summary>
@@ -86,12 +85,11 @@ namespace LHZ.FastJson.Json
                 case ObjectType.String:
                     return Expression.Lambda<Func<IJsonObject, T>>(Expression.Call( 
                         ((Func<IJsonObject, string>)ConvertToString).Method, jsonObjectParameter),  jsonObjectParameter);
+                case ObjectType.Nullable: return ConvertToNullable();
                 case ObjectType.Dictionary: return ConvertToDictionary();
                 case ObjectType.Array: return ConvertToArray();
                 case ObjectType.List: return ConvertToList();
-                case ObjectType.Enumerable:
-                    return Expression.Lambda<Func<IJsonObject, T>>(Expression.Call(
-                        ((Func<IJsonObject, ushort>)ConvertToUInt16).Method, jsonObjectParameter),  jsonObjectParameter);
+                //case ObjectType.Enumerable:  
                 default:
                     return ConvertToObject();
             }
@@ -113,14 +111,7 @@ namespace LHZ.FastJson.Json
             }
 
             if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
-            {
-#if NET35 || NET40
-
-                return GetObjectType(type.GetGenericArguments()[0]);
-#else
-                return GetObjectType(type.GenericTypeArguments[0]);
-#endif
-            }
+                return ObjectType.Nullable;
             else if (type.IsEnum)
                 return ObjectType.Enum;
             else if (typeof(IDictionary).IsAssignableFrom(type))
@@ -129,8 +120,8 @@ namespace LHZ.FastJson.Json
                 return ObjectType.Array;
             else if (typeof(IList).IsAssignableFrom(type))
                 return ObjectType.List;
-            else if (typeof(IEnumerable).IsAssignableFrom(type))
-                return ObjectType.Enumerable;
+            //else if (typeof(IEnumerable).IsAssignableFrom(type))
+            //    return ObjectType.Enumerable;
             else
                 return ObjectType.Object;
 
@@ -567,7 +558,8 @@ namespace LHZ.FastJson.Json
             //循环List赋值
             loopexpres.Add(Expression.IfThen(Expression.GreaterThanOrEqual(i, length), Expression.Break(label)));
             var item = Expression.Call(jsonArrayValue, typeof(List<IJsonObject>).GetMethod("get_Item"), i);
-            loopexpres.Add(Expression.Call(result, curType.GetMethod("Add", new Type[] { genericType }), Expression.Call(typeof(JsonDeserialzerExpression<>).MakeGenericType(genericType).GetMethod("Deserialzer", new Type[] { typeof(IJsonObject) }), item)));
+            loopexpres.Add(Expression.Call(result, curType.GetMethod("Add", new Type[] { genericType }), 
+                Expression.Call(typeof(JsonDeserialzerExpression<>).MakeGenericType(genericType).GetMethod("Deserialzer", new Type[] { typeof(IJsonObject) }), item)));
             loopexpres.Add(Expression.Assign(i, Expression.Increment(i)));
             expres.Add(Expression.Loop(Expression.Block(loopexpres), label));
             expres.Add(Expression.Label(returnLabel));
@@ -651,47 +643,33 @@ namespace LHZ.FastJson.Json
             return Expression.Lambda<Func<IJsonObject, T>>(Expression.Block(parameters, expres), jsonObjectParameter);
         }
 
-        /// <summary>
-        /// 解析成对象
-        /// </summary>
-        /// <param name="type">对象类型</param>
-        /// <param name="properties">对象属性列表</param>
-        /// <param name="jsonObject">Json对象</param>
-        /// <returns></returns>
-        public static object ConvertToObject(Type type, List<PropertyInfo> properties, IJsonObject jsonObject)
+        private static Expression<Func<IJsonObject, T>> ConvertToNullable()
         {
-            if (jsonObject.Type != JsonType.Content)
-            {
-                if (type.IsAssignableFrom(jsonObject.Value.GetType()))
-                {
-                    return jsonObject.Value;
-                }
-                throw new JsonDeserializationException(jsonObject, type, "Json对象不能把" + jsonObject.Type.ToString() + "类型不能解析成object类型");
-            }
-            if (type.IsAssignableFrom(jsonObject.GetType()))
-            {
-                return jsonObject;
-            }
-            object obj = System.Activator.CreateInstance(type);
-            Dictionary<string, JsonObject> dictionary = (Dictionary<string, JsonObject>)jsonObject.Value;
-            foreach (var item in properties)
-            {
-                JsonObject jsonitem = null;
-                dictionary.TryGetValue(item.Name, out jsonitem);
-                if (jsonitem == null)
-                {
-                    continue;
-                }
-                //object objItem = SwitchDeserializationMethod(item.PropertyType, jsonitem);
-#if NET35 || NET40
-                // item.SetValue(obj, objItem, null);
-#else
-                //item.SetValue(obj, objItem);
-#endif
-            }
-            return obj;
-        }
+            ParameterExpression jsonObjectParameter = Expression.Parameter(typeof(IJsonObject), "jsonObjectParameter");
+            var curType = typeof(T);
 
-    
+            List<Expression> expres = new List<Expression>();
+
+            var result = Expression.Variable(curType, "result");
+            var returnLabel = Expression.Label("returnLable");
+
+            //获取泛型类型
+            var genericType = curType.GetGenericArguments().FirstOrDefault();
+            if (genericType == null)
+            {
+                return Expression.Lambda<Func<IJsonObject, T>>(Expression.Throw(Expression.New(typeof(JsonDeserializationException).GetConstructor(new Type[] { typeof(IJsonObject),
+                    typeof(Type), typeof(string) }), jsonObjectParameter, Expression.Constant(curType), Expression.Constant("反序列化出错获取，获取Nullable泛型出错！"))), jsonObjectParameter);
+            }
+            //判断json是否为null
+            expres.Add(Expression.IfThen(Expression.Equal(Expression.Property(jsonObjectParameter, "Type"), Expression.Constant(JsonType.Null)),
+                Expression.Return(returnLabel)));
+            expres.Add(Expression.Assign(result, Expression.New(curType.GetConstructor(new Type[] { genericType }),
+                Expression.Call(typeof(JsonDeserialzerExpression<>).MakeGenericType(genericType).GetMethod("Deserialzer", new Type[] { typeof(IJsonObject) }), jsonObjectParameter))));
+
+            expres.Add(Expression.Label(returnLabel));
+            expres.Add(result);
+
+            return Expression.Lambda<Func<IJsonObject, T>>(Expression.Block(new ParameterExpression[] { result }, expres), jsonObjectParameter);
+        }
     }
 }

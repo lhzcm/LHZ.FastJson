@@ -28,6 +28,7 @@ namespace LHZ.FastJson.Enum
         Array,
         List,
         Enumerable,
-        Object
+        Object,
+        Nullable,
     }
 }
