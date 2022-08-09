@@ -1,6 +1,7 @@
 ﻿using LHZ.FastJson.Enum;
 using LHZ.FastJson.Exceptions;
 using LHZ.FastJson.JsonClass;
+using LHZ.FastJson.Wrapper;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -365,6 +366,22 @@ namespace LHZ.FastJson.Json
             {
                 throw new JsonDeserializationException(jsonObject, type, "Json对象的" + jsonObject.Type.ToString() + "类型不能解析成Enum类型");
             }
+        }
+
+        /// <summary>
+        /// 把字符串转换成枚举类型
+        /// </summary>
+        /// <typeparam name="TEnum">枚举类型</typeparam>
+        /// <param name="dist">目标字符串</param>
+        /// <returns>值类型包装类</returns>
+        private static StructConvertResult<TEnum> ConvertToEnum<TEnum>(string dist) where TEnum : struct
+        {
+            TEnum result;
+            if (System.Enum.TryParse<TEnum>(dist, out result))
+            {
+                return new StructConvertResult<TEnum>(true, result);
+            }
+            return new StructConvertResult<TEnum>(false, result);
         }
 
         /// <summary>
