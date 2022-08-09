@@ -32,5 +32,7 @@ namespace LHZ.FastJson
 
         int Position { get; }
 
+        string ToString();
+
     }
 }

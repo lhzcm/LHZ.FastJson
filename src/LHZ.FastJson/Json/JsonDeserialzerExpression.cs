@@ -80,12 +80,10 @@ namespace LHZ.FastJson.Json
                 case ObjectType.DateTime:
                     return Expression.Lambda<Func<IJsonObject, T>>(Expression.Call(
                         ((Func<IJsonObject, DateTime>)ConvertToDateTime).Method, jsonObjectParameter),  jsonObjectParameter);
-                case ObjectType.Enum:
-                    return Expression.Lambda<Func<IJsonObject, T>>(Expression.Call(
-                        ((Func<Type, IJsonObject, object>)ConvertToEnum).Method, Expression.Constant(curType), jsonObjectParameter),  jsonObjectParameter);
                 case ObjectType.String:
                     return Expression.Lambda<Func<IJsonObject, T>>(Expression.Call( 
                         ((Func<IJsonObject, string>)ConvertToString).Method, jsonObjectParameter),  jsonObjectParameter);
+                case ObjectType.Enum: return ConvertToEnum();
                 case ObjectType.Nullable: return ConvertToNullable();
                 case ObjectType.Dictionary: return ConvertToDictionary();
                 case ObjectType.Array: return ConvertToArray();
@@ -367,22 +365,34 @@ namespace LHZ.FastJson.Json
                 throw new JsonDeserializationException(jsonObject, type, "Json对象的" + jsonObject.Type.ToString() + "类型不能解析成Enum类型");
             }
         }
-
         /// <summary>
-        /// 把字符串转换成枚举类型
+        /// 解析成枚举
         /// </summary>
-        /// <typeparam name="TEnum">枚举类型</typeparam>
-        /// <param name="dist">目标字符串</param>
-        /// <returns>值类型包装类</returns>
-        private static StructConvertResult<TEnum> ConvertToEnum<TEnum>(string dist) where TEnum : struct
+        /// <returns>枚举</returns>
+        private static Expression<Func<IJsonObject, T>> ConvertToEnum()
         {
-            TEnum result;
-            if (System.Enum.TryParse<TEnum>(dist, out result))
-            {
-                return new StructConvertResult<TEnum>(true, result);
-            }
-            return new StructConvertResult<TEnum>(false, result);
+            ParameterExpression jsonObjectParameter = Expression.Parameter(typeof(IJsonObject), "jsonObjectParameter");
+            var curType = typeof(T);
+            List<Expression> expres = new List<Expression>();
+            var result = Expression.Variable(typeof(StructConvertResult<>).MakeGenericType(curType));
+
+            //判断是否是JsonContent 如果不是抛出异常
+            expres.Add(Expression.IfThen(Expression.AndAlso(Expression.NotEqual(Expression.Property(jsonObjectParameter, "Type"), Expression.Constant(JsonType.String)),
+                    Expression.NotEqual(Expression.Property(jsonObjectParameter, "Type"), Expression.Constant(JsonType.Number))),
+                Expression.Throw(Expression.New(typeof(JsonDeserializationException).GetConstructor(new Type[] { typeof(IJsonObject), typeof(Type), typeof(string) }),
+                jsonObjectParameter, Expression.Constant(curType), Expression.Constant("Json对象不为string，number不能解析成枚举类型")))));
+
+            var method = typeof(StructConvertResult<>).MakeGenericType(curType).GetMethod("ConvertToEnum", new Type[] { typeof(string) });
+            expres.Add(Expression.Assign(result, Expression.Call(method, Expression.Call(jsonObjectParameter, "ToString", new Type[] { }))));
+            expres.Add(Expression.IfThen(Expression.IsFalse(Expression.Property(result, "Success")), 
+                Expression.Throw(Expression.New(typeof(JsonDeserializationException).GetConstructor(new Type[] { typeof(IJsonObject), typeof(Type), typeof(string) }),
+                jsonObjectParameter, Expression.Constant(curType), Expression.Constant("Json对象不能解析成枚举类型")))));
+            expres.Add(Expression.Property(result, "Result"));
+            return Expression.Lambda<Func<IJsonObject, T>>(Expression.Block(new ParameterExpression[] { result }, expres), jsonObjectParameter);
         }
+
+
+
 
         /// <summary>
         /// 解析成字符类型
