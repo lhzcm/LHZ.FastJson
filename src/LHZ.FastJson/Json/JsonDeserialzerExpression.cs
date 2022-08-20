@@ -549,11 +549,7 @@ namespace LHZ.FastJson.Json
             var curType = typeof(T);
             //获取泛型类型
             var genericType = curType.GetGenericArguments().FirstOrDefault();
-            if (genericType == null)
-            {
-                return Expression.Lambda<Func<IJsonObject, T>>(Expression.Throw(Expression.New(typeof(JsonDeserializationException).GetConstructor(new Type[] { typeof(IJsonObject),
-                    typeof(Type), typeof(string) }), jsonObjectParameter, Expression.Constant(curType), Expression.Constant("泛型列化出错获取List泛型出错！"))), jsonObjectParameter);
-            }
+            
 
             var jsonArray = Expression.Variable(typeof(JsonArray), "jsonArra");
             var jsonArrayValue = Expression.Variable(typeof(List<IJsonObject>), "jsonArrayValue");
@@ -566,6 +562,14 @@ namespace LHZ.FastJson.Json
 
             List<Expression> expres = new List<Expression>();
             List<Expression> loopexpres = new List<Expression>();
+
+            if (genericType == null)
+            {
+                expres.Add(Expression.Throw(Expression.New(typeof(JsonDeserializationException).GetConstructor(new Type[] { typeof(IJsonObject),
+                    typeof(Type), typeof(string) }), jsonObjectParameter, Expression.Constant(curType), Expression.Constant("泛型列化出错获取List泛型出错！"))));
+                expres.Add(result);
+                return Expression.Lambda<Func<IJsonObject, T>>(Expression.Block(new ParameterExpression[] { result }, expres), jsonObjectParameter);
+            }
 
             //判断json是否为null
             expres.Add(Expression.IfThen(Expression.Equal(Expression.Property(jsonObjectParameter, "Type"), Expression.Constant(JsonType.Null)),
@@ -614,16 +618,22 @@ namespace LHZ.FastJson.Json
             var returnLabel = Expression.Label("returnLable");
 
             //判断json是否为null 值类型不能为null
-            if (!curType.IsValueType)
+            if (curType.IsValueType)
+            {
+               expres.Add(Expression.IfThen(Expression.Equal(Expression.Property(jsonObjectParameter, "Type"), Expression.Constant(JsonType.Null)),
+               Expression.Throw(Expression.New(typeof(JsonDeserializationException).GetConstructor(new Type[] { typeof(IJsonObject), typeof(Type), typeof(string) }),
+               jsonObjectParameter, Expression.Constant(curType), Expression.Constant("反序列化失败，无法将json的null类型转换成值类型")))));
+            }
+            else
             {
                 expres.Add(Expression.IfThen(Expression.Equal(Expression.Property(jsonObjectParameter, "Type"), Expression.Constant(JsonType.Null)),
-                    Expression.Return(returnLabel)));
+                Expression.Return(returnLabel)));
             }
 
-            //判断是否是JsonContent 如果不是抛出异常
-            expres.Add(Expression.IfThen(Expression.NotEqual(Expression.Property(jsonObjectParameter, "Type"), Expression.Constant(JsonType.Content)),
-                Expression.Throw(Expression.New(typeof(JsonDeserializationException).GetConstructor(new Type[] { typeof(IJsonObject), typeof(Type), typeof(string) }),
-                jsonObjectParameter, Expression.Constant(curType), Expression.Constant("Json对象不为Content类型不能解析成object类型")))));
+            ////判断是否是JsonContent 如果不是抛出异常
+            //expres.Add(Expression.IfThen(Expression.NotEqual(Expression.Property(jsonObjectParameter, "Type"), Expression.Constant(JsonType.Content)),
+            //    Expression.Throw(Expression.New(typeof(JsonDeserializationException).GetConstructor(new Type[] { typeof(IJsonObject), typeof(Type), typeof(string) }),
+            //    jsonObjectParameter, Expression.Constant(curType), Expression.Constant("Json对象不为Content类型不能解析成object类型")))));
 
             if (curType.IsAssignableFrom(typeof(JsonContent)))
             {
@@ -639,11 +649,23 @@ namespace LHZ.FastJson.Json
                 expres.Add(result);
                 return Expression.Lambda<Func<IJsonObject, T>>(Expression.Block(new ParameterExpression[] { result }, expres), jsonObjectParameter);
             }
+            //判断是否是接口或者抽象类型
+            if (curType.IsInterface || curType.IsAbstract)
+            {
+                expres.Add(Expression.Throw(Expression.New(typeof(JsonDeserializationException).GetConstructor(new Type[] { typeof(IJsonObject), typeof(Type), typeof(string) }),
+                jsonObjectParameter, Expression.Constant(curType), Expression.Constant("类型为接口或者是抽象接口，无法创建该类型对象"))));
+                expres.Add(Expression.Label(returnLabel));
+                expres.Add(result);
+                return Expression.Lambda<Func<IJsonObject, T>>(Expression.Block(new ParameterExpression[] { result }, expres), jsonObjectParameter);
+            }
+            //判断是否有默认的构造函数
             if (curType.GetConstructor(new Type[] { }) == null)
             {
                 expres.Add(Expression.Throw(Expression.New(typeof(JsonDeserializationException).GetConstructor(new Type[] { typeof(IJsonObject), typeof(Type), typeof(string) }),
                 jsonObjectParameter, Expression.Constant(curType), Expression.Constant("反序列化类型没有默认的构造函数，无法创建该类型对象"))));
-                return Expression.Lambda<Func<IJsonObject, T>>(Expression.Block(expres), jsonObjectParameter);
+                expres.Add(Expression.Label(returnLabel));
+                expres.Add(result);
+                return Expression.Lambda<Func<IJsonObject, T>>(Expression.Block(new ParameterExpression[] { result }, expres), jsonObjectParameter);
             }
             //初始化赋值每个属性
             foreach (var item in curType.GetProperties().Where(n=>n.CanWrite))

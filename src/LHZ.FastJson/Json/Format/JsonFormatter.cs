@@ -30,7 +30,7 @@ namespace LHZ.FastJson.Json.Format
         /// DateTime类型格式化转化
         /// </summary>
         /// <param name="dateTime">日期时间对象</param>
-        /// <param name="execCharParaphrase">是否要执行支付串转换</param>
+        /// <param name="execCharParaphrase">是否要执行字符串转换</param>
         /// <returns>格式化日期时间字符串</returns>
         public string DateTimeFormat(DateTime dateTime, out bool execCharParaphrase)
         {

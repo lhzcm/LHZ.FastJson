@@ -8,7 +8,7 @@ using System.Text;
 
 namespace LHZ.FastJson.UnitTest
 {
-    
+
     class TestJsonDeserizlizer
     {
         [Test]
@@ -77,7 +77,7 @@ namespace LHZ.FastJson.UnitTest
         {
             string testStr = "\"2020-07-09 12:00:00\"";
             DateTime obj = (new JsonDeserializer<DateTime>(testStr)).Deserialize();
-            Assert.IsTrue(obj == new DateTime(2020,07,09,12,0,0));
+            Assert.IsTrue(obj == new DateTime(2020, 07, 09, 12, 0, 0));
         }
 
 
@@ -113,7 +113,7 @@ namespace LHZ.FastJson.UnitTest
             {
                 Assert.IsTrue(i + 1 == obj[i]);
             }
-            
+
             obj = (new JsonDeserializer<List<int>>("null")).Deserialize();
             Assert.IsNull(obj);
         }
@@ -128,7 +128,7 @@ namespace LHZ.FastJson.UnitTest
             Assert.IsTrue(resut1 == "3");
 
             string testStr2 = "{\"one\":null,\"two\":2,\"three\":3}";
-            Dictionary<string,int?> obj2 = (new JsonDeserializer<Dictionary<string, int?>>(testStr2)).Deserialize();
+            Dictionary<string, int?> obj2 = (new JsonDeserializer<Dictionary<string, int?>>(testStr2)).Deserialize();
 
             int? result2;
             obj2.TryGetValue("three", out result2);
@@ -170,7 +170,7 @@ namespace LHZ.FastJson.UnitTest
         {
             int testint32 = 0;
             string testStr = "1234";
-            
+
             testint32 = (new JsonDeserializer<Int32>(testStr)).Deserialize();
             Assert.AreEqual(testint32, 1234);
         }
@@ -189,11 +189,35 @@ namespace LHZ.FastJson.UnitTest
             var strObj = "\"test\"".FromJson<string>();
             Assert.AreEqual(strObj, "test");
         }
-    }
 
+        [Test]
+        public void TestMultiProtertyObject()
+        {
+            List<string> testString = new List<string>();
+            testString.Add("{\"Name\":\"Test1\",\"Age\":22,\"Height\":123.2342,\"Obj\":\"sfsdfsd\"}");
+            testString.Add("{\"Name\":\"Test2\",\"Age\":26,\"Height\":1233.232,\"Obj\":null}");
+            testString.Add("{\"Name\":\"Test3\",\"Age\":27,\"Height\":1243.232,\"Obj\":123}");
+            testString.Add("{\"Name\":\"Test4\",\"Age\":28,\"Height\":123.2332,\"Obj\":null}");
+            testString.Add("{\"Name\":\"Test5\",\"Age\":24,\"Height\":123.2352,\"Obj\":null}");
+            testString.Add("{\"Name\":\"Test6\",\"Age\":25,\"Height\":12333.2342,\"Obj\":45.4}");
+
+            foreach (var item in testString)
+            {
+                var a = LHZ.FastJson.JsonConvert.Deserialize<TestMultiProtertyObj>(item);
+            }
+        }
+
+    }
     public class TestObjClass
     { 
         public int Id { get; set; }
         public string Name { get; set; }
+    }
+    public class TestMultiProtertyObj
+    {
+        public string Name { get; set; }
+        public int Age { get; set; }
+        public float Height { get; set; }
+        public Object Obj { get; set; }
     }
 }
