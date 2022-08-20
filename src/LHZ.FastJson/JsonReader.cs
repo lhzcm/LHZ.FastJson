@@ -3,6 +3,7 @@ using LHZ.FastJson.JsonClass;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Security;
 using System.Text;
 
 namespace LHZ.FastJson
@@ -10,105 +11,159 @@ namespace LHZ.FastJson
     /// <summary>
     /// Json字符串解析类
     /// </summary>
+    unsafe
     public class JsonReader : IJsonReader
     {
-        private char[] _jsonCharArray;
+        private readonly string _jsonString;
+        private char* _startPoint;
+        private char* _curPoint;
+        private char* _endPoint;
 
-        public JsonReader(string jsonStr)
+        public JsonReader(string jsonString)
         {
-            StringToCharArray(jsonStr);
+            _jsonString = jsonString;
         }
-
+        /// <summary>
+        /// 解析字符串
+        /// </summary>
+        /// <returns>Json对象</returns>
         public JsonObject JsonRead()
         {
-            int index = 0;
-            return GetJsonObject(ref index);
-        }
+            if (string.IsNullOrEmpty(_jsonString))
+            {
+                throw new Exception("Json解析错误，字符串为空");
+            }
+            fixed (char* point = _jsonString)
+            {
+                _startPoint = point;
+                _endPoint = point + _jsonString.Length;
+                _curPoint = point;
 
+                return GetJsonObject();
+            }
+        }
         /// <summary>
         /// 解析Json对象
         /// </summary>
-        /// <param name="index">当前解析字符索引</param>
         /// <returns>Json对象</returns>
-        private JsonObject GetJsonObject(ref int index)
+        private JsonObject GetJsonObject()
         {
-            index = SkipBlank(index);
-            if (_jsonCharArray[index] == '{')
+            SkipWhitespace();
+            if (*_curPoint == '{')
             {
-                return GetJsonContent(ref index);
+                return GetJsonContent();
             }
-            else if (_jsonCharArray[index] == '"')
+            else if (*_curPoint == '"')
             {
-                return GetJsonString(ref index);
+                return GetJsonString();
             }
-            else if (_jsonCharArray[index] >= '0' && _jsonCharArray[index] <= '9')
+            else if (*_curPoint >= '0' && *_curPoint <= '9')
             {
-                return GetJsonNumber(ref index);
+                return GetJsonNumber();
             }
-            else if (_jsonCharArray[index] == 'n')
+            else if (*_curPoint == 'n')
             {
-                return GetJsonNull(ref index);
+                return GetJsonNull();
             }
-            else if (_jsonCharArray[index] == '[')
+            else if (*_curPoint == '[')
             {
-                return GetJsonArray(ref index);
+                return GetJsonArray();
             }
-            else if (_jsonCharArray[index] == 't' || _jsonCharArray[index] == 'f')
+            else if (*_curPoint == 't' || *_curPoint == 'f')
             {
-                return GetJsonBoolean(ref index);
+                return GetJsonBoolean();
             }
             else
             {
+                int index = (int)(_curPoint - _startPoint);
                 throw new JsonReadException(index, "字符位置[" + index + "]处，解析错误，未知Json类型");
             }
 
         }
-
-        /// <summary>
-        /// 把string转化为字符数组
-        /// </summary>
-        /// <param name="jsonStr">json字符串</param>
-        private void StringToCharArray(string jsonStr)
-        {
-            if (string.IsNullOrEmpty(jsonStr))
-            {
-                throw new Exception("Json解析错误，字符串为空");
-            }
-            _jsonCharArray = jsonStr.ToCharArray();
-        }
-
         /// <summary>
         /// 跳过空白字符
         /// </summary>
-        /// <param name="index">当前解析字符索引</param>
-        /// <returns>跳过空白字符后的索引</returns>
-        private int SkipBlank(int index)
+        private void SkipWhitespace()
         {
-            while (_jsonCharArray[index] == ' ' || _jsonCharArray[index] == '\r' || _jsonCharArray[index] == '\n' || _jsonCharArray[index] == '\t')
+            while (*_curPoint == ' ' || *_curPoint == '\r' || *_curPoint == '\n' || *_curPoint == '\t')
             {
-                index++;
+                MoveNext();
             }
-            return index;
         }
-
+        /// <summary>
+        /// 移动到下一个字符
+        /// </summary>
+        private void MoveNext()
+        {
+            _curPoint++;
+            if (_curPoint > _endPoint)
+            {
+                int index = (int)(_curPoint - _startPoint);
+                throw new JsonReadException(index, "索引溢出，字符串已经读取完，但json却未完全解析");
+            }
+        }
         /// <summary>
         /// 解析Json属性名称
         /// </summary>
-        /// <param name="startIndex">当前解析字符索引</param>
         /// <returns>属性名称</returns>
-        private string GetAttrName(ref int startIndex)
+        private string GetAttrName()
         {
-            if (_jsonCharArray[startIndex] != '"')
+            if (*_curPoint != '"')
             {
-                throw new JsonReadException(startIndex, "字符位置[" + startIndex + "]处，Json字符串解析属性名错误");
+                int index = (int)(_curPoint - _startPoint);
+                throw new JsonReadException(index, "字符位置[" + index + "]处，Json字符串解析属性名错误");
             }
-            StringBuilder stringBuilder = new StringBuilder(8);
 
-            while (_jsonCharArray[++startIndex] != '"')
+            MoveNext();
+            char* startPoint = _curPoint;
+            int startIndex = (int)(_curPoint - _startPoint);
+            while (*_curPoint != '"')
             {
-                if (_jsonCharArray[startIndex] == '\\')
+                if (*_curPoint == '\\')
                 {
-                    switch (_jsonCharArray[++startIndex])
+                    int index = (int)(_curPoint - _startPoint);
+                    throw new JsonReadException(index, "字符位置[" + index + "]处，Json属性名解析错误，属性名不能有转义字符");
+                }
+                MoveNext();
+            }
+            if (startPoint == _curPoint)
+            {
+                int index = (int)(startPoint - _startPoint);
+                throw new JsonReadException(index, "属性名称不能为空！");
+            }
+            string name = new String(_startPoint, (int)(startPoint - _startPoint), (int)(_curPoint - startPoint));
+            MoveNext();
+            return name;
+        }
+#if NET40 || NET45 || NET46
+        /// <summary>
+        /// 解析Json String对象
+        /// </summary>
+        /// <returns>Json对象</returns>
+        private unsafe JsonObject GetJsonString()
+        {
+            int index = (int)(_curPoint - _startPoint);
+            int count = 0;
+            if (*_curPoint != '"')
+            {
+                throw new JsonReadException(index, "字符位置[" + index + "]处，Json字符串解析string错误");
+            }
+            StringBuilder stringBuilder = new StringBuilder();
+            MoveNext();
+
+            int startIndex = (int)(_curPoint - _startPoint);
+            while (*_curPoint != '"')
+            {
+                if (*_curPoint == '\\')
+                {
+                    count = (int)(_curPoint - _startPoint) - startIndex;
+                    if (count > 0)
+                    {
+                        stringBuilder.Append(_jsonString, startIndex, count);
+                    }
+
+                    MoveNext();
+                    switch (*_curPoint)
                     {
                         case '\'': stringBuilder.Append('\''); break;
                         case '"': stringBuilder.Append('\"'); break;
@@ -121,35 +176,54 @@ namespace LHZ.FastJson
                         case 'r': stringBuilder.Append('\r'); break;
                         case 't': stringBuilder.Append('\t'); break;
                         case 'v': stringBuilder.Append('\v'); break;
-                        default: throw new Exception(startIndex + "处，Json属性名解析错误，'\\" + _jsonCharArray[startIndex] + "'转义失败");
+                        default:
+                            index = (int)(_curPoint - _startPoint);
+                            throw new JsonReadException(index, "字符位置[" + index + "]处，Json字符串解析错误，'\\" + *_curPoint + "'转义失败");
                     }
+                    MoveNext();
+                    startIndex = (int)(_curPoint - _startPoint);
                     continue;
                 }
-                stringBuilder.Append(_jsonCharArray[startIndex]);
+                MoveNext();
             }
-            startIndex++;
-            return stringBuilder.ToString();
-        }
+            count = (int)(_curPoint - _startPoint) - startIndex;
+            if (count > 0)
+            {
+                stringBuilder.Append(_jsonString, startIndex, count);
+            }
+            MoveNext();
 
+            return new JsonString(stringBuilder.ToString(), index);
+        }
+#else
         /// <summary>
         /// 解析Json String对象
         /// </summary>
-        /// <param name="startIndex">当前解析字符索引</param>
         /// <returns>Json对象</returns>
-        private JsonObject GetJsonString(ref int startIndex)
+        private unsafe JsonObject GetJsonString()
         {
-            int position = startIndex;
-            if (_jsonCharArray[startIndex] != '"')
+            int index = (int)(_curPoint - _startPoint);
+            int count = 0;
+            if (*_curPoint != '"')
             {
-                throw new Exception(startIndex + "处，Json字符串解析string错误");
+                throw new JsonReadException(index, "字符位置[" + index + "]处，Json字符串解析string错误");
             }
-            StringBuilder stringBuilder = new StringBuilder(8);
-
-            while (_jsonCharArray[++startIndex] != '"')
+            StringBuilder stringBuilder = new StringBuilder();
+            MoveNext();
+            
+            char* startPoint = _curPoint;
+            while (*_curPoint != '"')
             {
-                if (_jsonCharArray[startIndex] == '\\')
+                if (*_curPoint == '\\')
                 {
-                    switch (_jsonCharArray[++startIndex])
+                    count = (int)(_curPoint - startPoint);
+                    if (count > 0)
+                    {
+                        stringBuilder.Append(startPoint, count);
+                    }
+
+                    MoveNext();
+                    switch (*_curPoint)
                     {
                         case '\'': stringBuilder.Append('\''); break; 
                         case '"': stringBuilder.Append('\"'); break;
@@ -162,175 +236,186 @@ namespace LHZ.FastJson
                         case 'r': stringBuilder.Append('\r'); break;
                         case 't': stringBuilder.Append('\t'); break;
                         case 'v': stringBuilder.Append('\v'); break;
-                        default: throw new JsonReadException(startIndex, "字符位置[" + startIndex + "]处，Json字符串解析错误，'\\" + _jsonCharArray[startIndex] + "'转义失败");
+                        default:
+                            index = (int)(_curPoint - _startPoint);
+                            throw new JsonReadException(index, "字符位置[" + index + "]处，Json字符串解析错误，'\\" + *_curPoint + "'转义失败");
                     }
+                    MoveNext();
+                    startPoint = _curPoint;
                     continue;
                 }
-                stringBuilder.Append(_jsonCharArray[startIndex]);
+                MoveNext();
             }
-            startIndex++;
-            return new JsonString(stringBuilder.ToString(), position);
-        }
+            count = (int)(_curPoint - startPoint);
+            if (count > 0)
+            {
+                stringBuilder.Append(startPoint, count);
+            }
+            MoveNext();
 
+            return new JsonString(stringBuilder.ToString(), index);
+        }
+#endif
         /// <summary>
         /// 解析Json Number对象
         /// </summary>
-        /// <param name="startIndex">当前解析字符索引</param>
         /// <returns>Json对象</returns>
-        private JsonObject GetJsonNumber(ref int startIndex)
+        private JsonObject GetJsonNumber()
         {
-            int position = startIndex;
-            if (_jsonCharArray[startIndex] < '0' || _jsonCharArray[startIndex] > '9')
-            {
-                throw new JsonReadException(startIndex, "字符位置[" + startIndex + "]处，Json字符串解析number错误");
-            }
-            StringBuilder stringBuilder = new StringBuilder(8);
-            stringBuilder.Append(_jsonCharArray[startIndex++]);
-            short pointNums = 0;
-            while (startIndex < _jsonCharArray.Length && ((_jsonCharArray[startIndex] == '.') || (_jsonCharArray[startIndex] >= '0' && _jsonCharArray[startIndex] <= '9')))
-            {
-                if (_jsonCharArray[startIndex] == '.')
-                {
-                    if (pointNums > 0)
-                    {
-                        throw new JsonReadException(startIndex, "字符位置[" + startIndex + "]处，Json字符串解析错误，'\\" + _jsonCharArray[startIndex] + "'解析number出错");
-                    }
-                    pointNums++;
-                }
-                stringBuilder.Append(_jsonCharArray[startIndex++]);
-            }
-            return new JsonNumber(pointNums > 0 ? Enum.NumberType.Double: Enum.NumberType.Long, stringBuilder.ToString(), position);
-        }
+            int index = (int)(_curPoint - _startPoint);
+            char* startPorint = _curPoint;
+            bool hasPoint = false;
 
+            while ((*_curPoint >= '0' && *_curPoint <= '9') || *_curPoint == '.')
+            {
+                if (*_curPoint == '.')
+                {
+                    if (hasPoint)
+                    {
+                        throw new JsonReadException(index, "字符位置[" + index + "]处，Json字符串解析错误，出现多个小数点，解析number出错");
+                    }
+                    hasPoint = true;
+                }
+                MoveNext();
+            }
+            string numberStr = new string(startPorint, 0, (int)(_curPoint - startPorint));
+            return new JsonNumber(hasPoint ? Enum.NumberType.Double: Enum.NumberType.Long, numberStr, index);
+        }
         /// <summary>
         /// 解析Json Boolean对象
         /// </summary>
-        /// <param name="startIndex">当前解析字符索引</param>
         /// <returns>Json对象</returns>
-        private JsonObject GetJsonBoolean(ref int startIndex)
+        private JsonObject GetJsonBoolean()
         {
-            int position = startIndex;
-            if (_jsonCharArray[startIndex] != 't' && _jsonCharArray[startIndex] != 'f')
+            int index = (int)(_curPoint - _startPoint);
+            char * startPorint = _curPoint;
+            
+            if (*_curPoint == 't')
             {
-                throw new JsonReadException(startIndex, "字符位置[" + startIndex + "]处，Json字符串解析boolean错误"); 
+                MoveNext();
+                MoveNext();
+                MoveNext();
+                MoveNext();
             }
-            StringBuilder stringBuilder = new StringBuilder(4);
-            while (startIndex < _jsonCharArray.Length && _jsonCharArray[startIndex] >= 'a' && _jsonCharArray[startIndex] <= 'z')
+            else
             {
-                stringBuilder.Append(_jsonCharArray[startIndex++]);
+                MoveNext();
+                MoveNext();
+                MoveNext();
+                MoveNext();
+                MoveNext();
             }
-            string result = stringBuilder.ToString();
-            if (result != "true" && result != "false")
+            string boolStr = new string(startPorint, 0, (int)(_curPoint - startPorint));
+            if (boolStr != "true" && boolStr != "false")
             {
-                throw new JsonReadException(startIndex, "字符位置[" + startIndex + "]处，Json字符串解析boolean错误");
+                throw new JsonReadException(index, "字符位置[" + index + "]处，Json字符串解析boolean错误");
             }
-            return new JsonBoolean(result == "true" ? Enum.BooleanType.True : Enum.BooleanType.False, result, position);
+            return new JsonBoolean(boolStr == "true" ? Enum.BooleanType.True : Enum.BooleanType.False, boolStr, index);
         }
-
         /// <summary>
         /// 解析Json Null
         /// </summary>
-        /// <param name="startIndex">当前解析字符索引</param>
         /// <returns>Json对象</returns>
-        private JsonObject GetJsonNull(ref int startIndex)
+        private JsonObject GetJsonNull()
         {
-            if (_jsonCharArray[startIndex] != 'n')
-            {
-                throw new JsonReadException(startIndex, "字符位置[" + startIndex + "]处，Json字符串解析null错误");
-            }
-            string result = new string(_jsonCharArray, startIndex, 4);
-            if (result != "null")
-            {
-                throw new JsonReadException(startIndex, "字符位置[" + startIndex + "]处，Json字符串解析null错误");
-            }
-            startIndex += 4;
-            return new JsonNull(result, startIndex - 4);
-        }
+            int index = (int)(_curPoint - _startPoint);
+            char* startPorint = _curPoint;
 
+            MoveNext();
+            MoveNext();
+            MoveNext();
+            MoveNext();
+
+            string nullStr = new string(startPorint, 0, (int)(_curPoint - startPorint));
+
+            if (nullStr != "null")
+            {
+                throw new JsonReadException(index, "字符位置[" + index + "]处，Json字符串解析null错误");
+            }
+            return new JsonNull(nullStr, index);
+        }
         /// <summary>
         /// 解析Json Content对象
         /// </summary>
-        /// <param name="startIndex">当前解析字符索引</param>
         /// <returns>Json对象</returns>
-        private JsonObject GetJsonContent(ref int startIndex)
+        private JsonObject GetJsonContent()
         {
-            if (_jsonCharArray[startIndex] != '{')
+            int index = (int)(_curPoint - _startPoint);
+            JsonContent content = new JsonContent(index);
+            MoveNext();
+            SkipWhitespace();
+            if (*_curPoint == '}')
             {
-                throw new JsonReadException(startIndex, "字符位置[" + startIndex + "]处，Json字符串解析content错");
-            }
-            JsonContent content = new JsonContent(startIndex);
-            startIndex = SkipBlank(++startIndex);
-            if (_jsonCharArray[startIndex] == '}')
-            {
-                startIndex++;
+                MoveNext();
                 return content;
             }
             while (true)
             {
-                string attrName = GetAttrName(ref startIndex);
-                startIndex = SkipBlank(startIndex);
-                if (_jsonCharArray[startIndex++] != ':')
+                string attrName = GetAttrName();
+                SkipWhitespace();
+                if (*_curPoint != ':')
                 {
-                    throw new JsonReadException(startIndex, "字符位置[" + startIndex + "]处，Json字符串解析content错");
+                    index = (int)(_curPoint - _startPoint);
+                    throw new JsonReadException(index, "字符位置[" + index + "]处出现意外字符‘"+*_curPoint+"’，期望字符‘:’，Json字符串解析content出错");
                 }
-                JsonObject value = GetJsonObject(ref startIndex);
+                MoveNext();
+                SkipWhitespace();
+
+                JsonObject value = GetJsonObject();
                 content.AddJsonAttr(attrName, value);
-                startIndex = SkipBlank(startIndex);
-                if (_jsonCharArray[startIndex] == ',')
+
+                SkipWhitespace();
+                if (*_curPoint == ',')
                 {
-                    startIndex = SkipBlank(++startIndex);
+                    MoveNext();
+                    SkipWhitespace();
                     continue;
                 }
-                else if (_jsonCharArray[startIndex] == '}')
+                else if (*_curPoint == '}')
                 {
                     break;
                 }
                 else
                 {
-                    throw new JsonReadException(startIndex, "字符位置[" + startIndex + "]处，Json字符串解析content出错");
+                    index = (int)(_curPoint - _startPoint);
+                    throw new JsonReadException(index, "字符位置[" + index + "]处出现意外字符‘" + *_curPoint + "’，期望字符‘:’或‘}’，Json字符串解析content出错");
                 }
             }
-            startIndex++;
+            MoveNext();
             return content;
         }
-
         /// <summary>
         /// 解析Json Array对象
         /// </summary>
-        /// <param name="startIndex">当前解析字符索引</param>
         /// <returns>Json对象</returns>
-        private JsonObject GetJsonArray(ref int startIndex)
+        private JsonObject GetJsonArray()
         {
-            if (_jsonCharArray[startIndex] != '[')
+            int index = (int)(_curPoint - _startPoint);
+            JsonArray jsonArray = new JsonArray(index);
+
+            MoveNext();
+            SkipWhitespace();
+
+            while (*_curPoint != ']')
             {
-                throw new JsonReadException(startIndex, "字符位置[" + startIndex + "]处，Json字符串解析Array错");
-            }
-            JsonArray jsonArray = new JsonArray(startIndex);
-            startIndex = SkipBlank(++startIndex);
-            if (_jsonCharArray[startIndex] == ']')
-            {
-                startIndex++;
-                return jsonArray;
-            }
-            while (true)
-            {
-                jsonArray.AddJsonObject(GetJsonObject(ref startIndex));
-                startIndex = SkipBlank(startIndex);
-                if (_jsonCharArray[startIndex] == ',')
+                jsonArray.AddJsonObject(GetJsonObject());
+                SkipWhitespace();
+                if (*_curPoint == ',')
                 {
-                    startIndex++;
+                    MoveNext();
                     continue;
                 }
-                else if (_jsonCharArray[startIndex] == ']')
+                else if (*_curPoint == ']')
                 {
                     break;
                 }
                 else
                 {
-                    throw new JsonReadException(startIndex, "字符位置[" + startIndex + "]处，Json字符串解析Array错");
+                    index = (int)(_curPoint - _startPoint);
+                    throw new JsonReadException(index, "字符位置[" + index + "]处，Json字符串解析Array错");
                 }
             }
-            startIndex++;
+            MoveNext();
             return jsonArray;
         }
     }
