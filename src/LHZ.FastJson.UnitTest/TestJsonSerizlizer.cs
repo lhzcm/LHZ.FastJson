@@ -143,6 +143,19 @@ namespace LHZ.FastJson.UnitTest
             Assert.AreEqual(structjson, "{\"Name\":\"test2\",\"Age\":10,\"Height\":170,\"Obj\":null}");
         }
 
+        [Test]
+        public void TestJsonIgnored()
+        {
+            TestJsonTgnoredClass testJsonTgnoredClass = new TestJsonTgnoredClass()
+            {
+                Name = "test",
+                Age = 10,
+                Height = 170
+            };
+            var testStr = LHZ.FastJson.JsonConvert.Serialize(testJsonTgnoredClass);
+            Assert.AreEqual(testStr, @"{""Name"":""test"",""Age"":10}");
+        }
+
 
         public class TestObj
         {
@@ -158,6 +171,14 @@ namespace LHZ.FastJson.UnitTest
             public int Age { get; set; }
             public float Height { get; set; }
             public TestObj Obj { get; set; }
+        }
+
+        public class TestJsonTgnoredClass
+        {
+            public string Name { get; set; }
+            public int Age { get; set; }
+            [Json.Attributes.JsonIgnored(Enum.JsonMethods.Serialize)]
+            public float Height { get; set; }
         }
     }
 }

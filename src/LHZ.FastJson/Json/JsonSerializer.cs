@@ -1,4 +1,5 @@
 ﻿using LHZ.FastJson.Enum;
+using LHZ.FastJson.Json.Attributes;
 using LHZ.FastJson.Json.Format;
 using System;
 using System.Collections;
@@ -89,7 +90,17 @@ namespace LHZ.FastJson.Json
             //是否可能循环引用
             bool maybeCircularReference = false;
             //获取属性
-            var properties = objType.GetProperties().Where(n => n.CanRead).ToList();
+            var properties = objType.GetProperties().Where(n => {
+                if (!n.CanRead)
+                    return false;
+                //判断是否忽略序列化
+                var jsonIgnored = Attribute.GetCustomAttribute(n, typeof(JsonIgnoredAttribute)) as JsonIgnoredAttribute;
+                if (jsonIgnored != null && (jsonIgnored.JsonIgnoredMethod & JsonMethods.Serialize) == JsonMethods.Serialize)
+                {
+                    return false;
+                }
+                return true;
+            }).ToList();
 
             //变量赋值
             expList.Add(Expression.Assign(obj, Expression.Convert(objParameter, objType)));
@@ -101,6 +112,7 @@ namespace LHZ.FastJson.Json
 
             foreach (var item in properties)
             {
+                
                 ObjectType objectType = GetObjectType(item.PropertyType);
                 Expression exp = null;
                 Func<Type, Action<JsonSerializer, object>> sact = GetSerializationAction;

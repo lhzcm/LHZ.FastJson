@@ -1,5 +1,6 @@
 ﻿using LHZ.FastJson.Enum;
 using LHZ.FastJson.Exceptions;
+using LHZ.FastJson.Json.Attributes;
 using LHZ.FastJson.JsonClass;
 using LHZ.FastJson.Wrapper;
 using System;
@@ -670,6 +671,13 @@ namespace LHZ.FastJson.Json
             //初始化赋值每个属性
             foreach (var item in curType.GetProperties().Where(n=>n.CanWrite))
             {
+                //判断是否忽略反序列化
+                var jsonIgnored = Attribute.GetCustomAttribute(item, typeof(JsonIgnoredAttribute)) as JsonIgnoredAttribute;
+                if (jsonIgnored != null && (jsonIgnored.JsonIgnoredMethod & JsonMethods.Deserialize) == JsonMethods.Deserialize)
+                {
+                    break;
+                }
+
                 var getJsonObjItem = Expression.Call(typeof(JsonDeserialzerExpression<>).MakeGenericType(item.PropertyType).GetMethod("Deserialzer", new Type[] { typeof(IJsonObject) }),
                         Expression.Call(jsonObjectParameter, typeof(IJsonObject).GetMethod("get_Item", new Type[] { typeof(string) }), Expression.Constant(item.Name)));
                 var hasChildrenNode = Expression.Call(jsonObjectParameter, typeof(IJsonObject).GetMethod("HasChildrenNode", new Type[] { typeof(string) }), Expression.Constant(item.Name));

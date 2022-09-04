@@ -207,6 +207,14 @@ namespace LHZ.FastJson.UnitTest
             }
         }
 
+        [Test]
+        public void TestJsonIgnored()
+        {
+            var testStr = @"{""Name"":""test"",""Age"":10,""Height"":170}";
+            var testObj = LHZ.FastJson.JsonConvert.Deserialize<TestJsonTgnoredClass>(testStr);
+            Assert.AreEqual(testObj.Height, 0);
+        }
+
     }
     public class TestObjClass
     { 
@@ -219,5 +227,12 @@ namespace LHZ.FastJson.UnitTest
         public int Age { get; set; }
         public float Height { get; set; }
         public Object Obj { get; set; }
+    }
+    public class TestJsonTgnoredClass
+    {
+        public string Name { get; set; }
+        public int Age { get; set; }
+        [Json.Attributes.JsonIgnored(Enum.JsonMethods.Deserialize)]
+        public float Height { get; set; }
     }
 }
