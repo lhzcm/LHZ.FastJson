@@ -1,4 +1,5 @@
 ﻿using LHZ.FastJson.Json;
+using LHZ.FastJson.Json.CustomConverter;
 using LHZ.FastJson.Json.Format;
 using NUnit.Framework;
 using System;
@@ -156,6 +157,13 @@ namespace LHZ.FastJson.UnitTest
             Assert.AreEqual(testStr, @"{""Name"":""test"",""Age"":10}");
         }
 
+        [Test]
+        public void TestCustomSerialize()
+        {
+            var str = (new JsonSerializer(new TestObj(), new CustomConvert())).Serialize();
+            Assert.AreEqual(str, "\"CustomConvert\"");
+        }
+
 
         public class TestObj
         {
@@ -180,5 +188,14 @@ namespace LHZ.FastJson.UnitTest
             [Json.Attributes.JsonIgnored(Enum.JsonMethods.Serialize)]
             public float Height { get; set; }
         }
+
+        public class CustomConvert : JsonCustomConvert<TestObj>
+        {
+            public override string Serialize(TestObj dist)
+            {
+                return "\"CustomConvert\"";
+            }
+        }
+
     }
 }

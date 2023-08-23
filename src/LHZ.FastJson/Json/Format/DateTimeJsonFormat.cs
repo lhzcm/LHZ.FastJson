@@ -9,6 +9,7 @@ namespace LHZ.FastJson.Json.Format
     /// <summary>
     /// 日期格式化类
     /// </summary>
+    [Obsolete]
     public class DateTimeJsonFormat : IJsonFormat
     {
         private string _fromatstr = "yyyy-MM-dd HH:mm:ss";

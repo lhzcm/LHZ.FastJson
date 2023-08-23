@@ -1,0 +1,17 @@
+{
+    "configurations": [
+        {
+            "type": "docker-run",
+            "name": "",
+            "imageIdOrName": "",
+        },
+        {
+            "type": "dotnet",
+            "name": "",
+            "projectPath": "",
+            "exePath": "",
+            "args": [],
+        },
+
+    ]
+}
