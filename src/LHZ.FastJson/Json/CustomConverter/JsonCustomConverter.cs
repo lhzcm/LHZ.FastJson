@@ -10,8 +10,48 @@ namespace LHZ.FastJson.Json.CustomConverter
     /// 自定义转换类型
     /// </summary>
     /// <typeparam name="T">类型</typeparam>
-    public abstract class JsonCustomConvert<T> : IJsonCustomConverter
+    public sealed class JsonCustomConvert<T> : IJsonCustomConverter
     {
+        private Func<T, string> _defaultSerializeFunc = (T dist) => (new JsonSerializer(dist)).Serialize();
+        private Func<IJsonObject, T> _defaultDeserializeFunc = (IJsonObject jsonObject) => JsonDeserialzerExpression<T>.Deserialzer(jsonObject);
+
+        public JsonCustomConvert()
+        {
+        }
+
+        public JsonCustomConvert(Func<T, string> customSerializeMethod)
+        {
+            if (customSerializeMethod == null)
+            {
+                throw new ArgumentNullException(nameof(customSerializeMethod));
+            }
+            _defaultSerializeFunc = customSerializeMethod;
+        }
+
+        public JsonCustomConvert(Func<IJsonObject, T> customDeserializeMethod)
+        {
+            if (customDeserializeMethod == null)
+            {
+                throw new ArgumentNullException(nameof(customDeserializeMethod));
+            }
+            _defaultDeserializeFunc = customDeserializeMethod;
+        }
+
+        public JsonCustomConvert(Func<T, string> customSerializeMethod, Func<IJsonObject, T> customDeserializeMethod)
+        {
+            if (customDeserializeMethod == null)
+            {
+                throw new ArgumentNullException(nameof(customDeserializeMethod));
+            }
+            _defaultDeserializeFunc = customDeserializeMethod;
+
+            if (customSerializeMethod == null)
+            {
+                throw new ArgumentNullException(nameof(customSerializeMethod));
+            }
+            _defaultSerializeFunc = customSerializeMethod;
+        }
+
         /// <summary>
         /// 自定义转换的类型
         /// </summary>
@@ -22,7 +62,7 @@ namespace LHZ.FastJson.Json.CustomConverter
         /// </summary>
         /// <param name="dist">序列化对象</param>
         /// <returns>序列化字符串</returns>
-        public virtual string Serialize(T dist)
+        public string Serialize(T dist)
         {
             return (new JsonSerializer(dist)).Serialize();
         }
@@ -32,7 +72,7 @@ namespace LHZ.FastJson.Json.CustomConverter
         /// </summary>
         /// <param name="jsonObject">json对象</param>
         /// <returns>反序列化对象</returns>
-        public virtual T Deserialize(IJsonObject jsonObject)
+        public T Deserialize(IJsonObject jsonObject)
         {
             return JsonDeserialzerExpression<T>.Deserialzer(jsonObject);
         }

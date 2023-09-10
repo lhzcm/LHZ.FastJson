@@ -4,6 +4,7 @@ using LHZ.FastJson.Json.Format;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 
 namespace LHZ.FastJson.UnitTest
@@ -160,7 +161,7 @@ namespace LHZ.FastJson.UnitTest
         [Test]
         public void TestCustomSerialize()
         {
-            var str = (new JsonSerializer(new TestObj(), new CustomConvert())).Serialize();
+            var str = (new JsonSerializer(new TestObj(), new JsonCustomConvert<TestObj>((TestObj o) => "CustomConvert"))).Serialize();
             Assert.AreEqual(str, "\"CustomConvert\"");
         }
 
@@ -189,13 +190,13 @@ namespace LHZ.FastJson.UnitTest
             public float Height { get; set; }
         }
 
-        public class CustomConvert : JsonCustomConvert<TestObj>
-        {
-            public override string Serialize(TestObj dist)
-            {
-                return "\"CustomConvert\"";
-            }
-        }
+        //public class CustomConvert : JsonCustomConvert<TestObj>
+        //{
+        //    public override string Serialize(TestObj dist)
+        //    {
+        //        return "\"CustomConvert\"";
+        //    }
+        //}
 
     }
 }
