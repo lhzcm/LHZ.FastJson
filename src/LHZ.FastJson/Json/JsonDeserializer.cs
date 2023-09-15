@@ -1,5 +1,6 @@
 ﻿using LHZ.FastJson.Enum;
 using LHZ.FastJson.Exceptions;
+using LHZ.FastJson.Json.CustomConverter;
 using LHZ.FastJson.JsonClass;
 using System;
 using System.Collections;
@@ -39,9 +40,9 @@ namespace LHZ.FastJson.Json
         /// 进行反序列化
         /// </summary>
         /// <returns>返回反序列化类型对象</returns>
-        public T Deserialize()
+        public T Deserialize(params IJsonCustomConverter[] converters)
         {
-            return JsonDeserialzerExpression<T>.Deserialzer(_obj);
+            return JsonDeserialzerExpression<T>.Deserialzer(_obj, converters);
         }
     }
 }

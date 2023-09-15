@@ -161,8 +161,10 @@ namespace LHZ.FastJson.UnitTest
         [Test]
         public void TestCustomSerialize()
         {
-            var str = (new JsonSerializer(new TestObj(), new JsonCustomConvert<TestObj>((TestObj o) => "CustomConvert"))).Serialize();
-            Assert.AreEqual(str, "\"CustomConvert\"");
+            var obj = new TestStructObj();
+            obj.Obj = new TestObj();
+            var str = new JsonSerializer(obj, new JsonCustomConvert<TestObj>(o => "\"CustomConvert\""), new JsonCustomConvert<int>(o=> (o+1).ToString())).Serialize();
+            Assert.AreEqual(str, "{\"Name\":null,\"Age\":1,\"Height\":0,\"Obj\":\"CustomConvert\"}");
         }
 
 

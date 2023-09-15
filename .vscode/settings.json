@@ -1,3 +1,9 @@
 {
-    "dotnet.defaultSolution": "src/LHZ.FastJson.sln"
+    "github.copilot.advanced": {},
+    "omnisharp.enableRoslynAnalyzers": true,
+    "dotnet.defaultSolution": "src/LHZ.FastJson.sln",
+    "dotnet.server.useOmnisharp": false,
+    "dotnet.unitTestDebuggingOptions": {
+        "type": "coreclr"
+    }
 }

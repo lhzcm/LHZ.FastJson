@@ -64,7 +64,7 @@ namespace LHZ.FastJson.Json.CustomConverter
         /// <returns>序列化字符串</returns>
         public string Serialize(T dist)
         {
-            return (new JsonSerializer(dist)).Serialize();
+            return _defaultSerializeFunc(dist);
         }
 
         /// <summary>
@@ -74,7 +74,7 @@ namespace LHZ.FastJson.Json.CustomConverter
         /// <returns>反序列化对象</returns>
         public T Deserialize(IJsonObject jsonObject)
         {
-            return JsonDeserialzerExpression<T>.Deserialzer(jsonObject);
+            return _defaultDeserializeFunc(jsonObject);
         }
 
         string IJsonCustomConverter.Serialize(object dist)
