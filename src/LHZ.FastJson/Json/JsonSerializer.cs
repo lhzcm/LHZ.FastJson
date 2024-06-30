@@ -142,6 +142,7 @@ namespace LHZ.FastJson.Json
 
             //expList.Add(Expression.IfThen(Expression.NotEqual(customConvertersFieldExp, Expression.Constant(null)), Expression.Block(customConvertersBody)));
             
+            
             //添加json对象类型左大括号
             expList.Add(Expression.Call(jsonStrBuilder, typeof(StringBuilder).GetMethod("Append", new Type[] { typeof(char) }), Expression.Constant('{')));
 
@@ -282,10 +283,12 @@ namespace LHZ.FastJson.Json
             }
 
             //自定义序列化对象
-            if(objectType == ObjectType.Dictionary || objectType == ObjectType.Enumerable || objectType == ObjectType.Object)
+            if(objectType == ObjectType.Object)
             {
-                var method = typeof(IJsonCustomConverter).GetMethod("Serialize");
+                var method = typeof(JsonSerializer).GetMethod("CustomConvert", BindingFlags.NonPublic | BindingFlags.Instance);
+                var customConvertMethod = method.MakeGenericMethod(objType);
 
+<<<<<<< HEAD
                 List<Expression> customeConverterExpList = new List<Expression>();
 
 
@@ -300,6 +303,9 @@ namespace LHZ.FastJson.Json
                 var callCoustomeConverterMethod = Expression.Call(jsonStrBuilder, typeof(StringBuilder).GetMethod("Append", new Type[] { typeof(string) }), Expression.Call(customConverter, method, objParameter));
                 customeConverterExpList.Add(Expression.IfThenElse(Expression.NotEqual(customConverter, Expression.Constant(null)), callCoustomeConverterMethod, exp));
                 exp = Expression.Block(new ParameterExpression[]{customConverter, jsonStrBuilder}, customeConverterExpList);
+=======
+                exp = Expression.IfThen(Expression.Equal(Expression.Call(thisObjParameter, customConvertMethod, obj), Expression.Constant(false)), exp);
+>>>>>>> 8a0d38a2ba36f1c2f8f4818a6eff5400c9f1b34e
             }
 
             var exp2 = Expression.Lambda<Action<JsonSerializer, object>>(exp, thisObjParameter, objParameter);
@@ -378,6 +384,18 @@ namespace LHZ.FastJson.Json
                 return ObjectType.Object;
         }
 
+        private bool CustomConvert<T>(T obj)
+        {
+            var type = typeof(T);
+            //自定义序列化
+            if(_customConverters?.TryGetValue(typeof(T), out IJsonCustomConverter converter) ?? false)
+            {
+                _jsonStrBuilder.Append(converter.Serialize(obj));
+                return true;
+            }
+            return false;
+        }
+
         /// <summary>
         /// bool类型序列化
         /// </summary>
@@ -385,10 +403,9 @@ namespace LHZ.FastJson.Json
         private void SerializeBoolean(bool obj)
         {
             //自定义序列化
-            var customConverter = _customConverters?[typeof(bool)];
-            if(customConverter != null)
+            if(_customConverters?.TryGetValue(typeof(bool), out IJsonCustomConverter converter) ?? false)
             {
-                _jsonStrBuilder.Append(customConverter.Serialize(obj));
+                _jsonStrBuilder.Append(converter.Serialize(obj));
                 return;
             }
             //默认序列化
@@ -405,10 +422,9 @@ namespace LHZ.FastJson.Json
         private void SerializeByte(byte obj)
         {
             //自定义序列化
-            var customConverter = _customConverters?[typeof(byte)];
-            if(customConverter != null)
+            if(_customConverters?.TryGetValue(typeof(byte), out IJsonCustomConverter converter) ?? false)
             {
-                _jsonStrBuilder.Append(customConverter.Serialize(obj));
+                _jsonStrBuilder.Append(converter.Serialize(obj));
                 return;
             }
             //默认序列化
@@ -422,10 +438,9 @@ namespace LHZ.FastJson.Json
         private void SerializeChar(char obj)
         {
             //自定义序列化
-            var customConverter = _customConverters?[typeof(char)];
-            if(customConverter != null)
+            if(_customConverters?.TryGetValue(typeof(char), out IJsonCustomConverter converter) ?? false)
             {
-                _jsonStrBuilder.Append(customConverter.Serialize(obj));
+                _jsonStrBuilder.Append(converter.Serialize(obj));
                 return;
             }
             //默认序列化
@@ -439,10 +454,9 @@ namespace LHZ.FastJson.Json
         private void SerializeInt16(short obj)
         {
             //自定义序列化
-            var customConverter = _customConverters?[typeof(short)];
-            if(customConverter != null)
+            if(_customConverters?.TryGetValue(typeof(short), out IJsonCustomConverter converter) ?? false)
             {
-                _jsonStrBuilder.Append(customConverter.Serialize(obj));
+                _jsonStrBuilder.Append(converter.Serialize(obj));
                 return;
             }
             //默认序列化
@@ -456,10 +470,9 @@ namespace LHZ.FastJson.Json
         private void SerializeUInt16(ushort obj)
         {
             //自定义序列化
-            var customConverter = _customConverters?[typeof(ushort)];
-            if(customConverter != null)
+            if(_customConverters?.TryGetValue(typeof(ushort), out IJsonCustomConverter converter) ?? false)
             {
-                _jsonStrBuilder.Append(customConverter.Serialize(obj));
+                _jsonStrBuilder.Append(converter.Serialize(obj));
                 return;
             }
             //默认序列化
@@ -473,6 +486,15 @@ namespace LHZ.FastJson.Json
         /// <param name="obj">需要序列化的对象</param>
         private void SerializeInt32(int obj)
         {
+<<<<<<< HEAD
+=======
+            //自定义序列化
+            if(_customConverters?.TryGetValue(typeof(int), out IJsonCustomConverter converter) ?? false)
+            {
+                _jsonStrBuilder.Append(converter.Serialize(obj));
+                return;
+            }
+>>>>>>> 8a0d38a2ba36f1c2f8f4818a6eff5400c9f1b34e
             //默认序列化
             _jsonStrBuilder.Append(obj.ToString());
         }
@@ -484,10 +506,9 @@ namespace LHZ.FastJson.Json
         private void SerializeUInt32(uint obj)
         {
             //自定义序列化
-            var customConverter = _customConverters?[typeof(uint)];
-            if(customConverter != null)
+            if(_customConverters?.TryGetValue(typeof(uint), out IJsonCustomConverter converter) ?? false)
             {
-                _jsonStrBuilder.Append(customConverter.Serialize(obj));
+                _jsonStrBuilder.Append(converter.Serialize(obj));
                 return;
             }
             //默认序列化
@@ -501,10 +522,9 @@ namespace LHZ.FastJson.Json
         private void SerializeInt64(long obj)
         {
             //自定义序列化
-            var customConverter = _customConverters?[typeof(long)];
-            if(customConverter != null)
+            if(_customConverters?.TryGetValue(typeof(long), out IJsonCustomConverter converter) ?? false)
             {
-                _jsonStrBuilder.Append(customConverter.Serialize(obj));
+                _jsonStrBuilder.Append(converter.Serialize(obj));
                 return;
             }
             //默认序列化
@@ -518,10 +538,9 @@ namespace LHZ.FastJson.Json
         private void SerializeUInt64(ulong obj)
         {
             //自定义序列化
-            var customConverter = _customConverters?[typeof(ulong)];
-            if(customConverter != null)
+            if(_customConverters?.TryGetValue(typeof(ulong), out IJsonCustomConverter converter) ?? false)
             {
-                _jsonStrBuilder.Append(customConverter.Serialize(obj));
+                _jsonStrBuilder.Append(converter.Serialize(obj));
                 return;
             }
             //默认序列化
@@ -535,10 +554,9 @@ namespace LHZ.FastJson.Json
         private void SerializeFloat(float obj)
         {
             //自定义序列化
-            var customConverter = _customConverters?[typeof(float)];
-            if(customConverter != null)
+           if(_customConverters?.TryGetValue(typeof(float), out IJsonCustomConverter converter) ?? false)
             {
-                _jsonStrBuilder.Append(customConverter.Serialize(obj));
+                _jsonStrBuilder.Append(converter.Serialize(obj));
                 return;
             }
             //默认序列化
@@ -552,10 +570,9 @@ namespace LHZ.FastJson.Json
         private void SerializeDouble(double obj)
         {
             //自定义序列化
-            var customConverter = _customConverters?[typeof(double)];
-            if(customConverter != null)
+            if(_customConverters?.TryGetValue(typeof(double), out IJsonCustomConverter converter) ?? false)
             {
-                _jsonStrBuilder.Append(customConverter.Serialize(obj));
+                _jsonStrBuilder.Append(converter.Serialize(obj));
                 return;
             }
             //默认序列化
@@ -564,10 +581,9 @@ namespace LHZ.FastJson.Json
         private void SerializeDecimal(decimal obj)
         {
             //自定义序列化
-            var customConverter = _customConverters?[typeof(decimal)];
-            if(customConverter != null)
+            if(_customConverters?.TryGetValue(typeof(decimal), out IJsonCustomConverter converter) ?? false)
             {
-                _jsonStrBuilder.Append(customConverter.Serialize(obj));
+                _jsonStrBuilder.Append(converter.Serialize(obj));
                 return;
             }
             //默认序列化
@@ -580,10 +596,9 @@ namespace LHZ.FastJson.Json
         private void SerializeDateTime(DateTime obj)
         {
             //自定义序列化
-            var customConverter = _customConverters?[typeof(DateTime)];
-            if(customConverter != null)
+           if(_customConverters?.TryGetValue(typeof(DateTime), out IJsonCustomConverter converter) ?? false)
             {
-                _jsonStrBuilder.Append(customConverter.Serialize(obj));
+                _jsonStrBuilder.Append(converter.Serialize(obj));
                 return;
             }
             //默认序列化
@@ -606,10 +621,9 @@ namespace LHZ.FastJson.Json
         private void SerializeEnum(object obj, Type type)
         {
             //自定义序列化
-            var customConverter = _customConverters?[type];
-            if(customConverter != null)
+           if(_customConverters?.TryGetValue(type, out IJsonCustomConverter converter) ?? false)
             {
-                _jsonStrBuilder.Append(customConverter.Serialize(obj));
+                _jsonStrBuilder.Append(converter.Serialize(obj));
                 return;
             }
             //默认序列化
@@ -626,10 +640,9 @@ namespace LHZ.FastJson.Json
                 throw new Exception("当前对象不能转化成string类型");
             }
             //自定义序列化
-            var customConverter = _customConverters?[typeof(string)];
-            if(customConverter != null)
+            if(_customConverters?.TryGetValue(typeof(string), out IJsonCustomConverter converter) ?? false)
             {
-                _jsonStrBuilder.Append(customConverter.Serialize(obj));
+                _jsonStrBuilder.Append(converter.Serialize(obj));
                 return;
             }
             //默认序列化
@@ -689,12 +702,12 @@ namespace LHZ.FastJson.Json
         private void SerializeDictionary(IDictionary obj)
         {
             //自定义序列化
-            var customConverter = _customConverters?[obj.GetType()];
-            if (customConverter != null)
+            if(_customConverters?.TryGetValue(obj.GetType(), out IJsonCustomConverter converter) ?? false)
             {
-                _jsonStrBuilder.Append(customConverter.Serialize(obj));
+                _jsonStrBuilder.Append(converter.Serialize(obj));
                 return;
             }
+            //默认序列化
             _jsonStrBuilder.Append('{');
             int i = 0;
             foreach (DictionaryEntry item in obj)
@@ -716,10 +729,9 @@ namespace LHZ.FastJson.Json
         private void SerializeEnumerable(IEnumerable obj)
         {
             //自定义序列化
-            var customConverter = _customConverters?[obj.GetType()];
-            if(customConverter != null)
+            if(_customConverters?.TryGetValue(obj.GetType(), out IJsonCustomConverter converter) ?? false)
             {
-                _jsonStrBuilder.Append(customConverter.Serialize(obj));
+                _jsonStrBuilder.Append(converter.Serialize(obj));
                 return;
             }
             //默认序列化
@@ -759,6 +771,7 @@ namespace LHZ.FastJson.Json
         {
             return _objStack;
         }
+<<<<<<< HEAD
         private IJsonCustomConverter GetCustomConverter(Type type)
         {
             if (_customConverters == null)
@@ -772,6 +785,8 @@ namespace LHZ.FastJson.Json
             }
             return null;
         }
+=======
+>>>>>>> 8a0d38a2ba36f1c2f8f4818a6eff5400c9f1b34e
 
         /// <summary>
         /// 字符转义
