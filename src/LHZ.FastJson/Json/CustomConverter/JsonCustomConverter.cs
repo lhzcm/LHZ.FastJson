@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LHZ.FastJson.Enum.CustomConverter;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,9 +13,10 @@ namespace LHZ.FastJson.Json.CustomConverter
     /// <typeparam name="T">类型</typeparam>
     public sealed class JsonCustomConvert<T> : IJsonCustomConverter
     {
-        private Func<T, string> _defaultSerializeFunc = (T dist) => (new JsonSerializer(dist)).Serialize();
-        private Func<IJsonObject, T> _defaultDeserializeFunc = (IJsonObject jsonObject) => JsonDeserialzerExpression<T>.Deserialzer(jsonObject);
-
+        private Func<T, string> _serializeFunc = (T dist) => (new JsonSerializer(dist)).Serialize();
+        private Func<IJsonObject, T> _deserializeFunc = (IJsonObject jsonObject) => JsonDeserialzerExpression<T>.Deserialzer(jsonObject);
+        private readonly Type _type = typeof(T);
+        private readonly JsonCustomConvertItem _item = JsonCustomConvertItem.None;
         public JsonCustomConvert()
         {
         }
@@ -25,7 +27,8 @@ namespace LHZ.FastJson.Json.CustomConverter
             {
                 throw new ArgumentNullException(nameof(customSerializeMethod));
             }
-            _defaultSerializeFunc = customSerializeMethod;
+            _item = JsonCustomConvertItem.CustomSerialize;
+            _serializeFunc = customSerializeMethod;
         }
 
         public JsonCustomConvert(Func<IJsonObject, T> customDeserializeMethod)
@@ -34,28 +37,37 @@ namespace LHZ.FastJson.Json.CustomConverter
             {
                 throw new ArgumentNullException(nameof(customDeserializeMethod));
             }
-            _defaultDeserializeFunc = customDeserializeMethod;
+            _item = JsonCustomConvertItem.CustomDeSerialize;
+            _deserializeFunc = customDeserializeMethod;
         }
 
         public JsonCustomConvert(Func<T, string> customSerializeMethod, Func<IJsonObject, T> customDeserializeMethod)
         {
+            _item = JsonCustomConvertItem.All;
             if (customDeserializeMethod == null)
             {
                 throw new ArgumentNullException(nameof(customDeserializeMethod));
             }
-            _defaultDeserializeFunc = customDeserializeMethod;
-
+            _serializeFunc = customSerializeMethod;
             if (customSerializeMethod == null)
             {
                 throw new ArgumentNullException(nameof(customSerializeMethod));
             }
-            _defaultSerializeFunc = customSerializeMethod;
+            _deserializeFunc = customDeserializeMethod;
         }
 
         /// <summary>
         /// 自定义转换的类型
         /// </summary>
-        public Type ConvertType => typeof(T);
+        public Type ConvertType => _type;
+
+        Type IJsonCustomConverter.ConvertType => _type;
+
+        /// <summary>
+        /// 自定义转换项
+        /// </summary>
+        public JsonCustomConvertItem CustomItem => _item;
+        JsonCustomConvertItem IJsonCustomConverter.CustomItem => _item;
 
         /// <summary>
         /// 自定义序列化方法
@@ -64,7 +76,7 @@ namespace LHZ.FastJson.Json.CustomConverter
         /// <returns>序列化字符串</returns>
         public string Serialize(T dist)
         {
-            return (new JsonSerializer(dist)).Serialize();
+            return _serializeFunc(dist);
         }
 
         /// <summary>

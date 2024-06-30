@@ -1,4 +1,5 @@
 ﻿using LHZ.FastJson.Enum;
+using LHZ.FastJson.Enum.CustomConverter;
 using LHZ.FastJson.Json.Attributes;
 using LHZ.FastJson.Json.CustomConverter;
 using LHZ.FastJson.Json.Format;
@@ -9,6 +10,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
+using System.Xml.Schema;
 
 namespace LHZ.FastJson.Json
 {
@@ -42,9 +44,13 @@ namespace LHZ.FastJson.Json
             this._obj = obj;
             if(jsonCustomConverters != null && jsonCustomConverters.Length > 0)
             {
-                _customConverters = new Dictionary<Type, IJsonCustomConverter>(jsonCustomConverters.Length);
+                _customConverters = new Dictionary<Type, IJsonCustomConverter>(jsonCustomConverters.Length + 4);
                 foreach(var item in jsonCustomConverters)
                 {
+                    if ((item.CustomItem & Enum.CustomConverter.JsonCustomConvertItem.CustomSerialize) != Enum.CustomConverter.JsonCustomConvertItem.CustomSerialize)
+                    {
+                        continue;
+                    }
                     if(_customConverters.ContainsKey(item.ConvertType))
                     {
                         _customConverters[item.ConvertType] = item;
@@ -108,7 +114,9 @@ namespace LHZ.FastJson.Json
             var obj = Expression.Parameter(objType, "obj");
             //表达式列表
             List<Expression> expList = new List<Expression>();
-            
+            //最结尾的跳转LabelTarget
+            LabelTarget endLabelTarget = Expression.Label("endLabelTarget");
+
             //是否可能循环引用
             bool maybeCircularReference = false;
             //获取属性
@@ -126,6 +134,13 @@ namespace LHZ.FastJson.Json
             //变量赋值
             expList.Add(Expression.Assign(obj, Expression.Convert(objParameter, objType)));
             expList.Add(Expression.Assign(jsonStrBuilder, Expression.Call(thisObjParameter, ((Func<StringBuilder>) GetStringBuilder).Method)));
+
+            ////自定义json格式（添加到上一层实现）
+            //List<Expression> customConvertersBody = new List<Expression>();
+            //var customConvertersField = typeof(JsonSerializer).GetField("_customConverters", BindingFlags.NonPublic | BindingFlags.Instance);
+            //var customConvertersFieldExp = Expression.Field(thisObjParameter, customConvertersField);
+
+            //expList.Add(Expression.IfThen(Expression.NotEqual(customConvertersFieldExp, Expression.Constant(null)), Expression.Block(customConvertersBody)));
             
             //添加json对象类型左大括号
             expList.Add(Expression.Call(jsonStrBuilder, typeof(StringBuilder).GetMethod("Append", new Type[] { typeof(char) }), Expression.Constant('{')));
@@ -216,6 +231,8 @@ namespace LHZ.FastJson.Json
                 expList.Insert(2, Expression.Call(stack, typeof(Stack<object>).GetMethod("Push", new Type[]{ typeof(object) }), objParameter));
                 expList.Add(Expression.Call(stack, typeof(Stack<object>).GetMethod("Pop")));
             }
+            //最后加上结尾标签
+            expList.Add(Expression.Label(endLabelTarget));
 
             expList.Add(Expression.Call(jsonStrBuilder, typeof(StringBuilder).GetMethod("Append", new Type[] { typeof(string) }), Expression.Constant("}")));
             return  Expression.Lambda<Action<JsonSerializer, object>>(Expression.Block(new ParameterExpression[] { obj, jsonStrBuilder, stack}, expList), thisObjParameter, objParameter);
@@ -269,13 +286,24 @@ namespace LHZ.FastJson.Json
             {
                 var method = typeof(IJsonCustomConverter).GetMethod("Serialize");
 
-                List<Expression> expressionCodes = new List<Expression>();
-               
+                List<Expression> customeConverterExpList = new List<Expression>();
+
+
+                //var customConvertersField = typeof(JsonSerializer).GetField("_customConverters", BindingFlags.NonPublic | BindingFlags.Instance);
+                //var customConvertersFieldExp = Expression.Field(thisObjParameter, customConvertersField);
+
                 var customConverter = Expression.Variable(typeof(IJsonCustomConverter), "customConverter");
-                expressionCodes.Add(Expression.Assign(customConverter, Expression.Call(thisObjParameter,((Func<Type, IJsonCustomConverter>)GetCustomConverter).Method, Expression.Constant(objType))));
-                expressionCodes.Add(Expression.IfThenElse(Expression.NotEqual(customConverter, Expression.Constant(null)), Expression.Call(customConverter, method, objParameter), exp));
-                exp = Expression.Block(new ParameterExpression[]{customConverter}, expressionCodes);
+                var jsonStrBuilder = Expression.Variable(typeof(StringBuilder), "customConverter");
+
+                customeConverterExpList.Add(Expression.Assign(customConverter, Expression.Call(thisObjParameter,((Func<Type, IJsonCustomConverter>)GetCustomConverter).Method, Expression.Constant(objType))));
+                customeConverterExpList.Add(Expression.Assign(jsonStrBuilder, Expression.Call(thisObjParameter, ((Func<StringBuilder>)GetStringBuilder).Method)));
+                var callCoustomeConverterMethod = Expression.Call(jsonStrBuilder, typeof(StringBuilder).GetMethod("Append", new Type[] { typeof(string) }), Expression.Call(customConverter, method, objParameter));
+                customeConverterExpList.Add(Expression.IfThenElse(Expression.NotEqual(customConverter, Expression.Constant(null)), callCoustomeConverterMethod, exp));
+                exp = Expression.Block(new ParameterExpression[]{customConverter, jsonStrBuilder}, customeConverterExpList);
             }
+
+            var exp2 = Expression.Lambda<Action<JsonSerializer, object>>(exp, thisObjParameter, objParameter);
+
 
             return Expression.Lambda<Action<JsonSerializer, object>>(exp, thisObjParameter, objParameter);
         }
@@ -445,13 +473,6 @@ namespace LHZ.FastJson.Json
         /// <param name="obj">需要序列化的对象</param>
         private void SerializeInt32(int obj)
         {
-            //自定义序列化
-            var customConverter = _customConverters?[typeof(int)];
-            if(customConverter != null)
-            {
-                _jsonStrBuilder.Append(customConverter.Serialize(obj));
-                return;
-            }
             //默认序列化
             _jsonStrBuilder.Append(obj.ToString());
         }
@@ -740,7 +761,16 @@ namespace LHZ.FastJson.Json
         }
         private IJsonCustomConverter GetCustomConverter(Type type)
         {
-            return _customConverters?[type];
+            if (_customConverters == null)
+            {
+                return null;
+            }
+            IJsonCustomConverter converter = null;
+            if (_customConverters.TryGetValue(type, out converter) && (converter.CustomItem & JsonCustomConvertItem.CustomSerialize) == JsonCustomConvertItem.CustomSerialize)
+            {
+                return converter;
+            }
+            return null;
         }
 
         /// <summary>
