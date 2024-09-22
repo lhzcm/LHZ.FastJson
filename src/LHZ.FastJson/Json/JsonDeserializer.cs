@@ -1,5 +1,6 @@
 ﻿using LHZ.FastJson.Enum;
 using LHZ.FastJson.Exceptions;
+using LHZ.FastJson.Interface;
 using LHZ.FastJson.JsonClass;
 using System;
 using System.Collections;
@@ -13,7 +14,7 @@ using System.Reflection.Emit;
 using System.Text;
 
 namespace LHZ.FastJson.Json
-{ 
+{
     /// <summary>
     /// 反序列化类
     /// </summary>
@@ -39,9 +40,29 @@ namespace LHZ.FastJson.Json
         /// 进行反序列化
         /// </summary>
         /// <returns>返回反序列化类型对象</returns>
-        public T Deserialize()
+        public T Deserialize(params IJsonCustomConverter[] jsonCustomConverters)
         {
-            return JsonDeserialzerExpression<T>.Deserialzer(_obj);
+            Dictionary<Type, IJsonCustomConverter> customConverters = null;
+            if (jsonCustomConverters != null && jsonCustomConverters.Length > 0)
+            {
+                customConverters = new Dictionary<Type, IJsonCustomConverter>(jsonCustomConverters.Length + 4);
+                foreach (var item in jsonCustomConverters)
+                {
+                    if ((item.CustomItem & Enum.CustomConverter.JsonCustomConvertItem.CustomDeSerialize) != Enum.CustomConverter.JsonCustomConvertItem.CustomDeSerialize)
+                    {
+                        continue;
+                    }
+                    if (customConverters.ContainsKey(item.ConvertType))
+                    {
+                        customConverters[item.ConvertType] = item;
+                    }
+                    else
+                    {
+                        customConverters.Add(item.ConvertType, item);
+                    }
+                }
+            }
+            return JsonDeserialzerExpression<T>.Deserialzer(_obj, customConverters);
         }
     }
 }

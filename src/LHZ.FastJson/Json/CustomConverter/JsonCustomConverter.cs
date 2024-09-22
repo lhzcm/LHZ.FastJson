@@ -1,4 +1,6 @@
 ﻿using LHZ.FastJson.Enum.CustomConverter;
+using LHZ.FastJson.Exceptions;
+using LHZ.FastJson.Interface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,11 +19,12 @@ namespace LHZ.FastJson.Json.CustomConverter
         private Func<IJsonObject, T> _deserializeFunc = (IJsonObject jsonObject) => JsonDeserialzerExpression<T>.Deserialzer(jsonObject);
         private readonly Type _type = typeof(T);
         private readonly JsonCustomConvertItem _item = JsonCustomConvertItem.None;
+        private readonly bool _serializeValidate = false;
         public JsonCustomConvert()
         {
         }
 
-        public JsonCustomConvert(Func<T, string> customSerializeMethod)
+        public JsonCustomConvert(Func<T, string> customSerializeMethod, bool serializeValidate = false)
         {
             if (customSerializeMethod == null)
             {
@@ -29,6 +32,7 @@ namespace LHZ.FastJson.Json.CustomConverter
             }
             _item = JsonCustomConvertItem.CustomSerialize;
             _serializeFunc = customSerializeMethod;
+            _serializeValidate = serializeValidate;
         }
 
         public JsonCustomConvert(Func<IJsonObject, T> customDeserializeMethod)
@@ -76,6 +80,11 @@ namespace LHZ.FastJson.Json.CustomConverter
         /// <returns>序列化字符串</returns>
         public string Serialize(T dist)
         {
+            var jsonStr = _serializeFunc(dist);
+            if (_serializeValidate&& !JsonReader.IsJsonString(jsonStr, out Exception readEx))
+            {
+                throw new JsonCustomConverterException(this, "该自定义序列化方法序列化出来的Json字符串是无效的Json字符串", readEx);
+            }
             return _serializeFunc(dist);
         }
 
@@ -86,7 +95,7 @@ namespace LHZ.FastJson.Json.CustomConverter
         /// <returns>反序列化对象</returns>
         public T Deserialize(IJsonObject jsonObject)
         {
-            return JsonDeserialzerExpression<T>.Deserialzer(jsonObject);
+            return _deserializeFunc(jsonObject);
         }
 
         string IJsonCustomConverter.Serialize(object dist)

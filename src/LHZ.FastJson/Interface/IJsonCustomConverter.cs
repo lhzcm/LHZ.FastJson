@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace LHZ.FastJson.Json.CustomConverter
+namespace LHZ.FastJson.Interface
 {
     // /// <summary>
     // /// 自定义转换类型
@@ -55,6 +55,6 @@ namespace LHZ.FastJson.Json.CustomConverter
         /// <summary>
         /// 包含的自定义项（序列化|反序列化）
         /// </summary>
-        JsonCustomConvertItem CustomItem{get;}
+        JsonCustomConvertItem CustomItem { get; }
     }
 }

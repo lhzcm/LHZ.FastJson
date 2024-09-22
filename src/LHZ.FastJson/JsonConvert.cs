@@ -1,4 +1,5 @@
-﻿using LHZ.FastJson.Json;
+﻿using LHZ.FastJson.Interface;
+using LHZ.FastJson.Json;
 using LHZ.FastJson.Json.Format;
 using LHZ.FastJson.JsonClass;
 using System;
@@ -56,6 +57,17 @@ namespace LHZ.FastJson
         {
             JsonDeserializer<T> deserializer = new JsonDeserializer<T>(jsonString);
             return deserializer.Deserialize();
+        }
+        /// <summary>
+        /// Json字符串反序列化成T类型
+        /// </summary>
+        /// <typeparam name="T">反序列化目标类型</typeparam>
+        /// <param name="jsonString">JsonObject类型</param>
+        /// <returns>反序列化目标对象</returns>
+        public static T Deserialize<T>(string jsonString, params IJsonCustomConverter[] jsonCustomConverters)
+        {
+            JsonDeserializer<T> deserializer = new JsonDeserializer<T>(jsonString);
+            return deserializer.Deserialize(jsonCustomConverters);
         }
 
         /// <summary>

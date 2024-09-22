@@ -1,7 +1,7 @@
 ﻿using LHZ.FastJson.Enum;
 using LHZ.FastJson.Enum.CustomConverter;
+using LHZ.FastJson.Interface;
 using LHZ.FastJson.Json.Attributes;
-using LHZ.FastJson.Json.CustomConverter;
 using LHZ.FastJson.Json.Format;
 using System;
 using System.Collections;
