@@ -1,10 +1,13 @@
 ﻿using LHZ.FastJson.Json;
+using LHZ.FastJson.Json.CustomConverter;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
+using static LHZ.FastJson.UnitTest.TestJsonSerizlizer;
 
 namespace LHZ.FastJson.UnitTest
 {
@@ -213,6 +216,15 @@ namespace LHZ.FastJson.UnitTest
             var testStr = @"{""Name"":""test"",""Age"":10,""Height"":170}";
             var testObj = LHZ.FastJson.JsonConvert.Deserialize<TestJsonTgnoredClass>(testStr);
             Assert.AreEqual(testObj.Height, 0);
+        }
+
+        [Test]
+        public void TestCustomSerialize()
+        {
+            var jsonStr = "{\"Id\":1, \"Name\":\"tom\"}";
+            var obj = JsonConvert.Deserialize<TestObjClass>(jsonStr, new JsonCustomConvert<int>(n=> 2));
+           
+            Assert.AreEqual(obj.Id, 2);
         }
 
     }

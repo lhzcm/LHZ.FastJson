@@ -6,6 +6,7 @@ using System.Text;
 
 namespace LHZ.FastJson.Json.Format
 {
+    [Obsolete]
     public interface IJsonFormat
     {
          ObjectType Type { get;}

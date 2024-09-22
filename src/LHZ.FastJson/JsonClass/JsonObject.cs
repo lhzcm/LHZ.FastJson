@@ -36,7 +36,7 @@ namespace LHZ.FastJson.JsonClass
                 IJsonObject result = null;
                 if (this.Type != JsonType.Content)
                 {
-                    return result;
+                    throw new InvalidOperationException($"{this.Type}并非是{JsonType.Content}无法调用该索引方法！");
                 }
                ((Dictionary<string, IJsonObject>)this.Value).TryGetValue(index, out result);
                 return result;
@@ -52,12 +52,25 @@ namespace LHZ.FastJson.JsonClass
             get
             {
                 IJsonObject result = null;
-                if (this.Type != JsonType.Array)
+                if (this.Type == JsonType.Array)
                 {
+                    result = ((List<IJsonObject>)this.Value)[index];
                     return result;
                 }
-                result = ((List<IJsonObject>)this.Value)[index];
-                return result;
+                else if (this.Type == JsonType.Content)
+                {
+                    int i = 0;
+                    foreach (var item in (Dictionary<string, IJsonObject>)this.Value)
+                    {
+                        if (index == i)
+                        {
+                            return item.Value;
+                        }
+                        i++;
+                    }
+                    throw new ArgumentOutOfRangeException();
+                }
+                throw new InvalidOperationException($"{this.Type}并非是{JsonType.Array}或{JsonType.Content}无法调用该索引方法！");
             }
         }
 

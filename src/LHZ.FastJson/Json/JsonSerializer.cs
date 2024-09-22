@@ -1,4 +1,6 @@
 ﻿using LHZ.FastJson.Enum;
+using LHZ.FastJson.Enum.CustomConverter;
+using LHZ.FastJson.Interface;
 using LHZ.FastJson.Json.Attributes;
 using LHZ.FastJson.Json.Format;
 using System;
@@ -8,13 +10,18 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
+using System.Xml.Schema;
 
 namespace LHZ.FastJson.Json
 {
+    /// <summary>
+    /// Json序列化类
+    /// </summary>
     public class JsonSerializer
     {
         private StringBuilder _jsonStrBuilder = new StringBuilder(128);
         private Stack<object> _objStack = new Stack<object>();
+        [Obsolete]
         private JsonFormatter _formater;
 
         private static readonly Dictionary<Type, ObjectType> _objectTypes = JsonObjectType.GetObjectTypes();
@@ -22,15 +29,41 @@ namespace LHZ.FastJson.Json
 
         private object _obj;
 
+        private Dictionary<Type, IJsonCustomConverter> _customConverters;
+
         public JsonSerializer(object obj)
         {
             this._obj = obj;
         }
-
+        [Obsolete]
         public JsonSerializer(object obj, IJsonFormat[] formats)
         {
             this._obj = obj;
             this._formater = new JsonFormatter(formats);
+        }
+
+        public JsonSerializer(object obj, params IJsonCustomConverter[] jsonCustomConverters)
+        {
+            this._obj = obj;
+            if(jsonCustomConverters != null && jsonCustomConverters.Length > 0)
+            {
+                _customConverters = new Dictionary<Type, IJsonCustomConverter>(jsonCustomConverters.Length + 4);
+                foreach(var item in jsonCustomConverters)
+                {
+                    if ((item.CustomItem & Enum.CustomConverter.JsonCustomConvertItem.CustomSerialize) != Enum.CustomConverter.JsonCustomConvertItem.CustomSerialize)
+                    {
+                        continue;
+                    }
+                    if(_customConverters.ContainsKey(item.ConvertType))
+                    {
+                        _customConverters[item.ConvertType] = item;
+                    }
+                    else
+                    {
+                        _customConverters.Add(item.ConvertType, item);
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -55,8 +88,7 @@ namespace LHZ.FastJson.Json
         /// <returns>对象序列化委托方法</returns>
         private Action<JsonSerializer, object> GetSerializationAction(Type objType)
         {
-            Action<JsonSerializer, object> act = null;
-            if (_serializationActions.TryGetValue(objType, out act))
+            if (_serializationActions.TryGetValue(objType, out Action<JsonSerializer, object> act))
             {
                 return act;
             }
@@ -85,7 +117,8 @@ namespace LHZ.FastJson.Json
             var obj = Expression.Parameter(objType, "obj");
             //表达式列表
             List<Expression> expList = new List<Expression>();
-            
+            //最结尾的跳转LabelTarget
+            LabelTarget endLabelTarget = Expression.Label("endLabelTarget");
 
             //是否可能循环引用
             bool maybeCircularReference = false;
@@ -94,8 +127,7 @@ namespace LHZ.FastJson.Json
                 if (!n.CanRead)
                     return false;
                 //判断是否忽略序列化
-                var jsonIgnored = Attribute.GetCustomAttribute(n, typeof(JsonIgnoredAttribute)) as JsonIgnoredAttribute;
-                if (jsonIgnored != null && (jsonIgnored.JsonIgnoredMethod & JsonMethods.Serialize) == JsonMethods.Serialize)
+                if (Attribute.GetCustomAttribute(n, typeof(JsonIgnoredAttribute)) is JsonIgnoredAttribute jsonIgnored && (jsonIgnored.JsonIgnoredMethod & JsonMethods.Serialize) == JsonMethods.Serialize)
                 {
                     return false;
                 }
@@ -105,15 +137,21 @@ namespace LHZ.FastJson.Json
             //变量赋值
             expList.Add(Expression.Assign(obj, Expression.Convert(objParameter, objType)));
             expList.Add(Expression.Assign(jsonStrBuilder, Expression.Call(thisObjParameter, ((Func<StringBuilder>) GetStringBuilder).Method)));
-            
-            
 
-            expList.Add(Expression.Call(jsonStrBuilder, typeof(StringBuilder).GetMethod("Append", new Type[] { typeof(string) }), Expression.Constant("{")));
+            ////自定义json格式（添加到上一层实现）
+            //List<Expression> customConvertersBody = new List<Expression>();
+            //var customConvertersField = typeof(JsonSerializer).GetField("_customConverters", BindingFlags.NonPublic | BindingFlags.Instance);
+            //var customConvertersFieldExp = Expression.Field(thisObjParameter, customConvertersField);
+
+            //expList.Add(Expression.IfThen(Expression.NotEqual(customConvertersFieldExp, Expression.Constant(null)), Expression.Block(customConvertersBody)));
+            
+            //添加json对象类型左大括号
+            expList.Add(Expression.Call(jsonStrBuilder, typeof(StringBuilder).GetMethod("Append", new Type[] { typeof(char) }), Expression.Constant('{')));
 
             foreach (var item in properties)
             {
-                
-                ObjectType objectType = GetObjectType(item.PropertyType);
+                var propertyType = item.PropertyType;
+                ObjectType objectType = GetObjectType(propertyType);
                 Expression exp = null;
                 Func<Type, Action<JsonSerializer, object>> sact = GetSerializationAction;
 
@@ -134,7 +172,7 @@ namespace LHZ.FastJson.Json
                     case ObjectType.Double: exp = Expression.Call(thisObjParameter, ((Action<double>)SerializeDouble).Method, Expression.Property(obj, item.Name)); break;
                     case ObjectType.Decimal: exp = Expression.Call(thisObjParameter, ((Action<decimal>)SerializeDecimal).Method, Expression.Property(obj, item.Name)); break;
                     case ObjectType.DateTime: exp = Expression.Call(thisObjParameter, ((Action<DateTime>)SerializeDateTime).Method, Expression.Property(obj, item.Name)); break;
-                    case ObjectType.Enum: exp = Expression.Call(thisObjParameter, ((Action<object>)SerializeEnum).Method, Expression.Property(obj, item.Name)); break;
+                    case ObjectType.Enum: exp = Expression.Call(thisObjParameter, ((Action<object, Type>)SerializeEnum).Method, Expression.Property(obj, item.Name), Expression.Constant(propertyType)); break;
                     case ObjectType.String: exp = Expression.Call(thisObjParameter, ((Action<string>)SerializeString).Method, Expression.Property(obj, item.Name)); break;
                     case ObjectType.Dictionary:
                         {
@@ -155,9 +193,25 @@ namespace LHZ.FastJson.Json
                             break;
                         }
                 }
+                ////获取属性类型序列化 (该方法不会判断每个对象真实的类型)
+                // var expressionMethods = this.GetType().GetMethods((BindingFlags) 0x7FFFFFFF).First(n => n.Name == "CreateSerializationExpression" && n.IsGenericMethod).MakeGenericMethod(item.PropertyType);
+                // var serializationExpression = expressionMethods.Invoke(this, null) as Expression;
+                // exp = Expression.Invoke(serializationExpression, new Expression[]{thisObjParameter, Expression.Property(obj, item.Name)});
+
+                if(objectType == ObjectType.Dictionary || objectType == ObjectType.Enumerable || objectType == ObjectType.Object)
+                {
+                    maybeCircularReference = true;
+                }
+
                 //判断引用类型是否为空
                 if (objectType == ObjectType.String || objectType == ObjectType.Dictionary || objectType == ObjectType.Enumerable || objectType == ObjectType.Object)
                 {
+                    //需要进行循环引用判断
+                    if(objectType != ObjectType.String)
+                    {
+                        maybeCircularReference = true;
+                    }
+                    //进行null判断
                     var propertyNull = Expression.Call(jsonStrBuilder, typeof(StringBuilder).GetMethod("Append", new Type[] { typeof(string) }), Expression.Constant("null"));
                     exp = Expression.IfThenElse(Expression.Equal(Expression.Property(obj, item.Name), Expression.Constant(null)), propertyNull, exp);
                 }
@@ -180,6 +234,8 @@ namespace LHZ.FastJson.Json
                 expList.Insert(2, Expression.Call(stack, typeof(Stack<object>).GetMethod("Push", new Type[]{ typeof(object) }), objParameter));
                 expList.Add(Expression.Call(stack, typeof(Stack<object>).GetMethod("Pop")));
             }
+            //最后加上结尾标签
+            expList.Add(Expression.Label(endLabelTarget));
 
             expList.Add(Expression.Call(jsonStrBuilder, typeof(StringBuilder).GetMethod("Append", new Type[] { typeof(string) }), Expression.Constant("}")));
             return  Expression.Lambda<Action<JsonSerializer, object>>(Expression.Block(new ParameterExpression[] { obj, jsonStrBuilder, stack}, expList), thisObjParameter, objParameter);
@@ -198,12 +254,14 @@ namespace LHZ.FastJson.Json
             var objParameter = Expression.Parameter(typeof(object));
             //对象进行转换
             var obj = Expression.Convert(objParameter, objType);
-           
+            
+        
             //表达式
             Expression exp = null;
-            
 
             ObjectType objectType = GetObjectType(objType);
+            
+            
             switch (objectType)
             {
                 case ObjectType.Boolean: exp = Expression.Call(thisObjParameter, ((Action<bool>)SerializeBoolean).Method, obj); break;
@@ -219,14 +277,79 @@ namespace LHZ.FastJson.Json
                 case ObjectType.Double: exp = Expression.Call(thisObjParameter, ((Action<double>)SerializeDouble).Method, obj); break;
                 case ObjectType.Decimal: exp = Expression.Call(thisObjParameter, ((Action<decimal>)SerializeDecimal).Method, obj); break;
                 case ObjectType.DateTime: exp = Expression.Call(thisObjParameter, ((Action<DateTime>)SerializeDateTime).Method, obj); break;
-                case ObjectType.Enum: exp = Expression.Call(thisObjParameter, ((Action<object>)SerializeEnum).Method, obj); break;
+                case ObjectType.Enum: exp = Expression.Call(thisObjParameter, ((Action<object, Type>)SerializeEnum).Method, obj, Expression.Constant(objType)); break;
                 case ObjectType.String: exp = Expression.Call(thisObjParameter, ((Action<string>)SerializeString).Method, obj); break;
                 case ObjectType.Dictionary: exp = Expression.Call(thisObjParameter, ((Action<IDictionary>)SerializeDictionary).Method, obj); break;
                 case ObjectType.Enumerable: exp = Expression.Call(thisObjParameter, ((Action<IEnumerable>)SerializeEnumerable).Method, obj); break;
                 default: exp = Expression.Invoke(CreateObjectSerializationExpression(objType), thisObjParameter, objParameter); break;
             }
- 
+
+            #region 自定义序列化
+            //自定义序列化对象
+            var method = typeof(IJsonCustomConverter).GetMethod("Serialize");
+
+            List<Expression> customeConverterExpList = new List<Expression>();
+            //var customConvertersField = typeof(JsonSerializer).GetField("_customConverters", BindingFlags.NonPublic | BindingFlags.Instance);
+            //var customConvertersFieldExp = Expression.Field(thisObjParameter, customConvertersField);
+
+            var customConverter = Expression.Variable(typeof(IJsonCustomConverter), "customConverter");
+            var jsonStrBuilder = Expression.Variable(typeof(StringBuilder), "customConverter");
+
+            customeConverterExpList.Add(Expression.Assign(customConverter, Expression.Call(thisObjParameter, ((Func<Type, IJsonCustomConverter>)GetCustomConverter).Method, Expression.Constant(objType))));
+            customeConverterExpList.Add(Expression.Assign(jsonStrBuilder, Expression.Call(thisObjParameter, ((Func<StringBuilder>)GetStringBuilder).Method)));
+            var callCoustomeConverterMethod = Expression.Call(jsonStrBuilder, typeof(StringBuilder).GetMethod("Append", new Type[] { typeof(string) }), Expression.Call(customConverter, method, objParameter));
+            customeConverterExpList.Add(Expression.IfThenElse(Expression.NotEqual(customConverter, Expression.Constant(null)), callCoustomeConverterMethod, exp));
+            exp = Expression.Block(new ParameterExpression[] { customConverter, jsonStrBuilder }, customeConverterExpList);
+            #endregion 
+
+            var exp2 = Expression.Lambda<Action<JsonSerializer, object>>(exp, thisObjParameter, objParameter);
+
+
             return Expression.Lambda<Action<JsonSerializer, object>>(exp, thisObjParameter, objParameter);
+        }
+
+        /// <summary>
+        /// 创建序列化的表达式(泛型)
+        /// </summary>
+        /// <typeparam name="T">泛型</typeparam>
+        /// <returns>表达式</returns>
+        private Expression<Action<JsonSerializer, T>> CreateSerializationExpression<T>()
+        {
+            //对象类型
+            var objType = typeof(T);
+            //当前对象
+            var thisObjParameter = Expression.Parameter(typeof(JsonSerializer), "thisObjParameter");
+            //序列化对象参数
+            var objParameter = Expression.Parameter(objType);
+
+            //表达式
+            Expression exp = null;
+        
+
+            ObjectType objectType = GetObjectType(objType);
+            switch (objectType)
+            {
+                case ObjectType.Boolean: exp = Expression.Call(thisObjParameter, ((Action<bool>)SerializeBoolean).Method, objParameter); break;
+                case ObjectType.Int32: exp = Expression.Call(thisObjParameter, ((Action<int>)SerializeInt32).Method, objParameter); break;
+                case ObjectType.Int64: exp = Expression.Call(thisObjParameter, ((Action<long>)SerializeInt64).Method, objParameter); break;
+                case ObjectType.UInt32: exp = Expression.Call(thisObjParameter, ((Action<uint>)SerializeUInt32).Method, objParameter); break;
+                case ObjectType.UInt64: exp = Expression.Call(thisObjParameter, ((Action<ulong>)SerializeUInt64).Method, objParameter); break;
+                case ObjectType.Int16: exp = Expression.Call(thisObjParameter, ((Action<short>)SerializeInt16).Method, objParameter); break;
+                case ObjectType.UInt16: exp = Expression.Call(thisObjParameter, ((Action<ushort>)SerializeUInt16).Method, objParameter); break;
+                case ObjectType.Byte: exp = Expression.Call(thisObjParameter, ((Action<byte>)SerializeByte).Method, objParameter); break;
+                case ObjectType.Char: exp = Expression.Call(thisObjParameter, ((Action<char>)SerializeChar).Method, objParameter); break;
+                case ObjectType.Float: exp = Expression.Call(thisObjParameter, ((Action<float>)SerializeFloat).Method, objParameter); break;
+                case ObjectType.Double: exp = Expression.Call(thisObjParameter, ((Action<double>)SerializeDouble).Method, objParameter); break;
+                case ObjectType.Decimal: exp = Expression.Call(thisObjParameter, ((Action<decimal>)SerializeDecimal).Method, objParameter); break;
+                case ObjectType.DateTime: exp = Expression.Call(thisObjParameter, ((Action<DateTime>)SerializeDateTime).Method, objParameter); break;
+                case ObjectType.Enum: exp = Expression.Call(thisObjParameter, ((Action<object, Type>)SerializeEnum).Method, objParameter, Expression.Constant(objType)); break;
+                case ObjectType.String: exp = Expression.Call(thisObjParameter, ((Action<string>)SerializeString).Method, objParameter); break;
+                case ObjectType.Dictionary: exp = Expression.Call(thisObjParameter, ((Action<IDictionary>)SerializeDictionary).Method, objParameter); break;
+                case ObjectType.Enumerable: exp = Expression.Call(thisObjParameter, ((Action<IEnumerable>)SerializeEnumerable).Method, objParameter); break;
+                default: exp = Expression.Invoke(CreateObjectSerializationExpression(objType), thisObjParameter, objParameter); break;
+            }
+ 
+            return Expression.Lambda<Action<JsonSerializer, T>>(exp, thisObjParameter, objParameter);
         }
 
         /// <summary>
@@ -364,8 +487,7 @@ namespace LHZ.FastJson.Json
         /// <param name="obj">需要序列化的对象</param>
         private void SerializeDateTime(DateTime obj)
         {
-            bool execCharParaphrase;
-            var dateStr = _formater.DateTimeFormat(obj, out execCharParaphrase);
+            var dateStr = _formater.DateTimeFormat(obj, out bool execCharParaphrase);
             if (execCharParaphrase)
             {
                 SerializeString(dateStr);
@@ -375,11 +497,13 @@ namespace LHZ.FastJson.Json
                 _jsonStrBuilder.Append("\"" + dateStr + "\"");
             }
         }
+
         /// <summary>
         /// Enum类型序列化
         /// </summary>
         /// <param name="obj">需要序列化的对象</param>
-        private void SerializeEnum(object obj)
+        /// <param name="type">对象类型</param>
+        private void SerializeEnum(object obj, Type type)
         {
             _jsonStrBuilder.Append("\"" + obj.ToString() + "\"");
         }
@@ -448,7 +572,7 @@ namespace LHZ.FastJson.Json
         /// <param name="obj">需要序列化的对象</param>
         private void SerializeDictionary(IDictionary obj)
         {
-            _jsonStrBuilder.Append("{");
+            _jsonStrBuilder.Append('{');
             int i = 0;
             foreach (DictionaryEntry item in obj)
             {
@@ -460,7 +584,7 @@ namespace LHZ.FastJson.Json
                 del(this, item.Value);
                 i++;
             }
-            _jsonStrBuilder.Append("}");
+            _jsonStrBuilder.Append('}');
         }
         /// <summary>
         /// Enumerable类型序列化
@@ -468,17 +592,17 @@ namespace LHZ.FastJson.Json
         /// <param name="obj">需要序列化的对象</param>
         private void SerializeEnumerable(IEnumerable obj)
         {
-            _jsonStrBuilder.Append("[");
+            _jsonStrBuilder.Append('[');
             int i = 0;
             foreach (var item in obj)
             {
                 if (i != 0)
-                    _jsonStrBuilder.Append(",");
+                    _jsonStrBuilder.Append(',');
                 var del = GetSerializationAction(item.GetType());
                 del(this, item);
                 i++;
             }
-            _jsonStrBuilder.Append("]");
+            _jsonStrBuilder.Append(']');
         }
         
         /// <summary>
@@ -503,6 +627,19 @@ namespace LHZ.FastJson.Json
         private Stack<object> GetStack()
         {
             return _objStack;
+        }
+        private IJsonCustomConverter GetCustomConverter(Type type)
+        {
+            if (_customConverters == null)
+            {
+                return null;
+            }
+            IJsonCustomConverter converter = null;
+            if (_customConverters.TryGetValue(type, out converter) && (converter.CustomItem & JsonCustomConvertItem.CustomSerialize) == JsonCustomConvertItem.CustomSerialize)
+            {
+                return converter;
+            }
+            return null;
         }
 
         /// <summary>

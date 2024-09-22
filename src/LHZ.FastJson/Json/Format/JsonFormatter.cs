@@ -8,8 +8,9 @@ using System.Text;
 namespace LHZ.FastJson.Json.Format
 {
     /// <summary>
-    /// 格式化类
+    /// 格式化类(已废弃，请使用JsonCoustomConvert)
     /// </summary>
+    [Obsolete]
     internal class JsonFormatter
     {
         private DateTimeJsonFormat _dateTimeFormat = null;

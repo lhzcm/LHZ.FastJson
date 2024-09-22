@@ -19,6 +19,50 @@ namespace LHZ.FastJson
         private char* _curPoint;
         private char* _endPoint;
 
+        private JsonObject _jsonObject;
+
+        /// <summary>
+        /// 判断是否是Json字符串
+        /// </summary>
+        /// <param name="jsonString">Json字符串</param>
+        /// <param name="exception">异常信息</param>
+        /// <returns></returns>
+        public static bool IsJsonString(string jsonString, out Exception exception)
+        {
+            var jsonReader = new JsonReader(jsonString);
+            try
+            {
+                jsonReader.JsonRead();
+                exception = null;
+                return true;
+            }
+            catch(Exception ex)
+            {
+                exception = ex;
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 是否是有效的json字符串
+        /// </summary>
+        public bool IsValidJson
+        {
+            get
+            {
+                //TODO 以后可以单独实现一个判断json是否有效的方法,提高性能
+                try
+                {
+                    JsonRead();
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+        }
+
         public JsonReader(string jsonString)
         {
             _jsonString = jsonString;
@@ -29,6 +73,11 @@ namespace LHZ.FastJson
         /// <returns>Json对象</returns>
         public JsonObject JsonRead()
         {
+            if (_jsonObject != null)
+            {
+                return _jsonObject;
+            }
+
             if (string.IsNullOrEmpty(_jsonString))
             {
                 throw new Exception("Json解析错误，字符串为空");
@@ -39,8 +88,9 @@ namespace LHZ.FastJson
                 _endPoint = point + _jsonString.Length;
                 _curPoint = point;
 
-                return GetJsonObject();
+                _jsonObject = GetJsonObject();
             }
+            return _jsonObject;
         }
         /// <summary>
         /// 解析Json对象
