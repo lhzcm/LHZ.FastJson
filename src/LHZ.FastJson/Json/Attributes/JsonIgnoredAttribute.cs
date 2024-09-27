@@ -9,7 +9,7 @@ namespace LHZ.FastJson.Json.Attributes
     /// <summary>
     /// Json忽略属性
     /// </summary>
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
     public class JsonIgnoredAttribute : Attribute
     {
         private JsonMethods _jsonIgnoredMethods = JsonMethods.All;

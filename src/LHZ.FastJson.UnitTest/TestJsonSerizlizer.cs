@@ -1,4 +1,5 @@
 ﻿using LHZ.FastJson.Json;
+using LHZ.FastJson.Json.Attributes;
 using LHZ.FastJson.Json.CustomConverter;
 using LHZ.FastJson.Json.Format;
 using NUnit.Framework;
@@ -169,6 +170,27 @@ namespace LHZ.FastJson.UnitTest
 
             str = (new JsonSerializer(new TestObj(), new JsonCustomConvert<TestObj>((TestObj o) => "CustomConvert"))).Serialize();
             Assert.AreEqual(str, "CustomConvert");
+        }
+
+        [Test]
+        public void TestJsonProptryNameAttribute()
+        {
+            var name = "test";
+            var testObj = new JsonProptryNameAttributeTest() 
+            { 
+                Name = name,
+                Age = 10
+            };
+            var jsonStr = (new JsonSerializer(testObj)).Serialize();
+            var jsonObj = (new JsonReader(jsonStr)).JsonRead();
+            Assert.AreEqual(jsonObj["studentName"].ToString(), name);
+        }
+
+        public class JsonProptryNameAttributeTest
+        {
+            [JsonProperty("studentName")]
+            public string Name { get; set; }
+            public int Age { get; set; }
         }
 
 

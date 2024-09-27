@@ -2,6 +2,7 @@
 using LHZ.FastJson.Exceptions;
 using LHZ.FastJson.Interface;
 using LHZ.FastJson.Json.Attributes;
+using LHZ.FastJson.Json.Utils;
 using LHZ.FastJson.JsonClass;
 using LHZ.FastJson.Wrapper;
 using System;
@@ -697,10 +698,13 @@ namespace LHZ.FastJson.Json
                 {
                     break;
                 }
+                #region 自定义属性名称处理
+                string jsonPropertyName = JsonUtility.GetPropertyName(item);
+                #endregion
 
                 var getJsonObjItem = Expression.Call(typeof(JsonDeserialzerExpression<>).MakeGenericType(item.PropertyType).GetMethod("Deserialzer", new Type[] { typeof(IJsonObject), typeof(Dictionary<Type, IJsonCustomConverter>) }),
-                        Expression.Call(jsonObjectParameter, typeof(IJsonObject).GetMethod("get_Item", new Type[] { typeof(string) }), Expression.Constant(item.Name)), jsonCustomConvertersParameter);
-                var hasChildrenNode = Expression.Call(jsonObjectParameter, typeof(IJsonObject).GetMethod("HasChildrenNode", new Type[] { typeof(string) }), Expression.Constant(item.Name));
+                        Expression.Call(jsonObjectParameter, typeof(IJsonObject).GetMethod("get_Item", new Type[] { typeof(string) }), Expression.Constant(jsonPropertyName)), jsonCustomConvertersParameter);
+                var hasChildrenNode = Expression.Call(jsonObjectParameter, typeof(IJsonObject).GetMethod("HasChildrenNode", new Type[] { typeof(string) }), Expression.Constant(jsonPropertyName));
 
                 var propertyValue = Expression.Variable(item.PropertyType, item.Name + "propertyValue");
                 parameters.Add(propertyValue);

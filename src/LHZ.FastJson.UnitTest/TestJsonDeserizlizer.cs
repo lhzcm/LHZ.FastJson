@@ -227,6 +227,23 @@ namespace LHZ.FastJson.UnitTest
             Assert.AreEqual(obj.Id, 2);
         }
 
+        [Test]
+        public void TestJsonProptryNameAttribute()
+        {
+            var name = "test";
+            var testObj = new JsonProptryNameAttributeTest()
+            {
+                Name = name,
+                Age = 10
+            };
+            var jsonStr = (new JsonSerializer(testObj)).Serialize();
+            var convertObj = new JsonDeserializer<JsonProptryNameAttributeTest>(jsonStr).Deserialize();
+
+            Assert.AreEqual(testObj.Age, testObj.Age);
+            Assert.AreEqual(testObj.Name, testObj.Name);
+        }
+
+
     }
     public class TestObjClass
     { 
