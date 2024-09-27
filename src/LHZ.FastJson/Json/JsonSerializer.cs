@@ -163,10 +163,10 @@ namespace LHZ.FastJson.Json
                 Func<Type, Action<JsonSerializer, object>> sact = GetSerializationAction;
 
                 #region 自定义属性名称处理
-                string propertyName = JsonSerializerUtility.GetPropertyName(item);
+                string jsonPropertyName = JsonUtility.GetPropertyName(item);
                 #endregion
 
-                expList.Add(Expression.Call(jsonStrBuilder, typeof(StringBuilder).GetMethod("Append", new Type[] { typeof(string) }), Expression.Constant( "\"" + propertyName + "\":")));
+                expList.Add(Expression.Call(jsonStrBuilder, typeof(StringBuilder).GetMethod("Append", new Type[] { typeof(string) }), Expression.Constant( "\"" + jsonPropertyName + "\":")));
                 switch (objectType)
                 {
 

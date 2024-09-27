@@ -35,5 +35,20 @@ namespace LHZ.FastJson.Json.Utils
             SameName = null;
             return false;
         }
+        /// <summary>
+        /// 获取类型属性对应的Json属性名称
+        /// </summary>
+        /// <param name="propertyInfo">属性</param>
+        /// <returns>Json属性名称</returns>
+        public static string GetPropertyName(PropertyInfo propertyInfo)
+        {
+            string propertyName = propertyInfo.Name;
+            var jsonPropertyAttr = Attribute.GetCustomAttribute(propertyInfo, typeof(JsonPropertyAttribute)) as JsonPropertyAttribute;
+            if (jsonPropertyAttr != null)
+            {
+                propertyName = jsonPropertyAttr.PropertyName;
+            }
+            return propertyName;
+        }
     }
 }

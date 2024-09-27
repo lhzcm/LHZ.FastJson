@@ -63,6 +63,7 @@ namespace LHZ.FastJson
         /// </summary>
         /// <typeparam name="T">反序列化目标类型</typeparam>
         /// <param name="jsonString">JsonObject类型</param>
+        /// <param name="jsonCustomConverters">自定义json转换器</param>
         /// <returns>反序列化目标对象</returns>
         public static T Deserialize<T>(string jsonString, params IJsonCustomConverter[] jsonCustomConverters)
         {

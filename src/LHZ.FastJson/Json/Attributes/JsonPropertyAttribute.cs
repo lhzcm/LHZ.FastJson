@@ -18,7 +18,7 @@ namespace LHZ.FastJson.Json.Attributes
         /// <param name="name">自定义属性名称</param>
         public JsonPropertyAttribute(string name)
         {
-            _name = name;
+            _name = name ?? throw new ArgumentNullException(nameof(name));
         }
 
         /// <summary>
