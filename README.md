@@ -65,6 +65,7 @@ paket add LHZ.FastJson --version 1.6.1
 Student student = new Student
 {
     NO = 1,
+    [JsonProperty("studentName")]
     Name = "lhz",
     Age = 18,
     Brithday = new DateTime(2002, 1, 1)
@@ -77,13 +78,13 @@ Console.WriteLine(jsonStr);
 ### 运行结果
 ``` bash
 PS C:\Users\admin\source\repos\LHZ.FastJson\LHZ.FastJson.Test> dotnet run
-{"NO":1,"Name":"lhz","Age":18,"Brithday":"2000/1/1 0:00:00"}
+{"NO":1,"studentName":"lhz","Age":18,"Brithday":"2000/1/1 0:00:00"}
 ```
 
 ## 使用LHZ.FastJson进行反序列化
 ### 反序列化代码示例
 ``` cshap
-string str = "{\"NO\":1,\"Name\":\"lhz\",\"Age\":18,\"Brithday\":\"2000/1/1 0:00:00\"}";
+string str = "{\"NO\":1,\"studentName\":\"lhz\",\"Age\":18,\"Brithday\":\"2000/1/1 0:00:00\"}";
 
 Student student = JsonConvert.Deserialize<Student>(str);
 
