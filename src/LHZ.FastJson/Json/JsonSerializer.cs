@@ -3,6 +3,7 @@ using LHZ.FastJson.Enum.CustomConverter;
 using LHZ.FastJson.Interface;
 using LHZ.FastJson.Json.Attributes;
 using LHZ.FastJson.Json.Format;
+using LHZ.FastJson.Json.Utils;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -144,6 +145,12 @@ namespace LHZ.FastJson.Json
             //var customConvertersFieldExp = Expression.Field(thisObjParameter, customConvertersField);
 
             //expList.Add(Expression.IfThen(Expression.NotEqual(customConvertersFieldExp, Expression.Constant(null)), Expression.Block(customConvertersBody)));
+
+            //判断是否有属性名称冲突
+            if (JsonUtility.HasSameNameProperty(properties, out string samePropertyName))
+            {
+                Expression.Throw(Expression.Constant(new Exception($"序列化失败，类型{objType.FullName}不同的属性存在相同的属性名\"{samePropertyName}\"")));
+            }
             
             //添加json对象类型左大括号
             expList.Add(Expression.Call(jsonStrBuilder, typeof(StringBuilder).GetMethod("Append", new Type[] { typeof(char) }), Expression.Constant('{')));
@@ -155,7 +162,11 @@ namespace LHZ.FastJson.Json
                 Expression exp = null;
                 Func<Type, Action<JsonSerializer, object>> sact = GetSerializationAction;
 
-                expList.Add(Expression.Call(jsonStrBuilder, typeof(StringBuilder).GetMethod("Append", new Type[] { typeof(string) }), Expression.Constant( "\"" + item.Name + "\":")));
+                #region 自定义属性名称处理
+                string propertyName = JsonSerializerUtility.GetPropertyName(item);
+                #endregion
+
+                expList.Add(Expression.Call(jsonStrBuilder, typeof(StringBuilder).GetMethod("Append", new Type[] { typeof(string) }), Expression.Constant( "\"" + propertyName + "\":")));
                 switch (objectType)
                 {
 
