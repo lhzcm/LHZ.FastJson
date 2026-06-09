@@ -37,7 +37,8 @@ namespace LHZ.FastJson.JsonClass
             StringBuilder strBuilder = new StringBuilder("{");
             foreach (var item in _value)
             {
-                strBuilder.Append("\"" + item.Key + "\":");
+                strBuilder.Append(new JsonString(item.Key, 0).ToJsonString());
+                strBuilder.Append(":");
                 strBuilder.Append(item.Value.ToJsonString() + ",");
             }
             if (_value.Count > 0)

@@ -31,6 +31,7 @@ namespace LHZ.FastJson.Json.Utils
                     SameName = propertyName;
                     return true;
                 }
+                names.Add(propertyName);
             }
             SameName = null;
             return false;

@@ -2,6 +2,7 @@
 using LHZ.FastJson.Exceptions;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 
@@ -36,6 +37,10 @@ namespace LHZ.FastJson.Json.Format
         public string DateTimeFormat(DateTime dateTime, out bool execCharParaphrase)
         {
             execCharParaphrase = false;
+            if (_dateTimeFormat == null)
+            {
+                return dateTime.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
+            }
             if (_dateTimeFormat.FormatFunc != null)
             {
                 execCharParaphrase = true;
