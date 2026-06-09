@@ -2,6 +2,8 @@
 轻巧便利的Json序列化和反序列化工具 <br/>
 Lightweight and convenient tool for JSON serialization and deserialization
 
+[更新日志](CHANGELOG.md)
+
 ## 序列化性能
 LHZ.FastJson重构了序列化方法，拥有极高的序列化性能，下表为LHZ.FastJson、NewtonJson和System.Text.Json的序列化性能测试
 ``` ini
