@@ -110,7 +110,7 @@ namespace LHZ.FastJson
         /// <param name="obj">需要序列化的对象</param>
         /// <param name="formats">格式化类型</param>
         /// <returns>Json字符串</returns>
-        [Obsolete]
+        [Obsolete("This method is obsolete. Use Serialize(object obj) instead.")]
         public static string Serialize(object obj, params IJsonFormat[] formats)
         {
             JsonSerializer serializer = new JsonSerializer(obj, formats);

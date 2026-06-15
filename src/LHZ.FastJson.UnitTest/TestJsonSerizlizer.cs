@@ -1,4 +1,4 @@
-﻿using LHZ.FastJson.Json;
+using LHZ.FastJson.Json;
 using LHZ.FastJson.Json.Attributes;
 using LHZ.FastJson.Json.CustomConverter;
 using LHZ.FastJson.Json.Format;
@@ -10,8 +10,14 @@ using System.Text;
 
 namespace LHZ.FastJson.UnitTest
 {
+    /// <summary>
+    /// 验证 JSON 序列化的核心场景。
+    /// </summary>
     class TestJsonSerizlizer
     {
+        /// <summary>
+        /// 验证 null 会序列化为 JSON null。
+        /// </summary>
         [Test]
         public void TestNull()
         {
@@ -20,6 +26,9 @@ namespace LHZ.FastJson.UnitTest
             Assert.IsTrue(obj == "null");
         }
 
+        /// <summary>
+        /// 验证集合对象可以连续序列化。
+        /// </summary>
         [Test]
         public void TestEnumerable()
         {
@@ -38,6 +47,9 @@ namespace LHZ.FastJson.UnitTest
             Assert.IsTrue(obj != null);
         }
 
+        /// <summary>
+        /// 验证循环引用会抛出预期异常。
+        /// </summary>
         [Test]
         public void TestCircularReference()
         {
@@ -58,6 +70,9 @@ namespace LHZ.FastJson.UnitTest
 
         }
 
+        /// <summary>
+        /// 验证字典对象可以序列化。
+        /// </summary>
         [Test]
         public void TestDictionary()
         {
@@ -67,6 +82,9 @@ namespace LHZ.FastJson.UnitTest
             string obj = (new JsonSerializer(testObj)).Serialize();
             Assert.IsTrue(obj != null);
         }
+        /// <summary>
+        /// 验证 DateTime 支持格式化序列化。
+        /// </summary>
         [Test]
         public void TestDateTime()
         {
@@ -80,6 +98,9 @@ namespace LHZ.FastJson.UnitTest
             Assert.AreEqual(obj, "\"test123\"");
 
         }
+        /// <summary>
+        /// 验证字符串转义、空值和空串的序列化。
+        /// </summary>
         [Test]
         public void TestString()
         {
@@ -99,6 +120,9 @@ namespace LHZ.FastJson.UnitTest
 
         }
 
+        /// <summary>
+        /// 验证可空值类型的序列化。
+        /// </summary>
         [Test]
         public void TestNullable()
         {
@@ -111,6 +135,9 @@ namespace LHZ.FastJson.UnitTest
             Assert.AreEqual(obj, "12");
         }
 
+        /// <summary>
+        /// 验证空对象会序列化为空 JSON 对象。
+        /// </summary>
         [Test]
         public void TestEmptyObject()
         {
@@ -120,6 +147,9 @@ namespace LHZ.FastJson.UnitTest
         }
 
 
+        /// <summary>
+        /// 验证空集合和空数组的序列化。
+        /// </summary>
         [Test]
         public void TestEmptyArray()
         {
@@ -131,6 +161,9 @@ namespace LHZ.FastJson.UnitTest
             Assert.AreEqual("[]", listjson);
         }
 
+        /// <summary>
+        /// 验证 ToJson 扩展方法的序列化结果。
+        /// </summary>
         [Test]
         public void TestCommonExtend()
         {
@@ -138,6 +171,9 @@ namespace LHZ.FastJson.UnitTest
             Assert.AreEqual(jsonStr, "{\"Name\":\"test\",\"Age\":20}");
         }
 
+        /// <summary>
+        /// 验证结构体对象的序列化。
+        /// </summary>
         [Test]
         public void TestStruct()
         {
@@ -146,6 +182,9 @@ namespace LHZ.FastJson.UnitTest
             Assert.AreEqual(structjson, "{\"Name\":\"test2\",\"Age\":10,\"Height\":170,\"Obj\":null}");
         }
 
+        /// <summary>
+        /// 验证序列化时会忽略指定属性。
+        /// </summary>
         [Test]
         public void TestJsonIgnored()
         {
@@ -159,6 +198,9 @@ namespace LHZ.FastJson.UnitTest
             Assert.AreEqual(testStr, @"{""Name"":""test"",""Age"":10}");
         }
 
+        /// <summary>
+        /// 验证自定义序列化转换器会生效。
+        /// </summary>
         [Test]
         public void TestCustomSerialize()
         {
@@ -172,6 +214,9 @@ namespace LHZ.FastJson.UnitTest
             Assert.AreEqual(str, "CustomConvert");
         }
 
+        /// <summary>
+        /// 验证 JsonProperty 特性会改写属性名。
+        /// </summary>
         [Test]
         public void TestJsonProptryNameAttribute()
         {

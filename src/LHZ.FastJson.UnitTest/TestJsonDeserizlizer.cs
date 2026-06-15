@@ -1,4 +1,4 @@
-﻿using LHZ.FastJson.Json;
+using LHZ.FastJson.Json;
 using LHZ.FastJson.Json.CustomConverter;
 using NUnit.Framework;
 using System;
@@ -12,8 +12,14 @@ using static LHZ.FastJson.UnitTest.TestJsonSerizlizer;
 namespace LHZ.FastJson.UnitTest
 {
 
+    /// <summary>
+    /// 验证 JSON 反序列化的核心场景。
+    /// </summary>
     class TestJsonDeserizlizer
     {
+        /// <summary>
+        /// 验证 JSON null 可反序列化为空对象。
+        /// </summary>
         [Test]
         public void TestNull()
         {
@@ -22,6 +28,9 @@ namespace LHZ.FastJson.UnitTest
             Assert.IsNull(obj);
         }
 
+        /// <summary>
+        /// 验证 int 数值反序列化。
+        /// </summary>
         [Test]
         public void TestInt()
         {
@@ -30,6 +39,9 @@ namespace LHZ.FastJson.UnitTest
             Assert.IsTrue(obj == 9284);
         }
 
+        /// <summary>
+        /// 验证 long 数值反序列化。
+        /// </summary>
         [Test]
         public void TestLong()
         {
@@ -38,6 +50,9 @@ namespace LHZ.FastJson.UnitTest
             Assert.IsTrue(obj == 9284523245244254);
         }
 
+        /// <summary>
+        /// 验证 float 数值反序列化。
+        /// </summary>
         [Test]
         public void TestFloat()
         {
@@ -46,6 +61,9 @@ namespace LHZ.FastJson.UnitTest
             Assert.IsTrue(obj == 1.2f);
         }
 
+        /// <summary>
+        /// 验证 double 数值反序列化。
+        /// </summary>
         [Test]
         public void TestDouble()
         {
@@ -54,6 +72,9 @@ namespace LHZ.FastJson.UnitTest
             Assert.IsTrue(obj == 1024.248);
         }
 
+        /// <summary>
+        /// 验证 decimal 数值反序列化。
+        /// </summary>
         [Test]
         public void TestDecimal()
         {
@@ -62,6 +83,9 @@ namespace LHZ.FastJson.UnitTest
             Assert.IsTrue(obj == 1020990934.24823423423432m);
         }
 
+        /// <summary>
+        /// 验证枚举可按名称和数值反序列化。
+        /// </summary>
         [Test]
         public void TestEnumMethod()
         {
@@ -75,6 +99,9 @@ namespace LHZ.FastJson.UnitTest
 
         }
 
+        /// <summary>
+        /// 验证 DateTime 字符串反序列化。
+        /// </summary>
         [Test]
         public void TestDateTime()
         {
@@ -84,6 +111,9 @@ namespace LHZ.FastJson.UnitTest
         }
 
 
+        /// <summary>
+        /// 验证数组和可空元素数组反序列化。
+        /// </summary>
         [Test]
         public void TestArray()
         {
@@ -107,6 +137,9 @@ namespace LHZ.FastJson.UnitTest
             }
         }
 
+        /// <summary>
+        /// 验证 List 集合反序列化。
+        /// </summary>
         [Test]
         public void TestList()
         {
@@ -120,6 +153,9 @@ namespace LHZ.FastJson.UnitTest
             obj = (new JsonDeserializer<List<int>>("null")).Deserialize();
             Assert.IsNull(obj);
         }
+        /// <summary>
+        /// 验证字典及可空值字典反序列化。
+        /// </summary>
         [Test]
         public void TestDictionary()
         {
@@ -138,6 +174,9 @@ namespace LHZ.FastJson.UnitTest
             Assert.IsTrue(result2 == 3);
         }
 
+        /// <summary>
+        /// 验证普通对象反序列化。
+        /// </summary>
         [Test]
         public void TestObject()
         {
@@ -150,6 +189,9 @@ namespace LHZ.FastJson.UnitTest
             Assert.IsNotNull(obj);
         }
 
+        /// <summary>
+        /// 验证可空值类型反序列化。
+        /// </summary>
         [Test]
         public void TestNullable()
         {
@@ -168,6 +210,9 @@ namespace LHZ.FastJson.UnitTest
             Test3
         }
 
+        /// <summary>
+        /// 验证 Int32 类型反序列化。
+        /// </summary>
         [Test]
         public void TestInt32()
         {
@@ -178,6 +223,9 @@ namespace LHZ.FastJson.UnitTest
             Assert.AreEqual(testint32, 1234);
         }
 
+        /// <summary>
+        /// 验证字符串转义后的反序列化。
+        /// </summary>
         [Test]
         public void TestString()
         {
@@ -186,6 +234,9 @@ namespace LHZ.FastJson.UnitTest
             Assert.AreEqual("c:\\ds\\dfe\\test.test", testDistStr);
         }
 
+        /// <summary>
+        /// 验证 FromJson 扩展方法的反序列化结果。
+        /// </summary>
         [Test]
         public void TestCommonExtend()
         {
@@ -193,6 +244,9 @@ namespace LHZ.FastJson.UnitTest
             Assert.AreEqual(strObj, "test");
         }
 
+        /// <summary>
+        /// 验证多属性对象可批量反序列化。
+        /// </summary>
         [Test]
         public void TestMultiProtertyObject()
         {
@@ -210,6 +264,9 @@ namespace LHZ.FastJson.UnitTest
             }
         }
 
+        /// <summary>
+        /// 验证反序列化时会忽略指定属性。
+        /// </summary>
         [Test]
         public void TestJsonIgnored()
         {
@@ -218,6 +275,9 @@ namespace LHZ.FastJson.UnitTest
             Assert.AreEqual(testObj.Height, 0);
         }
 
+        /// <summary>
+        /// 验证自定义转换器会影响反序列化。
+        /// </summary>
         [Test]
         public void TestCustomSerialize()
         {
@@ -227,6 +287,9 @@ namespace LHZ.FastJson.UnitTest
             Assert.AreEqual(obj.Id, 2);
         }
 
+        /// <summary>
+        /// 验证 JsonProperty 特性支持属性名映射。
+        /// </summary>
         [Test]
         public void TestJsonProptryNameAttribute()
         {
