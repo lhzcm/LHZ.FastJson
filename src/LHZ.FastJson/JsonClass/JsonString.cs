@@ -27,10 +27,14 @@ namespace LHZ.FastJson.JsonClass
             strBuilder.Append('\"');
             foreach (var item in _value)
             {
-                if (item > '"')
-                    strBuilder.Append(item);
-                else
+                if (item == '"' || item == '\\' || item < 0x20)
+                {
                     strBuilder.Append(CharParaphrase(item));
+                }
+                else
+                {
+                    strBuilder.Append(item);
+                }
             }
             strBuilder.Append('\"');
             return strBuilder.ToString();
@@ -52,16 +56,14 @@ namespace LHZ.FastJson.JsonClass
                 return "\\n";
             else if (paraphrase == '\t')
                 return "\\t";
-            else if (paraphrase == '\a')
-                return "\\a";
             else if (paraphrase == '\b')
                 return "\\b";
             else if (paraphrase == '\f')
                 return "\\f";
             else if (paraphrase == '\r')
                 return "\\r";
-            else if (paraphrase == '\v')
-                return "\\v";
+            else if (paraphrase < 0x20)
+                return "\\u" + ((int)paraphrase).ToString("x4");
             return paraphrase.ToString();
         }
     }

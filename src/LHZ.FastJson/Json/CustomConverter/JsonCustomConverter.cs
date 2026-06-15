@@ -85,7 +85,7 @@ namespace LHZ.FastJson.Json.CustomConverter
             {
                 throw new JsonCustomConverterException(this, "该自定义序列化方法序列化出来的Json字符串是无效的Json字符串", readEx);
             }
-            return _serializeFunc(dist);
+            return jsonStr;
         }
 
         /// <summary>

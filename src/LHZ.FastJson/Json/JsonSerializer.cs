@@ -6,7 +6,9 @@ using LHZ.FastJson.Json.Format;
 using LHZ.FastJson.Json.Utils;
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -26,7 +28,7 @@ namespace LHZ.FastJson.Json
         private JsonFormatter _formater;
 
         private static readonly Dictionary<Type, ObjectType> _objectTypes = JsonObjectType.GetObjectTypes();
-        private static readonly Dictionary<Type, Action<JsonSerializer, object>> _serializationActions = new Dictionary<Type, Action<JsonSerializer, object>>(4049);
+        private static readonly ConcurrentDictionary<Type, Action<JsonSerializer, object>> _serializationActions = new ConcurrentDictionary<Type, Action<JsonSerializer, object>>();
 
         private object _obj;
 
@@ -89,14 +91,7 @@ namespace LHZ.FastJson.Json
         /// <returns>对象序列化委托方法</returns>
         private Action<JsonSerializer, object> GetSerializationAction(Type objType)
         {
-            if (_serializationActions.TryGetValue(objType, out Action<JsonSerializer, object> act))
-            {
-                return act;
-            }
-            Expression<Action<JsonSerializer, object>> exp = CreateSerializationExpression(objType);
-            act = exp.Compile();
-            _serializationActions[objType] = act;
-            return act;
+            return _serializationActions.GetOrAdd(objType, type => CreateSerializationExpression(type).Compile());
         }
 
         /// <summary>
@@ -149,7 +144,7 @@ namespace LHZ.FastJson.Json
             //判断是否有属性名称冲突
             if (JsonUtility.HasSameNameProperty(properties, out string samePropertyName))
             {
-                Expression.Throw(Expression.Constant(new Exception($"序列化失败，类型{objType.FullName}不同的属性存在相同的属性名\"{samePropertyName}\"")));
+                throw new Exception($"序列化失败，类型{objType.FullName}不同的属性存在相同的属性名\"{samePropertyName}\"");
             }
             
             //添加json对象类型左大括号
@@ -166,7 +161,7 @@ namespace LHZ.FastJson.Json
                 string jsonPropertyName = JsonUtility.GetPropertyName(item);
                 #endregion
 
-                expList.Add(Expression.Call(jsonStrBuilder, typeof(StringBuilder).GetMethod("Append", new Type[] { typeof(string) }), Expression.Constant( "\"" + jsonPropertyName + "\":")));
+                expList.Add(Expression.Call(thisObjParameter, ((Action<string>)SerializePropertyName).Method, Expression.Constant(jsonPropertyName)));
                 switch (objectType)
                 {
 
@@ -185,6 +180,7 @@ namespace LHZ.FastJson.Json
                     case ObjectType.DateTime: exp = Expression.Call(thisObjParameter, ((Action<DateTime>)SerializeDateTime).Method, Expression.Property(obj, item.Name)); break;
                     case ObjectType.Enum: exp = Expression.Call(thisObjParameter, ((Action<object, Type>)SerializeEnum).Method, Expression.Property(obj, item.Name), Expression.Constant(propertyType)); break;
                     case ObjectType.String: exp = Expression.Call(thisObjParameter, ((Action<string>)SerializeString).Method, Expression.Property(obj, item.Name)); break;
+                    case ObjectType.Nullable: exp = Expression.Call(thisObjParameter, ((Action<object>)SerializeAny).Method, Expression.Convert(Expression.Property(obj, item.Name), typeof(object))); break;
                     case ObjectType.Dictionary:
                         {
                             exp = Expression.Call(thisObjParameter, ((Action<IDictionary>)SerializeDictionary).Method, Expression.Property(obj, item.Name));
@@ -290,6 +286,7 @@ namespace LHZ.FastJson.Json
                 case ObjectType.DateTime: exp = Expression.Call(thisObjParameter, ((Action<DateTime>)SerializeDateTime).Method, obj); break;
                 case ObjectType.Enum: exp = Expression.Call(thisObjParameter, ((Action<object, Type>)SerializeEnum).Method, obj, Expression.Constant(objType)); break;
                 case ObjectType.String: exp = Expression.Call(thisObjParameter, ((Action<string>)SerializeString).Method, obj); break;
+                case ObjectType.Nullable: exp = Expression.Call(thisObjParameter, ((Action<object>)SerializeAny).Method, objParameter); break;
                 case ObjectType.Dictionary: exp = Expression.Call(thisObjParameter, ((Action<IDictionary>)SerializeDictionary).Method, obj); break;
                 case ObjectType.Enumerable: exp = Expression.Call(thisObjParameter, ((Action<IEnumerable>)SerializeEnumerable).Method, obj); break;
                 default: exp = Expression.Invoke(CreateObjectSerializationExpression(objType), thisObjParameter, objParameter); break;
@@ -355,6 +352,7 @@ namespace LHZ.FastJson.Json
                 case ObjectType.DateTime: exp = Expression.Call(thisObjParameter, ((Action<DateTime>)SerializeDateTime).Method, objParameter); break;
                 case ObjectType.Enum: exp = Expression.Call(thisObjParameter, ((Action<object, Type>)SerializeEnum).Method, objParameter, Expression.Constant(objType)); break;
                 case ObjectType.String: exp = Expression.Call(thisObjParameter, ((Action<string>)SerializeString).Method, objParameter); break;
+                case ObjectType.Nullable: exp = Expression.Call(thisObjParameter, ((Action<object>)SerializeAny).Method, Expression.Convert(objParameter, typeof(object))); break;
                 case ObjectType.Dictionary: exp = Expression.Call(thisObjParameter, ((Action<IDictionary>)SerializeDictionary).Method, objParameter); break;
                 case ObjectType.Enumerable: exp = Expression.Call(thisObjParameter, ((Action<IEnumerable>)SerializeEnumerable).Method, objParameter); break;
                 default: exp = Expression.Invoke(CreateObjectSerializationExpression(objType), thisObjParameter, objParameter); break;
@@ -376,7 +374,9 @@ namespace LHZ.FastJson.Json
                 return objType;
             }
 
-            if (type.IsEnum)
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
+                return ObjectType.Nullable;
+            else if (type.IsEnum)
                 return ObjectType.Enum;
             else if (typeof(IDictionary).IsAssignableFrom(type))
                 return ObjectType.Dictionary;
@@ -404,7 +404,7 @@ namespace LHZ.FastJson.Json
         /// <param name="obj">需要序列化的对象</param>
         private void SerializeByte(byte obj)
         {
-            _jsonStrBuilder.Append(obj.ToString());
+            _jsonStrBuilder.Append(obj.ToString(CultureInfo.InvariantCulture));
         }
 
         /// <summary>
@@ -413,7 +413,7 @@ namespace LHZ.FastJson.Json
         /// <param name="obj">需要序列化的对象</param>
         private void SerializeChar(char obj)
         {
-            _jsonStrBuilder.Append("\"" + obj.ToString() + "\"");
+            SerializeString(obj.ToString());
         }
 
         /// <summary>
@@ -422,7 +422,7 @@ namespace LHZ.FastJson.Json
         /// <param name="obj">需要序列化的对象</param>
         private void SerializeInt16(short obj)
         {
-            _jsonStrBuilder.Append(obj.ToString());
+            _jsonStrBuilder.Append(obj.ToString(CultureInfo.InvariantCulture));
         }
 
         /// <summary>
@@ -431,7 +431,7 @@ namespace LHZ.FastJson.Json
         /// <param name="obj">需要序列化的对象</param>
         private void SerializeUInt16(ushort obj)
         {
-            _jsonStrBuilder.Append(obj.ToString());
+            _jsonStrBuilder.Append(obj.ToString(CultureInfo.InvariantCulture));
         }
 
 
@@ -441,7 +441,7 @@ namespace LHZ.FastJson.Json
         /// <param name="obj">需要序列化的对象</param>
         private void SerializeInt32(int obj)
         {
-            _jsonStrBuilder.Append(obj.ToString());
+            _jsonStrBuilder.Append(obj.ToString(CultureInfo.InvariantCulture));
         }
 
         /// <summary>
@@ -450,7 +450,7 @@ namespace LHZ.FastJson.Json
         /// <param name="obj">需要序列化的对象</param>
         private void SerializeUInt32(uint obj)
         {
-            _jsonStrBuilder.Append(obj.ToString());
+            _jsonStrBuilder.Append(obj.ToString(CultureInfo.InvariantCulture));
         }
 
         /// <summary>
@@ -459,7 +459,7 @@ namespace LHZ.FastJson.Json
         /// <param name="obj">需要序列化的对象</param>
         private void SerializeInt64(long obj)
         {
-            _jsonStrBuilder.Append(obj.ToString());
+            _jsonStrBuilder.Append(obj.ToString(CultureInfo.InvariantCulture));
         }
 
         /// <summary>
@@ -468,7 +468,7 @@ namespace LHZ.FastJson.Json
         /// <param name="obj">需要序列化的对象</param>
         private void SerializeUInt64(ulong obj)
         {
-            _jsonStrBuilder.Append(obj.ToString());
+            _jsonStrBuilder.Append(obj.ToString(CultureInfo.InvariantCulture));
         }
 
         /// <summary>
@@ -477,7 +477,7 @@ namespace LHZ.FastJson.Json
         /// <param name="obj"></param>
         private void SerializeFloat(float obj)
         {
-            _jsonStrBuilder.Append(obj.ToString());
+            _jsonStrBuilder.Append(obj.ToString(CultureInfo.InvariantCulture));
         }
 
         /// <summary>
@@ -486,11 +486,11 @@ namespace LHZ.FastJson.Json
         /// <param name="obj">需要序列化的对象</param>
         private void SerializeDouble(double obj)
         {
-            _jsonStrBuilder.Append(obj.ToString());
+            _jsonStrBuilder.Append(obj.ToString(CultureInfo.InvariantCulture));
         }
         private void SerializeDecimal(decimal obj)
         {
-            _jsonStrBuilder.Append(obj.ToString());
+            _jsonStrBuilder.Append(obj.ToString(CultureInfo.InvariantCulture));
         }
         /// <summary>
         /// DateTime类型序列化
@@ -498,6 +498,11 @@ namespace LHZ.FastJson.Json
         /// <param name="obj">需要序列化的对象</param>
         private void SerializeDateTime(DateTime obj)
         {
+            if (_formater == null)
+            {
+                SerializeString(obj.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture));
+                return;
+            }
             var dateStr = _formater.DateTimeFormat(obj, out bool execCharParaphrase);
             if (execCharParaphrase)
             {
@@ -516,7 +521,7 @@ namespace LHZ.FastJson.Json
         /// <param name="type">对象类型</param>
         private void SerializeEnum(object obj, Type type)
         {
-            _jsonStrBuilder.Append("\"" + obj.ToString() + "\"");
+            SerializeString(obj.ToString());
         }
         /// <summary>
         /// String类型序列化
@@ -529,54 +534,38 @@ namespace LHZ.FastJson.Json
                 throw new Exception("当前对象不能转化成string类型");
             }
             _jsonStrBuilder.Append('"');
-            unsafe
+            for (int i = 0; i < obj.Length; i++)
             {
-                fixed (char* test = obj)
+                char current = obj[i];
+                if (current < 0x20 || current == '"' || current == '\\')
                 {
-                    char* start = test;
-                    char* cur = test;
-
-                    while (*cur != '\0')
-                    {
-                        if (*cur < 0x20 || *cur == '"' || *cur == '\\')
-                        {
-                            if (cur > start)
-                            {
-#if NET40 || NET45
-                                _jsonStrBuilder.Append(obj, (int)(start - test), (int)(cur - start));
-#else
-                                _jsonStrBuilder.Append(start, (int)(cur - start));
-#endif
-                            }
-                            _jsonStrBuilder.Append(CharParaphrase(*cur));
-                            start = cur + 1;
-                        }
-                        cur++;
-                    }
-                    if (cur > start)
-                    {
-#if NET40 || NET45
-                        _jsonStrBuilder.Append(obj, (int)(start - test), (int)(cur - start));
-#else
-                        _jsonStrBuilder.Append(start, (int)(cur - start));
-#endif
-                    }
-
+                    _jsonStrBuilder.Append(CharParaphrase(current));
+                }
+                else
+                {
+                    _jsonStrBuilder.Append(current);
                 }
             }
             _jsonStrBuilder.Append('"');
-
-            //_jsonStrBuilder.Append('"');
-
-            //foreach (char item in obj)
-            //{
-            //    if (item < 0x20 || item == '"' || item == '\\')
-            //        _jsonStrBuilder.Append(CharParaphrase(item));
-            //    else
-            //        _jsonStrBuilder.Append(item);
-            //}
-            //_jsonStrBuilder.Append('"');
         }
+
+        private void SerializePropertyName(string name)
+        {
+            SerializeString(name);
+            _jsonStrBuilder.Append(':');
+        }
+
+        private void SerializeAny(object obj)
+        {
+            if (obj == null)
+            {
+                _jsonStrBuilder.Append("null");
+                return;
+            }
+            var del = GetSerializationAction(obj.GetType());
+            del(this, obj);
+        }
+
         /// <summary>
         /// Dictionary类型序列化
         /// </summary>
@@ -588,11 +577,13 @@ namespace LHZ.FastJson.Json
             foreach (DictionaryEntry item in obj)
             {
                 if (i == 0)
-                    _jsonStrBuilder.Append("\"" + item.Key.ToString() + "\":");
+                    SerializePropertyName(item.Key.ToString());
                 else
-                    _jsonStrBuilder.Append(",\"" + item.Key.ToString() + "\":");
-                var del = GetSerializationAction(item.Value.GetType());
-                del(this, item.Value);
+                {
+                    _jsonStrBuilder.Append(',');
+                    SerializePropertyName(item.Key.ToString());
+                }
+                SerializeAny(item.Value);
                 i++;
             }
             _jsonStrBuilder.Append('}');
@@ -609,8 +600,7 @@ namespace LHZ.FastJson.Json
             {
                 if (i != 0)
                     _jsonStrBuilder.Append(',');
-                var del = GetSerializationAction(item.GetType());
-                del(this, item);
+                SerializeAny(item);
                 i++;
             }
             _jsonStrBuilder.Append(']');
@@ -666,12 +656,10 @@ namespace LHZ.FastJson.Json
                 case '\\': return "\\\\";
                 case '\n': return "\\n";
                 case '\t': return "\\t";
-                case '\a': return "\\a";
                 case '\b': return "\\b";
                 case '\f': return "\\f";
                 case '\r': return "\\r";
-                case '\v': return "\\v";
-                default : return paraphrase.ToString();
+                default : return "\\u" + ((int)paraphrase).ToString("x4");
             }
         }
     }

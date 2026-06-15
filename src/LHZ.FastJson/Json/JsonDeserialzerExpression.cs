@@ -9,6 +9,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -106,9 +107,6 @@ namespace LHZ.FastJson.Json
                     return ConvertToObject();
             }
         }
-
-        
-
         /// <summary>
         /// 获取对象的类型
         /// </summary>
@@ -168,7 +166,7 @@ namespace LHZ.FastJson.Json
             {
                 throw new JsonDeserializationException(jsonObject, typeof(Byte), "Json对象Number类型不为Long不能解析成Byte类型");
             }
-            return Byte.Parse((string)jsonObject.Value);
+            return Byte.Parse((string)jsonObject.Value, CultureInfo.InvariantCulture);
         }
 
         /// <summary>
@@ -204,7 +202,7 @@ namespace LHZ.FastJson.Json
             {
                 throw new JsonDeserializationException(jsonObject, typeof(Int16), "Json对象Number类型不为Long不能解析成Int16类型");
             }
-            return Int16.Parse((string)jsonObject.Value);
+            return Int16.Parse((string)jsonObject.Value, CultureInfo.InvariantCulture);
         }
 
         /// <summary>
@@ -222,7 +220,7 @@ namespace LHZ.FastJson.Json
             {
                 throw new JsonDeserializationException(jsonObject, typeof(UInt16), "Json对象Number类型不为Long不能解析成UInt16类型");
             }
-            return UInt16.Parse((string)jsonObject.Value);
+            return UInt16.Parse((string)jsonObject.Value, CultureInfo.InvariantCulture);
         }
 
 
@@ -241,7 +239,7 @@ namespace LHZ.FastJson.Json
             {
                 throw new JsonDeserializationException(jsonObject, typeof(int), "Json对象Number类型不为Long不能解析成Int32类型");
             }
-            return int.Parse((string)jsonObject.Value);
+            return int.Parse((string)jsonObject.Value, CultureInfo.InvariantCulture);
         }
         /// <summary>
         /// 解析成uint32类型
@@ -258,7 +256,7 @@ namespace LHZ.FastJson.Json
             {
                 throw new JsonDeserializationException(jsonObject, typeof(uint), "Json对象Number类型不为Long不能解析成UInt32类型");
             }
-            return uint.Parse((string)jsonObject.Value);
+            return uint.Parse((string)jsonObject.Value, CultureInfo.InvariantCulture);
         }
 
         /// <summary>
@@ -276,7 +274,7 @@ namespace LHZ.FastJson.Json
             {
                 throw new JsonDeserializationException(jsonObject, typeof(long), "Json对象Number类型不为Long不能解析成Int64类型");
             }
-            return long.Parse((string)jsonObject.Value);
+            return long.Parse((string)jsonObject.Value, CultureInfo.InvariantCulture);
         }
 
         /// <summary>
@@ -294,7 +292,7 @@ namespace LHZ.FastJson.Json
             {
                 throw new JsonDeserializationException(jsonObject, typeof(ulong), "Json对象Number类型不为Long不能解析成UInt64类型");
             }
-            return ulong.Parse((string)jsonObject.Value);
+            return ulong.Parse((string)jsonObject.Value, CultureInfo.InvariantCulture);
         }
 
         /// <summary>
@@ -308,7 +306,7 @@ namespace LHZ.FastJson.Json
             {
                 throw new JsonDeserializationException(jsonObject, typeof(float), "Json对象不为Number类型不能解析成Float类型");
             }
-            return float.Parse((string)jsonObject.Value);
+            return float.Parse((string)jsonObject.Value, CultureInfo.InvariantCulture);
         }
         /// <summary>
         /// 解析成双精度浮点类型
@@ -321,7 +319,7 @@ namespace LHZ.FastJson.Json
             {
                 throw new JsonDeserializationException(jsonObject, typeof(double), "Json对象不为Number类型不能解析成Double类型");
             }
-            return double.Parse((string)jsonObject.Value);
+            return double.Parse((string)jsonObject.Value, CultureInfo.InvariantCulture);
         }
         /// <summary>
         /// 解析成数字类型
@@ -334,7 +332,7 @@ namespace LHZ.FastJson.Json
             {
                 throw new JsonDeserializationException(jsonObject, typeof(decimal), "Json对象不为Number类型不能解析成Decimal类型");
             }
-            return decimal.Parse((string)jsonObject.Value);
+            return decimal.Parse((string)jsonObject.Value, CultureInfo.InvariantCulture);
         }
 
         /// <summary>
@@ -366,7 +364,7 @@ namespace LHZ.FastJson.Json
             }
             else if (jsonObject.Type == JsonType.Number && ((JsonNumber)jsonObject).NumberType == NumberType.Long)
             {
-                int value = int.Parse((string)jsonObject.Value);
+                int value = int.Parse((string)jsonObject.Value, CultureInfo.InvariantCulture);
                 if (!System.Enum.IsDefined(type, value))
                 {
                     throw new JsonDeserializationException(jsonObject, type, "当前Number数字，在枚举中未定义");
@@ -492,12 +490,12 @@ namespace LHZ.FastJson.Json
             if (genericType.IsValueType)
             {
                 loopexpres.Add(Expression.Call(result, typeof(IDictionary).GetMethod("Add", new Type[] { typeof(object), typeof(object) }), Expression.Property(keyValue, "Key"),
-                    Expression.Convert(Expression.Call(typeof(JsonDeserialzerExpression<>).MakeGenericType(genericType).GetMethod("Deserialzer", new Type[] { typeof(IJsonObject) }), Expression.Property(keyValue, "Value")), typeof(object))));
+                    Expression.Convert(Expression.Call(typeof(JsonDeserialzerExpression<>).MakeGenericType(genericType).GetMethod("Deserialzer", new Type[] { typeof(IJsonObject), typeof(Dictionary<Type, IJsonCustomConverter>) }), Expression.Property(keyValue, "Value"), jsonCustomConvertersParameter), typeof(object))));
             }
-            else 
+            else
             {
                 loopexpres.Add(Expression.Call(result, typeof(IDictionary).GetMethod("Add", new Type[] { typeof(object), typeof(object) }), Expression.Property(keyValue, "Key"),
-                    Expression.Call(typeof(JsonDeserialzerExpression<>).MakeGenericType(genericType).GetMethod("Deserialzer", new Type[] { typeof(IJsonObject) }), Expression.Property(keyValue, "Value"))));
+                    Expression.Call(typeof(JsonDeserialzerExpression<>).MakeGenericType(genericType).GetMethod("Deserialzer", new Type[] { typeof(IJsonObject), typeof(Dictionary<Type, IJsonCustomConverter>) }), Expression.Property(keyValue, "Value"), jsonCustomConvertersParameter)));
             }
 
             expres.Add(Expression.Loop(Expression.Block(loopexpres), loopLabel));
@@ -548,7 +546,7 @@ namespace LHZ.FastJson.Json
             //循环数组赋值
             loopexpres.Add(Expression.IfThen(Expression.GreaterThanOrEqual(i, length), Expression.Break(loopLabel)));
             var item = Expression.Call(jsonArrayValue, typeof(List<IJsonObject>).GetMethod("get_Item"), i);
-            loopexpres.Add(Expression.Call(result, curType.GetMethod("Set"), i, Expression.Call(typeof(JsonDeserialzerExpression<>).MakeGenericType(elementType).GetMethod("Deserialzer", new Type[] { typeof(IJsonObject) }), item)));
+            loopexpres.Add(Expression.Call(result, curType.GetMethod("Set"), i, Expression.Call(typeof(JsonDeserialzerExpression<>).MakeGenericType(elementType).GetMethod("Deserialzer", new Type[] { typeof(IJsonObject), typeof(Dictionary<Type, IJsonCustomConverter>) }), item, jsonCustomConvertersParameter)));
             loopexpres.Add(Expression.Assign(i, Expression.Increment(i)));
             //loopexpres.Add(Expression.AddAssign(Expression.ArrayIndex(result, i),
             //    Expression.Call(typeof(JsonDeserialzerExpression<>).MakeGenericType(elementType).GetMethod("Deserialzer", new Type[] { typeof(IJsonObject) }), item)));
@@ -609,8 +607,8 @@ namespace LHZ.FastJson.Json
             //循环List赋值
             loopexpres.Add(Expression.IfThen(Expression.GreaterThanOrEqual(i, length), Expression.Break(label)));
             var item = Expression.Call(jsonArrayValue, typeof(List<IJsonObject>).GetMethod("get_Item"), i);
-            loopexpres.Add(Expression.Call(result, curType.GetMethod("Add", new Type[] { genericType }), 
-                Expression.Call(typeof(JsonDeserialzerExpression<>).MakeGenericType(genericType).GetMethod("Deserialzer", new Type[] { typeof(IJsonObject) }), item)));
+            loopexpres.Add(Expression.Call(result, curType.GetMethod("Add", new Type[] { genericType }),
+                Expression.Call(typeof(JsonDeserialzerExpression<>).MakeGenericType(genericType).GetMethod("Deserialzer", new Type[] { typeof(IJsonObject), typeof(Dictionary<Type, IJsonCustomConverter>) }), item, jsonCustomConvertersParameter)));
             loopexpres.Add(Expression.Assign(i, Expression.Increment(i)));
             expres.Add(Expression.Loop(Expression.Block(loopexpres), label));
             expres.Add(Expression.Label(returnLabel));
@@ -696,7 +694,7 @@ namespace LHZ.FastJson.Json
                 var jsonIgnored = Attribute.GetCustomAttribute(item, typeof(JsonIgnoredAttribute)) as JsonIgnoredAttribute;
                 if (jsonIgnored != null && (jsonIgnored.JsonIgnoredMethod & JsonMethods.Deserialize) == JsonMethods.Deserialize)
                 {
-                    break;
+                    continue;
                 }
                 #region 自定义属性名称处理
                 string jsonPropertyName = JsonUtility.GetPropertyName(item);
@@ -746,7 +744,7 @@ namespace LHZ.FastJson.Json
             expres.Add(Expression.IfThen(Expression.Equal(Expression.Property(jsonObjectParameter, "Type"), Expression.Constant(JsonType.Null)),
                 Expression.Return(returnLabel)));
             expres.Add(Expression.Assign(result, Expression.New(curType.GetConstructor(new Type[] { genericType }),
-                Expression.Call(typeof(JsonDeserialzerExpression<>).MakeGenericType(genericType).GetMethod("Deserialzer", new Type[] { typeof(IJsonObject) }), jsonObjectParameter))));
+                Expression.Call(typeof(JsonDeserialzerExpression<>).MakeGenericType(genericType).GetMethod("Deserialzer", new Type[] { typeof(IJsonObject), typeof(Dictionary<Type, IJsonCustomConverter>) }), jsonObjectParameter, jsonCustomConvertersParameter))));
 
             expres.Add(Expression.Label(returnLabel));
             expres.Add(result);

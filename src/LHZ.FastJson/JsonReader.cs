@@ -88,7 +88,14 @@ namespace LHZ.FastJson
                 _endPoint = point + _jsonString.Length;
                 _curPoint = point;
 
-                _jsonObject = GetJsonObject();
+                var jsonObject = GetJsonObject();
+                SkipWhitespace();
+                if (_curPoint != _endPoint)
+                {
+                    int index = (int)(_curPoint - _startPoint);
+                    throw new JsonReadException(index, "字符位置[" + index + "]处，Json字符串已解析完成但仍存在多余字符");
+                }
+                _jsonObject = jsonObject;
             }
             return _jsonObject;
         }
@@ -107,7 +114,7 @@ namespace LHZ.FastJson
             {
                 return GetJsonString();
             }
-            else if (*_curPoint >= '0' && *_curPoint <= '9')
+            else if ((*_curPoint >= '0' && *_curPoint <= '9') || *_curPoint == '-')
             {
                 return GetJsonNumber();
             }
@@ -158,34 +165,14 @@ namespace LHZ.FastJson
         /// <returns>属性名称</returns>
         private string GetAttrName()
         {
-            if (*_curPoint != '"')
-            {
-                int index = (int)(_curPoint - _startPoint);
-                throw new JsonReadException(index, "字符位置[" + index + "]处，Json字符串解析属性名错误");
-            }
-
-            MoveNext();
-            char* startPoint = _curPoint;
             int startIndex = (int)(_curPoint - _startPoint);
-            while (*_curPoint != '"')
+            string name = ReadStringLiteral(startIndex, "属性名");
+            if (name.Length == 0)
             {
-                if (*_curPoint == '\\')
-                {
-                    int index = (int)(_curPoint - _startPoint);
-                    throw new JsonReadException(index, "字符位置[" + index + "]处，Json属性名解析错误，属性名不能有转义字符");
-                }
-                MoveNext();
+                throw new JsonReadException(startIndex, "属性名称不能为空！");
             }
-            if (startPoint == _curPoint)
-            {
-                int index = (int)(startPoint - _startPoint);
-                throw new JsonReadException(index, "属性名称不能为空！");
-            }
-            string name = new String(_startPoint, (int)(startPoint - _startPoint), (int)(_curPoint - startPoint));
-            MoveNext();
             return name;
         }
-#if NET40 || NET45 || NET46
         /// <summary>
         /// 解析Json String对象
         /// </summary>
@@ -193,119 +180,119 @@ namespace LHZ.FastJson
         private unsafe JsonObject GetJsonString()
         {
             int index = (int)(_curPoint - _startPoint);
-            int count = 0;
-            if (*_curPoint != '"')
-            {
-                throw new JsonReadException(index, "字符位置[" + index + "]处，Json字符串解析string错误");
-            }
-            StringBuilder stringBuilder = new StringBuilder();
-            MoveNext();
-
-            int startIndex = (int)(_curPoint - _startPoint);
-            while (*_curPoint != '"')
-            {
-                if (*_curPoint == '\\')
-                {
-                    count = (int)(_curPoint - _startPoint) - startIndex;
-                    if (count > 0)
-                    {
-                        stringBuilder.Append(_jsonString, startIndex, count);
-                    }
-
-                    MoveNext();
-                    switch (*_curPoint)
-                    {
-                        case '\'': stringBuilder.Append('\''); break;
-                        case '"': stringBuilder.Append('\"'); break;
-                        case '\\': stringBuilder.Append('\\'); break;
-                        case '0': stringBuilder.Append('\0'); break;
-                        case 'a': stringBuilder.Append('\a'); break;
-                        case 'b': stringBuilder.Append('\b'); break;
-                        case 'f': stringBuilder.Append('\f'); break;
-                        case 'n': stringBuilder.Append('\n'); break;
-                        case 'r': stringBuilder.Append('\r'); break;
-                        case 't': stringBuilder.Append('\t'); break;
-                        case 'v': stringBuilder.Append('\v'); break;
-                        default:
-                            index = (int)(_curPoint - _startPoint);
-                            throw new JsonReadException(index, "字符位置[" + index + "]处，Json字符串解析错误，'\\" + *_curPoint + "'转义失败");
-                    }
-                    MoveNext();
-                    startIndex = (int)(_curPoint - _startPoint);
-                    continue;
-                }
-                MoveNext();
-            }
-            count = (int)(_curPoint - _startPoint) - startIndex;
-            if (count > 0)
-            {
-                stringBuilder.Append(_jsonString, startIndex, count);
-            }
-            MoveNext();
-
-            return new JsonString(stringBuilder.ToString(), index);
+            return new JsonString(ReadStringLiteral(index, "string"), index);
         }
-#else
-        /// <summary>
-        /// 解析Json String对象
-        /// </summary>
-        /// <returns>Json对象</returns>
-        private unsafe JsonObject GetJsonString()
+
+        private string ReadStringLiteral(int index, string targetName)
         {
-            int index = (int)(_curPoint - _startPoint);
-            int count = 0;
             if (*_curPoint != '"')
             {
-                throw new JsonReadException(index, "字符位置[" + index + "]处，Json字符串解析string错误");
+                throw new JsonReadException(index, "字符位置[" + index + "]处，Json字符串解析" + targetName + "错误");
             }
+
             StringBuilder stringBuilder = new StringBuilder();
             MoveNext();
-            
-            char* startPoint = _curPoint;
-            while (*_curPoint != '"')
+
+            while (true)
             {
-                if (*_curPoint == '\\')
+                if (_curPoint >= _endPoint)
                 {
-                    count = (int)(_curPoint - startPoint);
-                    if (count > 0)
+                    int curIndex = (int)(_curPoint - _startPoint);
+                    throw new JsonReadException(curIndex, "字符位置[" + curIndex + "]处，Json字符串解析错误，字符串未闭合");
+                }
+
+                char current = *_curPoint;
+                if (current == '"')
+                {
+                    MoveNext();
+                    return stringBuilder.ToString();
+                }
+
+                if (current < 0x20)
+                {
+                    int curIndex = (int)(_curPoint - _startPoint);
+                    throw new JsonReadException(curIndex, "字符位置[" + curIndex + "]处，Json字符串解析错误，字符串中存在未转义控制字符");
+                }
+
+                if (current == '\\')
+                {
+                    MoveNext();
+                    if (_curPoint >= _endPoint)
                     {
-                        stringBuilder.Append(startPoint, count);
+                        int curIndex = (int)(_curPoint - _startPoint);
+                        throw new JsonReadException(curIndex, "字符位置[" + curIndex + "]处，Json字符串解析错误，转义字符未完成");
                     }
 
-                    MoveNext();
                     switch (*_curPoint)
                     {
-                        case '\'': stringBuilder.Append('\''); break; 
                         case '"': stringBuilder.Append('\"'); break;
                         case '\\': stringBuilder.Append('\\'); break;
-                        case '0': stringBuilder.Append('\0'); break;
-                        case 'a': stringBuilder.Append('\a'); break;
+                        case '/': stringBuilder.Append('/'); break;
                         case 'b': stringBuilder.Append('\b'); break;
                         case 'f': stringBuilder.Append('\f'); break;
                         case 'n': stringBuilder.Append('\n'); break;
                         case 'r': stringBuilder.Append('\r'); break;
                         case 't': stringBuilder.Append('\t'); break;
-                        case 'v': stringBuilder.Append('\v'); break;
+                        case 'u': stringBuilder.Append(ReadUnicodeEscape()); break;
                         default:
-                            index = (int)(_curPoint - _startPoint);
-                            throw new JsonReadException(index, "字符位置[" + index + "]处，Json字符串解析错误，'\\" + *_curPoint + "'转义失败");
+                            int curIndex = (int)(_curPoint - _startPoint);
+                            throw new JsonReadException(curIndex, "字符位置[" + curIndex + "]处，Json字符串解析错误，'\\" + *_curPoint + "'转义失败");
                     }
                     MoveNext();
-                    startPoint = _curPoint;
                     continue;
                 }
+
+                stringBuilder.Append(current);
                 MoveNext();
             }
-            count = (int)(_curPoint - startPoint);
-            if (count > 0)
-            {
-                stringBuilder.Append(startPoint, count);
-            }
-            MoveNext();
-
-            return new JsonString(stringBuilder.ToString(), index);
         }
-#endif
+
+        private char ReadUnicodeEscape()
+        {
+            int value = 0;
+            for (int i = 0; i < 4; i++)
+            {
+                MoveNext();
+                if (_curPoint >= _endPoint || !IsHexDigit(*_curPoint))
+                {
+                    int index = (int)(_curPoint - _startPoint);
+                    throw new JsonReadException(index, "字符位置[" + index + "]处，Json字符串解析错误，Unicode转义字符格式错误");
+                }
+                value = value * 16 + HexToInt(*_curPoint);
+            }
+            return (char)value;
+        }
+
+        private static bool IsDigit(char value)
+        {
+            return value >= '0' && value <= '9';
+        }
+
+        private static bool IsOneToNine(char value)
+        {
+            return value >= '1' && value <= '9';
+        }
+
+        private static bool IsHexDigit(char value)
+        {
+            return (value >= '0' && value <= '9') ||
+                   (value >= 'a' && value <= 'f') ||
+                   (value >= 'A' && value <= 'F');
+        }
+
+        private static int HexToInt(char value)
+        {
+            if (value >= '0' && value <= '9')
+            {
+                return value - '0';
+            }
+            if (value >= 'a' && value <= 'f')
+            {
+                return value - 'a' + 10;
+            }
+            return value - 'A' + 10;
+        }
+
         /// <summary>
         /// 解析Json Number对象
         /// </summary>
@@ -315,21 +302,70 @@ namespace LHZ.FastJson
             int index = (int)(_curPoint - _startPoint);
             char* startPorint = _curPoint;
             bool hasPoint = false;
+            bool hasExponent = false;
 
-            while ((*_curPoint >= '0' && *_curPoint <= '9') || *_curPoint == '.')
+            if (*_curPoint == '-')
             {
-                if (*_curPoint == '.')
-                {
-                    if (hasPoint)
-                    {
-                        throw new JsonReadException(index, "字符位置[" + index + "]处，Json字符串解析错误，出现多个小数点，解析number出错");
-                    }
-                    hasPoint = true;
-                }
                 MoveNext();
+                if (_curPoint >= _endPoint || !IsDigit(*_curPoint))
+                {
+                    throw new JsonReadException(index, "字符位置[" + index + "]处，Json字符串解析错误，负号后缺少数字，解析number出错");
+                }
+            }
+
+            if (*_curPoint == '0')
+            {
+                MoveNext();
+                if (_curPoint < _endPoint && IsDigit(*_curPoint))
+                {
+                    throw new JsonReadException(index, "字符位置[" + index + "]处，Json字符串解析错误，number不能包含前导零");
+                }
+            }
+            else if (IsOneToNine(*_curPoint))
+            {
+                while (_curPoint < _endPoint && IsDigit(*_curPoint))
+                {
+                    MoveNext();
+                }
+            }
+            else
+            {
+                throw new JsonReadException(index, "字符位置[" + index + "]处，Json字符串解析错误，解析number出错");
+            }
+
+            if (_curPoint < _endPoint && *_curPoint == '.')
+            {
+                hasPoint = true;
+                MoveNext();
+                if (_curPoint >= _endPoint || !IsDigit(*_curPoint))
+                {
+                    throw new JsonReadException(index, "字符位置[" + index + "]处，Json字符串解析错误，小数点后缺少数字，解析number出错");
+                }
+                while (_curPoint < _endPoint && IsDigit(*_curPoint))
+                {
+                    MoveNext();
+                }
+            }
+
+            if (_curPoint < _endPoint && (*_curPoint == 'e' || *_curPoint == 'E'))
+            {
+                hasExponent = true;
+                MoveNext();
+                if (_curPoint < _endPoint && (*_curPoint == '+' || *_curPoint == '-'))
+                {
+                    MoveNext();
+                }
+                if (_curPoint >= _endPoint || !IsDigit(*_curPoint))
+                {
+                    throw new JsonReadException(index, "字符位置[" + index + "]处，Json字符串解析错误，指数后缺少数字，解析number出错");
+                }
+                while (_curPoint < _endPoint && IsDigit(*_curPoint))
+                {
+                    MoveNext();
+                }
             }
             string numberStr = new string(startPorint, 0, (int)(_curPoint - startPorint));
-            return new JsonNumber(hasPoint ? Enum.NumberType.Double: Enum.NumberType.Long, numberStr, index);
+            return new JsonNumber(hasPoint || hasExponent ? Enum.NumberType.Double: Enum.NumberType.Long, numberStr, index);
         }
         /// <summary>
         /// 解析Json Boolean对象
@@ -453,6 +489,12 @@ namespace LHZ.FastJson
                 if (*_curPoint == ',')
                 {
                     MoveNext();
+                    SkipWhitespace();
+                    if (*_curPoint == ']')
+                    {
+                        index = (int)(_curPoint - _startPoint);
+                        throw new JsonReadException(index, "字符位置[" + index + "]处，Json字符串解析Array错误，数组不能以逗号结尾");
+                    }
                     continue;
                 }
                 else if (*_curPoint == ']')
