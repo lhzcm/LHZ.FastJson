@@ -6,3 +6,4 @@ src/.vs
 TestResults/
 src/LHZ.FastJson.Benchmark/bin
 src/LHZ.FastJson.Benchmark/obj
+BenchmarkDotNet.Artifacts/

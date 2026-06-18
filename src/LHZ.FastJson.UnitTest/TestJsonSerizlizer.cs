@@ -1,3 +1,4 @@
+using LHZ.FastJson.Enum;
 using LHZ.FastJson.Json;
 using LHZ.FastJson.Json.Attributes;
 using LHZ.FastJson.Json.CustomConverter;
@@ -230,7 +231,13 @@ namespace LHZ.FastJson.UnitTest
             var jsonObj = (new JsonReader(jsonStr)).JsonRead();
             Assert.AreEqual(jsonObj["studentName"].ToString(), name);
         }
-
+        [Test]
+        public void TestEnumSerialize()
+        {
+            var obj = new TestEnumClass(){ObjectType = ObjectType.Enum, Name="枚举类型" };
+            var jsonStr = JsonConvert.Serialize(obj);
+            Assert.AreEqual(jsonStr, "{\"ObjectType\":14,\"Name\":\"枚举类型\"}");
+        }
         public class JsonProptryNameAttributeTest
         {
             [JsonProperty("studentName")]
@@ -262,14 +269,10 @@ namespace LHZ.FastJson.UnitTest
             [Json.Attributes.JsonIgnored(Enum.JsonMethods.Serialize)]
             public float Height { get; set; }
         }
-
-        //public class CustomConvert : JsonCustomConvert<TestObj>
-        //{
-        //    public override string Serialize(TestObj dist)
-        //    {
-        //        return "\"CustomConvert\"";
-        //    }
-        //}
-
+        internal class TestEnumClass
+        {
+            public ObjectType ObjectType{get; set;}
+            public string Name {get; set;}
+        }
     }
 }

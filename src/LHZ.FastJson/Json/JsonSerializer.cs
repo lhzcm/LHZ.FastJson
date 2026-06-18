@@ -146,7 +146,7 @@ namespace LHZ.FastJson.Json
             {
                 throw new Exception($"序列化失败，类型{objType.FullName}不同的属性存在相同的属性名\"{samePropertyName}\"");
             }
-            
+
             //添加json对象类型左大括号
             expList.Add(Expression.Call(jsonStrBuilder, typeof(StringBuilder).GetMethod("Append", new Type[] { typeof(char) }), Expression.Constant('{')));
 
@@ -160,11 +160,9 @@ namespace LHZ.FastJson.Json
                 #region 自定义属性名称处理
                 string jsonPropertyName = JsonUtility.GetPropertyName(item);
                 #endregion
-
                 expList.Add(Expression.Call(thisObjParameter, ((Action<string>)SerializePropertyName).Method, Expression.Constant(jsonPropertyName)));
                 switch (objectType)
                 {
-
                     case ObjectType.Boolean: exp = Expression.Call(thisObjParameter, ((Action<bool>)SerializeBoolean).Method, Expression.Property(obj, item.Name)); break;
                     case ObjectType.Int32: exp = Expression.Call(thisObjParameter, ((Action<int>)SerializeInt32).Method, Expression.Property(obj, item.Name)); break;
                     case ObjectType.Int64: exp = Expression.Call(thisObjParameter, ((Action<long>)SerializeInt64).Method, Expression.Property(obj, item.Name)); break;
@@ -178,7 +176,7 @@ namespace LHZ.FastJson.Json
                     case ObjectType.Double: exp = Expression.Call(thisObjParameter, ((Action<double>)SerializeDouble).Method, Expression.Property(obj, item.Name)); break;
                     case ObjectType.Decimal: exp = Expression.Call(thisObjParameter, ((Action<decimal>)SerializeDecimal).Method, Expression.Property(obj, item.Name)); break;
                     case ObjectType.DateTime: exp = Expression.Call(thisObjParameter, ((Action<DateTime>)SerializeDateTime).Method, Expression.Property(obj, item.Name)); break;
-                    case ObjectType.Enum: exp = Expression.Call(thisObjParameter, ((Action<object, Type>)SerializeEnum).Method, Expression.Property(obj, item.Name), Expression.Constant(propertyType)); break;
+                    case ObjectType.Enum: exp = Expression.Call(thisObjParameter, ((Action<System.Enum>)SerializeEnum).Method, Expression.Convert(Expression.Property(obj, item.Name), typeof(System.Enum))); break;
                     case ObjectType.String: exp = Expression.Call(thisObjParameter, ((Action<string>)SerializeString).Method, Expression.Property(obj, item.Name)); break;
                     case ObjectType.Nullable: exp = Expression.Call(thisObjParameter, ((Action<object>)SerializeAny).Method, Expression.Convert(Expression.Property(obj, item.Name), typeof(object))); break;
                     case ObjectType.Dictionary:
@@ -284,7 +282,7 @@ namespace LHZ.FastJson.Json
                 case ObjectType.Double: exp = Expression.Call(thisObjParameter, ((Action<double>)SerializeDouble).Method, obj); break;
                 case ObjectType.Decimal: exp = Expression.Call(thisObjParameter, ((Action<decimal>)SerializeDecimal).Method, obj); break;
                 case ObjectType.DateTime: exp = Expression.Call(thisObjParameter, ((Action<DateTime>)SerializeDateTime).Method, obj); break;
-                case ObjectType.Enum: exp = Expression.Call(thisObjParameter, ((Action<object, Type>)SerializeEnum).Method, obj, Expression.Constant(objType)); break;
+                case ObjectType.Enum: exp = Expression.Call(thisObjParameter, ((Action<System.Enum>)SerializeEnum).Method, obj); break;
                 case ObjectType.String: exp = Expression.Call(thisObjParameter, ((Action<string>)SerializeString).Method, obj); break;
                 case ObjectType.Nullable: exp = Expression.Call(thisObjParameter, ((Action<object>)SerializeAny).Method, objParameter); break;
                 case ObjectType.Dictionary: exp = Expression.Call(thisObjParameter, ((Action<IDictionary>)SerializeDictionary).Method, obj); break;
@@ -350,7 +348,7 @@ namespace LHZ.FastJson.Json
                 case ObjectType.Double: exp = Expression.Call(thisObjParameter, ((Action<double>)SerializeDouble).Method, objParameter); break;
                 case ObjectType.Decimal: exp = Expression.Call(thisObjParameter, ((Action<decimal>)SerializeDecimal).Method, objParameter); break;
                 case ObjectType.DateTime: exp = Expression.Call(thisObjParameter, ((Action<DateTime>)SerializeDateTime).Method, objParameter); break;
-                case ObjectType.Enum: exp = Expression.Call(thisObjParameter, ((Action<object, Type>)SerializeEnum).Method, objParameter, Expression.Constant(objType)); break;
+                case ObjectType.Enum: exp = Expression.Call(thisObjParameter, ((Action<System.Enum>)SerializeEnum).Method, objParameter); break;
                 case ObjectType.String: exp = Expression.Call(thisObjParameter, ((Action<string>)SerializeString).Method, objParameter); break;
                 case ObjectType.Nullable: exp = Expression.Call(thisObjParameter, ((Action<object>)SerializeAny).Method, Expression.Convert(objParameter, typeof(object))); break;
                 case ObjectType.Dictionary: exp = Expression.Call(thisObjParameter, ((Action<IDictionary>)SerializeDictionary).Method, objParameter); break;
@@ -518,10 +516,9 @@ namespace LHZ.FastJson.Json
         /// Enum类型序列化
         /// </summary>
         /// <param name="obj">需要序列化的对象</param>
-        /// <param name="type">对象类型</param>
-        private void SerializeEnum(object obj, Type type)
+        private void SerializeEnum(System.Enum obj)
         {
-            SerializeString(obj.ToString());
+            _jsonStrBuilder.Append(obj.ToString("D"));
         }
         /// <summary>
         /// String类型序列化
