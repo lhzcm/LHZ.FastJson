@@ -96,7 +96,7 @@ namespace LHZ.FastJson.JsonClass
         /// <summary>
         ///字符串位置
         /// </summary>
-        public int Position 
+        public int Position
         {
             get
             {

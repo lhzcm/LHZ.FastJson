@@ -4,6 +4,10 @@ using System.Text;
 
 namespace LHZ.FastJson.Enum.CustomConverter
 {
+    /// <summary>
+    /// 自定义转换项
+    /// </summary>
+    [Flags]
     public enum JsonCustomConvertItem
     {
         /// <summary>
