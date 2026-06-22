@@ -2,6 +2,25 @@
 
 本文档记录 LHZ.FastJson 的重要变更。
 
+## 1.8.2 - 2026-06-22
+
+本版本聚焦 Enum 序列化修复、IJsonObject 反序列化类型正确性，并新增性能基准测试。
+
+### 修复
+
+- 修复 Enum 序列化问题，将 `SerializeEnum(object, Type)` 重构为 `SerializeEnum(System.Enum)`，简化调用并修复潜在的类型转换错误。
+- 修复反序列化为 `IJsonObject` 及其子类（如 `JsonContent`）时赋值类型不正确的问题，改用 `Expression.Convert` 确保类型安全。
+
+### 改进
+
+- 为 `JsonCustomConvertItem` 枚举添加 `[Flags]` 特性，支持位标志组合。
+- 更新 `JsonConvert.Serialize(object, IJsonFormat[])` 的 `[Obsolete]` 消息，提供更明确的替代方法指引。
+
+### 测试
+
+- 新增性能基准测试项目 `LHZ.FastJson.Benchmark`，覆盖序列化、反序列化及 JsonReader 性能测试。
+- 新增回归测试，覆盖 Enum 序列化、IJsonObject 反序列化等场景。
+
 ## 1.8.1 - 2026-06-10
 
 本版本聚焦 JSON 规范兼容性、空值场景稳定性、自定义转换器传递和并发安全。
