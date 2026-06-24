@@ -1,3 +1,10 @@
 {
-    "dotnet.defaultSolution": "src/LHZ.FastJson.sln"
+    "dotnet.defaultSolution": "src/LHZ.FastJson.sln",
+    "chat.tools.terminal.autoApprove": {
+        "dotnet test": true,
+        "git add": true,
+        "git commit": true,
+        "git tag": true,
+        "git push": true
+    }
 }

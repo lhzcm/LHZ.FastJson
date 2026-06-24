@@ -4,6 +4,21 @@
 
 本文档记录 LHZ.FastJson 的重要变更。
 
+## 1.8.4 - 2026-06-24
+
+本版本新增了 `Guid` 类型的序列化和反序列化支持。
+
+### 功能
+
+- 在 `ObjectType` 枚举中添加 `Guid` 类型，实现 GUID 值的正确类型路由。
+- 在 `JsonSerializer` 中添加 `Guid` 序列化支持，以标准连字符格式输出 GUID。
+- 在 `JsonDeserialzerExpression` 中通过专用的 `ConvertToGuid` 方法添加 `Guid` 反序列化支持。
+
+### 测试
+
+- 在 `TestJsonSerizlizer` 中添加 Guid 序列化/反序列化往返测试。
+- 在 `TestJsonDeserizlizer` 中添加 Guid 反序列化测试。
+
 ## 1.8.3 - 2026-06-24
 
 本版本优化了 IJsonObject 反序列化，并完善了项目国际化文档。

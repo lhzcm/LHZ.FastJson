@@ -4,6 +4,21 @@
 
 This document records important changes to LHZ.FastJson.
 
+## 1.8.4 - 2026-06-24
+
+This release adds serialization and deserialization support for the `Guid` type.
+
+### Features
+
+- Added `Guid` type to the `ObjectType` enum, enabling proper type routing for GUID values.
+- Added `Guid` serialization support in `JsonSerializer`, outputting GUIDs in standard hyphenated format.
+- Added `Guid` deserialization support in `JsonDeserialzerExpression` via a dedicated `ConvertToGuid` method.
+
+### Tests
+
+- Added round-trip serialization/deserialization test for `Guid` in `TestJsonSerizlizer`.
+- Added deserialization test for `Guid` in `TestJsonDeserizlizer`.
+
 ## 1.8.3 - 2026-06-24
 
 This release optimizes IJsonObject deserialization and internationalizes the project documentation.
