@@ -4,6 +4,20 @@
 
 本文档记录 LHZ.FastJson 的重要变更。
 
+## 1.8.3 - 2026-06-24
+
+本版本优化了 IJsonObject 反序列化，并完善了项目国际化文档。
+
+### 改进
+
+- 优化 IJsonObject 类型反序列化：当目标类型可从 `IJsonObject` 指派时（如 `System.Object`），直接返回原始 `IJsonObject` 对象，避免不必要的转换，提升性能与正确性。
+- 重新整理 `JsonDeserialzerExpression.cs` 中的 `using` 语句，遵循标准规范（System 命名空间优先）。
+
+### 文档
+
+- 新增 README 和更新日志的英文版本，中文版本分别重命名为 `README_CN.md` 和 `CHANGELOG_CN.md`。
+- 添加中英文文档之间的语言切换链接。
+
 ## 1.8.2 - 2026-06-22
 
 本版本聚焦 Enum 序列化修复、IJsonObject 反序列化类型正确性，并新增性能基准测试。

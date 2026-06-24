@@ -4,6 +4,20 @@
 
 This document records important changes to LHZ.FastJson.
 
+## 1.8.3 - 2026-06-24
+
+This release optimizes IJsonObject deserialization and internationalizes the project documentation.
+
+### Improvements
+
+- Optimized IJsonObject type deserialization: when the target type is assignable from `IJsonObject` (e.g., `System.Object`), the library now returns the raw `IJsonObject` object directly instead of performing unnecessary conversion, improving performance and correctness.
+- Reorganized `using` statements in `JsonDeserialzerExpression.cs` to follow standard conventions (System usings first).
+
+### Documentation
+
+- Added English versions of README (`README.md`) and Changelog (`CHANGELOG.md`), with Chinese versions renamed to `README_CN.md` and `CHANGELOG_CN.md` respectively.
+- Added language switcher links between Chinese and English documentation.
+
 ## 1.8.2 - 2026-06-22
 
 This release focuses on Enum serialization fixes, correct type handling for IJsonObject deserialization, and adds performance benchmarks.
