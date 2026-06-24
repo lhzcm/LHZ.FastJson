@@ -24,6 +24,7 @@ namespace LHZ.FastJson.Enum
         Char,
         String,
         Enum,
+        Guid,
         Dictionary,
         Array,
         List,

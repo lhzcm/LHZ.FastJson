@@ -1,12 +1,12 @@
-using LHZ.FastJson.Json;
-using LHZ.FastJson.Json.CustomConverter;
-using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
+using LHZ.FastJson.Json;
+using LHZ.FastJson.Json.CustomConverter;
+using NUnit.Framework;
 using static LHZ.FastJson.UnitTest.TestJsonSerizlizer;
 
 namespace LHZ.FastJson.UnitTest
@@ -221,6 +221,17 @@ namespace LHZ.FastJson.UnitTest
 
             testint32 = (new JsonDeserializer<Int32>(testStr)).Deserialize();
             Assert.AreEqual(testint32, 1234);
+        }
+        /// <summary>
+        /// 验证 GUID 类型反序列化
+        /// </summary>
+        [Test]
+        public void TestGuid()
+        {
+            var guid = new Guid("d3f5f5e0-8c3b-4d2a-9f1e-2c3b5e6f7a8b");
+            var guidStr = guid.ToString();
+            var deserializedGuid = (new JsonDeserializer<Guid>($"\"{guidStr}\"")).Deserialize();
+            Assert.AreEqual(guid, deserializedGuid);
         }
 
         /// <summary>

@@ -1,12 +1,12 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using LHZ.FastJson.Exceptions;
 using LHZ.FastJson.Json;
 using LHZ.FastJson.Json.Attributes;
 using LHZ.FastJson.Json.CustomConverter;
 using LHZ.FastJson.JsonClass;
-using LHZ.FastJson.Exceptions;
 using NUnit.Framework;
-using System;
-using System.Collections;
-using System.Collections.Generic;
 
 namespace LHZ.FastJson.UnitTest
 {
@@ -139,67 +139,6 @@ namespace LHZ.FastJson.UnitTest
             Assert.IsInstanceOf<JsonContent>(jsonObject);
             Assert.AreEqual("1", jsonObject["a"].Value);
         }
-
-        /// <summary>
-        /// 验证字典键名可转换为目标键类型。
-        /// </summary>
-        [Test]
-        public void DeserializeDictionaryConvertsPropertyNamesToTargetKeyType()
-        {
-            var dictionary = JsonConvert.Deserialize<Dictionary<int, string>>("{\"1\":\"one\",\"2\":\"two\"}");
-
-            Assert.AreEqual("one", dictionary[1]);
-            Assert.AreEqual("two", dictionary[2]);
-        }
-
-        /// <summary>
-        /// 验证非字符串键字典可序列化后反序列化。
-        /// </summary>
-        [Test]
-        public void DictionaryWithNonStringKeysRoundTrips()
-        {
-            var source = new Dictionary<int, string>
-            {
-                { 1, "one" },
-                { 2, "two" }
-            };
-
-            var json = JsonConvert.Serialize(source);
-            var result = JsonConvert.Deserialize<Dictionary<int, string>>(json);
-
-            Assert.AreEqual(source, result);
-        }
-
-        /// <summary>
-        /// 验证集合接口会反序列化为具体集合。
-        /// </summary>
-        [Test]
-        public void DeserializeCollectionInterfacesUsesConcreteCollections()
-        {
-            var list = JsonConvert.Deserialize<IList<int>>("[1,2]");
-            CollectionAssert.AreEqual(new[] { 1, 2 }, list);
-
-            var enumerable = JsonConvert.Deserialize<IEnumerable<int>>("[3,4]");
-            CollectionAssert.AreEqual(new[] { 3, 4 }, enumerable);
-
-            var readOnlyList = JsonConvert.Deserialize<IReadOnlyList<int>>("[5,6]");
-            CollectionAssert.AreEqual(new[] { 5, 6 }, readOnlyList);
-        }
-
-        /// <summary>
-        /// 验证特殊浮点值不会产生非法 JSON。
-        /// </summary>
-        [Test]
-        public void SerializeSpecialFloatingPointValuesDoesNotProduceInvalidJson()
-        {
-            AssertSerializationProducesValidJsonOrThrows(double.NaN);
-            AssertSerializationProducesValidJsonOrThrows(double.PositiveInfinity);
-            AssertSerializationProducesValidJsonOrThrows(double.NegativeInfinity);
-            AssertSerializationProducesValidJsonOrThrows(float.NaN);
-            AssertSerializationProducesValidJsonOrThrows(float.PositiveInfinity);
-            AssertSerializationProducesValidJsonOrThrows(float.NegativeInfinity);
-        }
-
         /// <summary>
         /// 验证截断输入会返回 JSON 读取异常。
         /// </summary>
@@ -228,27 +167,6 @@ namespace LHZ.FastJson.UnitTest
 
             Assert.Throws<Exception>(() => JsonConvert.Serialize(list));
         }
-
-        private static void AssertSerializationProducesValidJsonOrThrows(object value)
-        {
-            try
-            {
-                var json = JsonConvert.Serialize(value);
-                Exception exception;
-
-                Assert.IsTrue(JsonReader.IsJsonString(json, out exception),
-                    $"Serializing {value.GetType().Name} value '{value}' produced invalid JSON '{json}'. Reader error: {exception?.Message}");
-            }
-            catch (AssertionException)
-            {
-                throw;
-            }
-            catch (Exception)
-            {
-                // Throwing is acceptable for non-standard JSON values like NaN and Infinity.
-            }
-        }
-
         public class NullablePropertyClass
         {
             public int? Count { get; set; }

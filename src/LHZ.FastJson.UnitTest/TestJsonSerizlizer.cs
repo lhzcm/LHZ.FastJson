@@ -1,13 +1,13 @@
+using System;
+using System.Collections.Generic;
+using System.Reflection.Metadata.Ecma335;
+using System.Text;
 using LHZ.FastJson.Enum;
 using LHZ.FastJson.Json;
 using LHZ.FastJson.Json.Attributes;
 using LHZ.FastJson.Json.CustomConverter;
 using LHZ.FastJson.Json.Format;
 using NUnit.Framework;
-using System;
-using System.Collections.Generic;
-using System.Reflection.Metadata.Ecma335;
-using System.Text;
 
 namespace LHZ.FastJson.UnitTest
 {
@@ -181,6 +181,17 @@ namespace LHZ.FastJson.UnitTest
             TestStructObj structObj = new TestStructObj() { Name="test2", Age = 10, Height= 170, Obj = null };
             string structjson = (new JsonSerializer(structObj)).Serialize();
             Assert.AreEqual(structjson, "{\"Name\":\"test2\",\"Age\":10,\"Height\":170,\"Obj\":null}");
+        }
+        /// <summary>
+        /// 验证Guid类型的序列化
+        /// </summary>
+        [Test]
+        public void TestGuid()
+        {
+            var guid = Guid.NewGuid();
+            var jsonStr = JsonConvert.Serialize(guid);
+            var guid2 = JsonConvert.Deserialize<Guid>(jsonStr);
+            Assert.AreEqual(guid, guid2);
         }
 
         /// <summary>

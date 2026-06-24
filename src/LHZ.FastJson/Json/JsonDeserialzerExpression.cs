@@ -94,7 +94,10 @@ namespace LHZ.FastJson.Json
                         ((Func<IJsonObject, decimal>)ConvertToDecimal).Method, jsonObjectParameter),  jsonObjectParameter, jsonCustomConvertersParameter);
                 case ObjectType.DateTime:
                     return Expression.Lambda<Func<IJsonObject, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Call(
-                        ((Func<IJsonObject, DateTime>)ConvertToDateTime).Method, jsonObjectParameter),  jsonObjectParameter, jsonCustomConvertersParameter);
+                        ((Func<IJsonObject, DateTime>)ConvertToDateTime).Method, jsonObjectParameter), jsonObjectParameter, jsonCustomConvertersParameter);
+                case ObjectType.Guid:
+                    return Expression.Lambda<Func<IJsonObject, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Call(
+                        ((Func<IJsonObject, Guid>)ConvertToGuid).Method, jsonObjectParameter), jsonObjectParameter, jsonCustomConvertersParameter);
                 case ObjectType.String:
                     return Expression.Lambda<Func<IJsonObject, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Call( 
                         ((Func<IJsonObject, string>)ConvertToString).Method, jsonObjectParameter),  jsonObjectParameter, jsonCustomConvertersParameter);
@@ -131,6 +134,8 @@ namespace LHZ.FastJson.Json
                 return ObjectType.Array;
             else if (typeof(IList).IsAssignableFrom(type))
                 return ObjectType.List;
+            else if (type == typeof(Guid))
+                return ObjectType.Guid;
             //else if (typeof(IEnumerable).IsAssignableFrom(type))
             //    return ObjectType.Enumerable;
             else
@@ -376,6 +381,19 @@ namespace LHZ.FastJson.Json
             {
                 throw new JsonDeserializationException(jsonObject, type, "Json对象的" + jsonObject.Type.ToString() + "类型不能解析成Enum类型");
             }
+        }
+        /// <summary>
+        /// 解析成GUID类型
+        /// </summary>
+        /// <param name="jsonObject">Json对象</param>
+        /// <returns></returns>
+        private static Guid ConvertToGuid(IJsonObject jsonObject)
+        {
+            if (jsonObject.Type != JsonType.String)
+            {
+                throw new JsonDeserializationException(jsonObject, typeof(Guid), "Json对象不为String类型不能解析成Guid类型");
+            }
+            return Guid.Parse((string)jsonObject.Value);
         }
         /// <summary>
         /// 解析成枚举

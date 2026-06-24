@@ -1,10 +1,4 @@
-﻿using LHZ.FastJson.Enum;
-using LHZ.FastJson.Enum.CustomConverter;
-using LHZ.FastJson.Interface;
-using LHZ.FastJson.Json.Attributes;
-using LHZ.FastJson.Json.Format;
-using LHZ.FastJson.Json.Utils;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -14,6 +8,12 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Xml.Schema;
+using LHZ.FastJson.Enum;
+using LHZ.FastJson.Enum.CustomConverter;
+using LHZ.FastJson.Interface;
+using LHZ.FastJson.Json.Attributes;
+using LHZ.FastJson.Json.Format;
+using LHZ.FastJson.Json.Utils;
 
 namespace LHZ.FastJson.Json
 {
@@ -177,6 +177,7 @@ namespace LHZ.FastJson.Json
                     case ObjectType.Decimal: exp = Expression.Call(thisObjParameter, ((Action<decimal>)SerializeDecimal).Method, Expression.Property(obj, item.Name)); break;
                     case ObjectType.DateTime: exp = Expression.Call(thisObjParameter, ((Action<DateTime>)SerializeDateTime).Method, Expression.Property(obj, item.Name)); break;
                     case ObjectType.Enum: exp = Expression.Call(thisObjParameter, ((Action<System.Enum>)SerializeEnum).Method, Expression.Convert(Expression.Property(obj, item.Name), typeof(System.Enum))); break;
+                    case ObjectType.Guid: exp = Expression.Call(thisObjParameter, ((Action<Guid>)SerializeGuid).Method, Expression.Property(obj, item.Name)); break;
                     case ObjectType.String: exp = Expression.Call(thisObjParameter, ((Action<string>)SerializeString).Method, Expression.Property(obj, item.Name)); break;
                     case ObjectType.Nullable: exp = Expression.Call(thisObjParameter, ((Action<object>)SerializeAny).Method, Expression.Convert(Expression.Property(obj, item.Name), typeof(object))); break;
                     case ObjectType.Dictionary:
@@ -245,7 +246,6 @@ namespace LHZ.FastJson.Json
             expList.Add(Expression.Call(jsonStrBuilder, typeof(StringBuilder).GetMethod("Append", new Type[] { typeof(string) }), Expression.Constant("}")));
             return  Expression.Lambda<Action<JsonSerializer, object>>(Expression.Block(new ParameterExpression[] { obj, jsonStrBuilder, stack}, expList), thisObjParameter, objParameter);
         }
-       
         /// <summary>
         /// 创建序列化的表达式
         /// </summary>
@@ -259,14 +259,10 @@ namespace LHZ.FastJson.Json
             var objParameter = Expression.Parameter(typeof(object));
             //对象进行转换
             var obj = Expression.Convert(objParameter, objType);
-            
-        
             //表达式
             Expression exp = null;
 
             ObjectType objectType = GetObjectType(objType);
-            
-            
             switch (objectType)
             {
                 case ObjectType.Boolean: exp = Expression.Call(thisObjParameter, ((Action<bool>)SerializeBoolean).Method, obj); break;
@@ -283,6 +279,7 @@ namespace LHZ.FastJson.Json
                 case ObjectType.Decimal: exp = Expression.Call(thisObjParameter, ((Action<decimal>)SerializeDecimal).Method, obj); break;
                 case ObjectType.DateTime: exp = Expression.Call(thisObjParameter, ((Action<DateTime>)SerializeDateTime).Method, obj); break;
                 case ObjectType.Enum: exp = Expression.Call(thisObjParameter, ((Action<System.Enum>)SerializeEnum).Method, obj); break;
+                case ObjectType.Guid: exp = Expression.Call(thisObjParameter, ((Action<Guid>)SerializeGuid).Method, obj); break;
                 case ObjectType.String: exp = Expression.Call(thisObjParameter, ((Action<string>)SerializeString).Method, obj); break;
                 case ObjectType.Nullable: exp = Expression.Call(thisObjParameter, ((Action<object>)SerializeAny).Method, objParameter); break;
                 case ObjectType.Dictionary: exp = Expression.Call(thisObjParameter, ((Action<IDictionary>)SerializeDictionary).Method, obj); break;
@@ -350,12 +347,12 @@ namespace LHZ.FastJson.Json
                 case ObjectType.DateTime: exp = Expression.Call(thisObjParameter, ((Action<DateTime>)SerializeDateTime).Method, objParameter); break;
                 case ObjectType.Enum: exp = Expression.Call(thisObjParameter, ((Action<System.Enum>)SerializeEnum).Method, objParameter); break;
                 case ObjectType.String: exp = Expression.Call(thisObjParameter, ((Action<string>)SerializeString).Method, objParameter); break;
+                case ObjectType.Guid: exp = Expression.Call(thisObjParameter, ((Action<Guid>)SerializeGuid).Method, objParameter); break;
                 case ObjectType.Nullable: exp = Expression.Call(thisObjParameter, ((Action<object>)SerializeAny).Method, Expression.Convert(objParameter, typeof(object))); break;
                 case ObjectType.Dictionary: exp = Expression.Call(thisObjParameter, ((Action<IDictionary>)SerializeDictionary).Method, objParameter); break;
                 case ObjectType.Enumerable: exp = Expression.Call(thisObjParameter, ((Action<IEnumerable>)SerializeEnumerable).Method, objParameter); break;
                 default: exp = Expression.Invoke(CreateObjectSerializationExpression(objType), thisObjParameter, objParameter); break;
             }
- 
             return Expression.Lambda<Action<JsonSerializer, T>>(exp, thisObjParameter, objParameter);
         }
 
@@ -376,6 +373,8 @@ namespace LHZ.FastJson.Json
                 return ObjectType.Nullable;
             else if (type.IsEnum)
                 return ObjectType.Enum;
+            else if (type == typeof(Guid))
+                return ObjectType.Guid;
             else if (typeof(IDictionary).IsAssignableFrom(type))
                 return ObjectType.Dictionary;
             else if (typeof(IEnumerable).IsAssignableFrom(type))
@@ -519,6 +518,14 @@ namespace LHZ.FastJson.Json
         private void SerializeEnum(System.Enum obj)
         {
             _jsonStrBuilder.Append(obj.ToString("D"));
+        }
+        /// <summary>
+        /// Guid类型序列化
+        /// </summary>
+        /// <param name="obj">需要序列化的对象</param>
+        private void SerializeGuid(Guid obj)
+        {
+            SerializeString(obj.ToString());
         }
         /// <summary>
         /// String类型序列化
