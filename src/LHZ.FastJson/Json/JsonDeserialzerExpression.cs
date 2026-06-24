@@ -1,12 +1,4 @@
-﻿using LHZ.FastJson.Enum;
-using LHZ.FastJson.Exceptions;
-using LHZ.FastJson.Interface;
-using LHZ.FastJson.Json.Attributes;
-using LHZ.FastJson.Json.Utils;
-using LHZ.FastJson.JsonClass;
-using LHZ.FastJson.Wrapper;
-using LHZ.FastJson;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -15,6 +7,14 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
+using LHZ.FastJson;
+using LHZ.FastJson.Enum;
+using LHZ.FastJson.Exceptions;
+using LHZ.FastJson.Interface;
+using LHZ.FastJson.Json.Attributes;
+using LHZ.FastJson.Json.Utils;
+using LHZ.FastJson.JsonClass;
+using LHZ.FastJson.Wrapper;
 
 namespace LHZ.FastJson.Json
 {
@@ -650,12 +650,14 @@ namespace LHZ.FastJson.Json
                 expres.Add(Expression.IfThen(Expression.Equal(Expression.Property(jsonObjectParameter, "Type"), Expression.Constant(JsonType.Null)),
                 Expression.Return(returnLabel)));
             }
-
-            ////判断是否是JsonContent 如果不是抛出异常
-            //expres.Add(Expression.IfThen(Expression.NotEqual(Expression.Property(jsonObjectParameter, "Type"), Expression.Constant(JsonType.Content)),
-            //    Expression.Throw(Expression.New(typeof(JsonDeserializationException).GetConstructor(new Type[] { typeof(IJsonObject), typeof(Type), typeof(string) }),
-            //    jsonObjectParameter, Expression.Constant(curType), Expression.Constant("Json对象不为Content类型不能解析成object类型")))));
-
+            //对象可以指派IJsonObject类型变量 
+            if (curType.IsAssignableFrom(typeof(IJsonObject)))
+            {
+                expres.Add(Expression.Assign(result, jsonObjectParameter));
+                expres.Add(Expression.Label(returnLabel));
+                expres.Add(result);
+                return Expression.Lambda<Func<IJsonObject, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Block(new ParameterExpression[] { result }, expres), jsonObjectParameter, jsonCustomConvertersParameter);
+            }
             if (typeof(IJsonObject).IsAssignableFrom(curType))
             {
                 expres.Add(Expression.Assign(result, Expression.Convert(jsonObjectParameter, curType)));

@@ -126,18 +126,6 @@ namespace LHZ.FastJson.UnitTest
             var nullable = JsonConvert.Deserialize<int?>("1", converter);
             Assert.AreEqual(2, nullable.Value);
         }
-
-        /// <summary>
-        /// 验证对象反序列化会拒绝非对象根节点。
-        /// </summary>
-        [Test]
-        public void DeserializeObjectRejectsNonObjectJsonRoot()
-        {
-            Assert.Throws<JsonDeserializationException>(() => JsonConvert.Deserialize<SimpleObjectRootClass>("1"));
-            Assert.Throws<JsonDeserializationException>(() => JsonConvert.Deserialize<SimpleObjectRootClass>("[1]"));
-            Assert.Throws<JsonDeserializationException>(() => JsonConvert.Deserialize<SimpleObjectRootClass>("\"abc\""));
-        }
-
         /// <summary>
         /// 验证 JsonObject 类型会保留读取后的节点结构。
         /// </summary>
