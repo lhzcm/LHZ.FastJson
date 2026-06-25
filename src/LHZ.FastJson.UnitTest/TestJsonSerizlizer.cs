@@ -43,7 +43,7 @@ namespace LHZ.FastJson.UnitTest
             testObj.Add(new TestObj() { Name = "test8", Age = 24, Height = 230.453f });
             testObj.Add(new TestObj() { Name = "test9", Age = 11, Height = 20.443f });
             string obj = null;
-            for(int i = 0; i < 10000; i++)
+            for (int i = 0; i < 10000; i++)
                 obj = (new JsonSerializer(testObj)).Serialize();
             Assert.IsTrue(obj != null);
         }
@@ -79,7 +79,7 @@ namespace LHZ.FastJson.UnitTest
         {
             Dictionary<string, object> testObj = new Dictionary<string, object>();
             testObj.Add("test1", new { Name = "test1", Age = 18 });
-            testObj.Add("test2", new { Name = "test2", IsTeacher = true});
+            testObj.Add("test2", new { Name = "test2", IsTeacher = true });
             string obj = (new JsonSerializer(testObj)).Serialize();
             Assert.IsTrue(obj != null);
         }
@@ -94,7 +94,7 @@ namespace LHZ.FastJson.UnitTest
             string obj = (new JsonSerializer(testObj, formats)).Serialize();
             Assert.AreEqual(obj, "\"2020-07-18\"");
 
-            formats[0] = new DateTimeJsonFormat((n)=>"test123");
+            formats[0] = new DateTimeJsonFormat((n) => "test123");
             obj = (new JsonSerializer(testObj, formats)).Serialize();
             Assert.AreEqual(obj, "\"test123\"");
 
@@ -106,7 +106,7 @@ namespace LHZ.FastJson.UnitTest
         public void TestString()
         {
             string testObj = "test\\\"\\\\tal";
-            
+
             string obj = (new JsonSerializer(testObj)).Serialize();
             Assert.IsTrue("\"test\\\\\\\"\\\\\\\\tal\"" == obj);
 
@@ -178,7 +178,7 @@ namespace LHZ.FastJson.UnitTest
         [Test]
         public void TestStruct()
         {
-            TestStructObj structObj = new TestStructObj() { Name="test2", Age = 10, Height= 170, Obj = null };
+            TestStructObj structObj = new TestStructObj() { Name = "test2", Age = 10, Height = 170, Obj = null };
             string structjson = (new JsonSerializer(structObj)).Serialize();
             Assert.AreEqual(structjson, "{\"Name\":\"test2\",\"Age\":10,\"Height\":170,\"Obj\":null}");
         }
@@ -216,7 +216,8 @@ namespace LHZ.FastJson.UnitTest
         [Test]
         public void TestCustomSerialize()
         {
-            var str = (new JsonSerializer(1, new JsonCustomConvert<int>((int o) => { 
+            var str = (new JsonSerializer(1, new JsonCustomConvert<int>((int o) =>
+            {
                 Assert.AreEqual(1, o);
                 return "2";
             }))).Serialize();
@@ -233,8 +234,8 @@ namespace LHZ.FastJson.UnitTest
         public void TestJsonProptryNameAttribute()
         {
             var name = "test";
-            var testObj = new JsonProptryNameAttributeTest() 
-            { 
+            var testObj = new JsonProptryNameAttributeTest()
+            {
                 Name = name,
                 Age = 10
             };
@@ -245,9 +246,34 @@ namespace LHZ.FastJson.UnitTest
         [Test]
         public void TestEnumSerialize()
         {
-            var obj = new TestEnumClass(){ObjectType = ObjectType.Enum, Name="枚举类型" };
+            var obj = new TestEnumClass() { ObjectType = ObjectType.Enum, Name = "枚举类型" };
             var jsonStr = JsonConvert.Serialize(obj);
             Assert.AreEqual(jsonStr, "{\"ObjectType\":14,\"Name\":\"枚举类型\"}");
+        }
+        [Test]
+        public void TestDitionarySerialize()
+        {
+            var obj = new Dictionary<string, SimpleModel>();
+            obj.Add("test1", new SimpleModel()
+            {
+                Id = 1,
+                Name = "test1",
+                Price = 10.0,
+                IsActive = true,
+                CreateTime = DateTime.Parse("2026-06-24 23:32:03"),
+                Uid = Guid.Parse("5789473f-32c1-43f4-b723-834e05b07afd")
+            });
+            obj.Add("test2", new SimpleModel()
+            {
+                Id = 2,
+                Name = "test2",
+                Price = 20.0,
+                IsActive = false,
+                CreateTime = DateTime.Parse("2026-06-24 23:32:03"),
+                Uid = Guid.Parse("0d6c8fd4-b18d-47d2-95c2-b07c9a5d8312")
+            });
+            var jsonStr = JsonConvert.Serialize(obj);
+            Assert.AreEqual(jsonStr, "{\"test1\":{\"Id\":1,\"Name\":\"test1\",\"Price\":10,\"IsActive\":true,\"CreateTime\":\"2026-06-24 23:32:03\",\"Uid\":\"5789473f-32c1-43f4-b723-834e05b07afd\"},\"test2\":{\"Id\":2,\"Name\":\"test2\",\"Price\":20,\"IsActive\":false,\"CreateTime\":\"2026-06-24 23:32:03\",\"Uid\":\"0d6c8fd4-b18d-47d2-95c2-b07c9a5d8312\"}}");
         }
         public class JsonProptryNameAttributeTest
         {
@@ -282,8 +308,17 @@ namespace LHZ.FastJson.UnitTest
         }
         internal class TestEnumClass
         {
-            public ObjectType ObjectType{get; set;}
-            public string Name {get; set;}
+            public ObjectType ObjectType { get; set; }
+            public string Name { get; set; }
+        }
+        public class SimpleModel
+        {
+            public int Id { get; set; }
+            public string Name { get; set; } = string.Empty;
+            public double Price { get; set; }
+            public bool IsActive { get; set; }
+            public DateTime CreateTime { get; set; }
+            public Guid Uid { get; set; }
         }
     }
 }
