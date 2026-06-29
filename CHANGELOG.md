@@ -4,6 +4,26 @@
 
 This document records important changes to LHZ.FastJson.
 
+## 1.8.5 - 2026-06-29
+
+This release refactors the JSON parsing and JsonClass infrastructure, introducing `StringView` and `JsonPropertyName` for improved performance and code structure.
+
+### Features
+
+- Added `StringView` struct for optimized string view operations, reducing memory allocations during JSON parsing.
+- Added `JsonPropertyName` class to standardize property name handling in JsonClass types.
+
+### Improvements
+
+- Refactored `JsonReader` to improve JSON parsing performance and code structure.
+- Optimized all JsonClass types (`JsonArray`, `JsonBoolean`, `JsonContent`, `JsonNull`, `JsonNumber`, `JsonObject`, `JsonString`) with cleaner implementations.
+- Improved `JsonDeserialzerExpression` expression tree generation logic.
+- Updated `IJsonObject` interface for better extensibility.
+
+### Tests
+
+- Enhanced unit test coverage for the refactored components.
+
 ## 1.8.4 - 2026-06-24
 
 This release adds serialization and deserialization support for the `Guid` type.

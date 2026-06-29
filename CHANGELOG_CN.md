@@ -4,6 +4,26 @@
 
 本文档记录 LHZ.FastJson 的重要变更。
 
+## 1.8.5 - 2026-06-29
+
+本版本重构了 Json 解析与 JsonClass 基础设施，引入 `StringView` 和 `JsonPropertyName`，提升性能并优化代码结构。
+
+### 功能
+
+- 新增 `StringView` 结构体，优化字符串视图操作，减少 JSON 解析过程中的内存分配。
+- 新增 `JsonPropertyName` 类，规范化 JsonClass 类型中的属性名称处理。
+
+### 改进
+
+- 重构 `JsonReader`，改进 JSON 解析性能和代码结构。
+- 优化所有 JsonClass 类型（`JsonArray`、`JsonBoolean`、`JsonContent`、`JsonNull`、`JsonNumber`、`JsonObject`、`JsonString`），实现更清晰的代码。
+- 改进 `JsonDeserialzerExpression` 表达式树生成逻辑。
+- 更新 `IJsonObject` 接口，增强可扩展性。
+
+### 测试
+
+- 完善重构组件的单元测试覆盖。
+
 ## 1.8.4 - 2026-06-24
 
 本版本新增了 `Guid` 类型的序列化和反序列化支持。
