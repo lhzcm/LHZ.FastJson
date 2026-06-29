@@ -11,21 +11,35 @@ namespace LHZ.FastJson.JsonClass
     /// </summary>
     class JsonNull : JsonObject
     {
-        private string _value;
+        private static readonly string _value = "null";
+        private static readonly StringView _null = new StringView(_value);
+        public static StringView Null => _null;
         public override object Value => _value;
+        [Obsolete("This method is deprecated and will be removed in the next official release.")]
         public string GetValue()
         {
-            return this._value;
+            return _value;
         }
-        public JsonNull(string value, int position) : base(position)
+        internal JsonNull(int position) : base(position)
         {
-            this.Type = JsonType.Null;
-            this._value = value;
+        }
+        public JsonNull()
+        {
         }
 
         public override string ToJsonString()
         {
             return _value;
         }
+
+        public override StringBuilder ToJsonStringBuilder(StringBuilder stringBuilder = null)
+        {
+            return stringBuilder == null ? new StringBuilder(_value)
+            : stringBuilder.Append(_value);
+        }
+        /// <summary>
+        /// Json对象类型
+        /// </summary>
+        public override JsonType Type => JsonType.Null;
     }
 }

@@ -10,26 +10,40 @@ namespace LHZ.FastJson.JsonClass
     /// </summary>
     public class JsonBoolean : JsonObject
     {
-        private string _value;
-        public override object Value => _value;
+        public override object Value => ToJsonString();
+        private static readonly StringView _true = new StringView("true");
+        private static readonly StringView _false = new StringView("false");
+        internal static StringView True => _true;
+        internal static StringView False => _false;
+
+        [Obsolete("This method is deprecated and will be removed in the next official release.")]
         public string GetValue()
         {
-            return this._value;
+            return this.ToJsonString();
         }
         /// <summary>
         /// bool类型（true or false）
         /// </summary>
         public BooleanType BooleanType { get; }
-        public JsonBoolean(BooleanType type, string value, int position) : base(position)
+        internal JsonBoolean(BooleanType type, int position) : base(position)
         {
-            this.Type = JsonType.Boolean;
             this.BooleanType = type;
-            this._value = value;
         }
-
+        public JsonBoolean()
+        {
+        }
+        public override StringBuilder ToJsonStringBuilder(StringBuilder stringBuilder = null)
+        {
+            return stringBuilder == null ? new StringBuilder(BooleanType == BooleanType.True ? "true" : "false")
+            : stringBuilder.Append(BooleanType == BooleanType.True ? "true" : "false");
+        }
         public override string ToJsonString()
         {
-            return _value;
+            return BooleanType == BooleanType.True ? "true" : "false";
         }
+        /// <summary>
+        /// Json对象类型
+        /// </summary>
+        public override JsonType Type => JsonType.Boolean;
     }
 }

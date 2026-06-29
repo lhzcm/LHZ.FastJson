@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using LHZ.FastJson.Enum;
 
 namespace LHZ.FastJson.JsonClass
 {
@@ -11,36 +12,45 @@ namespace LHZ.FastJson.JsonClass
     {
         private string _value;
         public override object Value => _value;
+        [Obsolete("This method is deprecated and will be removed in the next official release.")]
         public string GetValue()
         {
-            return this._value;
+            return this._value.ToString();
         }
-        public JsonString(string value, int position) : base(position)
+        internal JsonString(string value, int position) : base(position)
         {
-            this.Type = Enum.JsonType.String;
             this._value = value;
         }
-
-        public override string ToJsonString()
+        public JsonString(string value)
         {
-            StringBuilder strBuilder = new StringBuilder();
-            strBuilder.Append('\"');
-            foreach (var item in _value)
+            if(value == null)
+            {
+                throw new ArgumentNullException(nameof(value), "value is not allow null");
+            }
+            this._value = value;
+        }
+        public override StringBuilder ToJsonStringBuilder(StringBuilder stringBuilder = null)
+        {
+            if(stringBuilder == null)
+            {
+                stringBuilder = new StringBuilder();
+            }
+
+            stringBuilder.Append('\"');
+            foreach(var item in _value)
             {
                 if (item == '"' || item == '\\' || item < 0x20)
                 {
-                    strBuilder.Append(CharParaphrase(item));
+                    stringBuilder.Append(CharParaphrase(item));
                 }
                 else
                 {
-                    strBuilder.Append(item);
+                    stringBuilder.Append(item);
                 }
             }
-            strBuilder.Append('\"');
-            return strBuilder.ToString();
+            stringBuilder.Append('\"');
+            return stringBuilder;
         }
-
-
         /// <summary>
         /// 字符转义
         /// </summary>
@@ -65,6 +75,14 @@ namespace LHZ.FastJson.JsonClass
             else if (paraphrase < 0x20)
                 return "\\u" + ((int)paraphrase).ToString("x4");
             return paraphrase.ToString();
+        }
+        /// <summary>
+        /// Json对象类型
+        /// </summary>
+        public override JsonType Type => JsonType.String;
+        public override string ToString()
+        {
+            return _value;
         }
     }
 }

@@ -8,3 +8,4 @@ src/LHZ.FastJson.Benchmark/bin
 src/LHZ.FastJson.Benchmark/obj
 BenchmarkDotNet.Artifacts/
 .vscode/
+src/LHZ.FastJson.Benchmark.Nuget

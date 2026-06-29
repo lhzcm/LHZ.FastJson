@@ -14,20 +14,24 @@ namespace LHZ.FastJson.JsonClass
     {
         private List<IJsonObject> _value;
         public override object Value => _value;
+        [Obsolete("This method is deprecated and will be removed in the next official release.")]
         public List<IJsonObject> GetValue()
         {
             return this._value;
         }
-        public JsonArray(int position) : base(position)
+        internal JsonArray(int position) : base(position)
         {
-            this.Type = JsonType.Array;
+            this._value = new List<IJsonObject>();
+        }
+        public JsonArray()
+        {
             this._value = new List<IJsonObject>();
         }
 
         public int Length => _value.Count;
 
         /// <summary>
-        /// 像数组里添加Json对象
+        /// 向数组里添加Json对象
         /// </summary>
         /// <param name="obj">Json对象</param>
         public void AddJsonObject(JsonObject obj)
@@ -35,20 +39,24 @@ namespace LHZ.FastJson.JsonClass
             this._value.Add(obj);
         }
 
-        public override string ToJsonString()
+        public override StringBuilder ToJsonStringBuilder(StringBuilder stringBuilder = null)
         {
-            StringBuilder strBuilder = new StringBuilder();
-            strBuilder.Append("[");
+            if(stringBuilder == null)
+            {
+                stringBuilder = new StringBuilder();
+            }
+            stringBuilder.Append("[");
             for (int i = 0; i < _value.Count; i++)
             {
-                strBuilder.Append(_value[i].ToJsonString() + ",");
+                _value[i].ToJsonStringBuilder(stringBuilder);
+                stringBuilder.Append(",");
             }
             if (_value.Count > 0)
             {
-                strBuilder.Remove(strBuilder.Length - 1, 1);
+                stringBuilder.Remove(stringBuilder.Length - 1, 1);
             }
-            strBuilder.Append("]");
-            return strBuilder.ToString();
+            stringBuilder.Append("]");
+            return stringBuilder;
         }
 
         public IEnumerator<IJsonObject> GetEnumerator()
@@ -60,5 +68,21 @@ namespace LHZ.FastJson.JsonClass
         {
             return _value.GetEnumerator();
         }
+        /// <summary>
+        /// 通过下标索引获取对象
+        /// </summary>
+        /// <param name="index">下标串索引</param>
+        /// <returns>Json对象</returns>
+        public override IJsonObject this[int index]
+        {
+            get
+            {
+                return _value[index];
+            }
+        }
+        /// <summary>
+        /// Json对象类型
+        /// </summary>
+        public override JsonType Type => JsonType.Array;
     }
 }

@@ -26,6 +26,11 @@ namespace LHZ.FastJson.UnitTest
             string testStr = "null";
             var obj = (new JsonDeserializer<object>(testStr)).Deserialize();
             Assert.IsNull(obj);
+            testStr = "{\"Count\":1,\"ExpiryDate\":null,\"Rating\":null,\"Name\":null}";
+            var nullableObj = (new JsonDeserializer<NullableModel>(testStr)).Deserialize();
+            Assert.AreEqual(1, nullableObj.Count);
+            Assert.AreEqual(null, nullableObj.ExpiryDate);
+            Assert.AreEqual(null, nullableObj.Name);
         }
 
         /// <summary>
@@ -337,5 +342,12 @@ namespace LHZ.FastJson.UnitTest
         public int Age { get; set; }
         [Json.Attributes.JsonIgnored(Enum.JsonMethods.Deserialize)]
         public float Height { get; set; }
+    }
+    public class NullableModel
+    {
+        public int? Count { get; set; }
+        public DateTime? ExpiryDate { get; set; }
+        public double? Rating { get; set; }
+        public string Name { get; set; }
     }
 }

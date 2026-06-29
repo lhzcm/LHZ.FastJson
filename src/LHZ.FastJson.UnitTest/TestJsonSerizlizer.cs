@@ -25,6 +25,9 @@ namespace LHZ.FastJson.UnitTest
             object testObj = null;
             string obj = (new JsonSerializer(testObj)).Serialize();
             Assert.IsTrue(obj == "null");
+
+            var _nullableWithNullsJson = JsonConvert.Serialize(new NullableModel());
+            Assert.AreEqual("{\"Count\":null,\"ExpiryDate\":null,\"Rating\":null,\"Name\":null}", _nullableWithNullsJson);
         }
 
         /// <summary>
@@ -319,6 +322,13 @@ namespace LHZ.FastJson.UnitTest
             public bool IsActive { get; set; }
             public DateTime CreateTime { get; set; }
             public Guid Uid { get; set; }
+        }
+        public class NullableModel
+        {
+            public int? Count { get; set; }
+            public DateTime? ExpiryDate { get; set; }
+            public double? Rating { get; set; }
+            public string Name { get; set; }
         }
     }
 }

@@ -133,11 +133,11 @@ namespace LHZ.FastJson.UnitTest
         public void DeserializeJsonObjectTypesPreservesParsedJson()
         {
             var content = JsonConvert.Deserialize<JsonContent>("{\"a\":1}");
-            Assert.AreEqual("1", content["a"].Value);
+            Assert.AreEqual("1", content["a"].Value.ToString());
 
             var jsonObject = JsonConvert.Deserialize<JsonObject>("{\"a\":1}");
             Assert.IsInstanceOf<JsonContent>(jsonObject);
-            Assert.AreEqual("1", jsonObject["a"].Value);
+            Assert.AreEqual("1", jsonObject["a"].Value.ToString());
         }
         /// <summary>
         /// 验证截断输入会返回 JSON 读取异常。
@@ -164,8 +164,15 @@ namespace LHZ.FastJson.UnitTest
         {
             var list = new ArrayList();
             list.Add(list);
-
-            Assert.Throws<Exception>(() => JsonConvert.Serialize(list));
+            try
+            {
+                var ret = JsonConvert.Serialize(list);
+            }
+            catch(Exception)
+            {
+                Assert.Pass();
+            }
+            Assert.Fail();
         }
         public class NullablePropertyClass
         {

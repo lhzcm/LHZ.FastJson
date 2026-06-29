@@ -5,6 +5,10 @@
         "git add": true,
         "git commit": true,
         "git tag": true,
-        "git push": true
+        "git push": true,
+        "dotnet restore": true,
+        "dotnet build": true,
+        "dotnet run": true,
+        "dotnet pack": true
     }
 }

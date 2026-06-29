@@ -144,34 +144,20 @@ namespace LHZ.FastJson
         {
             while (*_curPoint == ' ' || *_curPoint == '\r' || *_curPoint == '\n' || *_curPoint == '\t')
             {
-                MoveNext();
+                MoveNext(1);
             }
         }
         /// <summary>
         /// 移动到下一个字符
         /// </summary>
-        private void MoveNext()
+        private void MoveNext(int step)
         {
-            _curPoint++;
+            _curPoint += step;
             if (_curPoint > _endPoint)
             {
                 int index = (int)(_curPoint - _startPoint);
                 throw new JsonReadException(index, "索引溢出，字符串已经读取完，但json却未完全解析");
             }
-        }
-        /// <summary>
-        /// 解析Json属性名称
-        /// </summary>
-        /// <returns>属性名称</returns>
-        private string GetAttrName()
-        {
-            int startIndex = (int)(_curPoint - _startPoint);
-            string name = ReadStringLiteral(startIndex, "属性名");
-            if (name.Length == 0)
-            {
-                throw new JsonReadException(startIndex, "属性名称不能为空！");
-            }
-            return name;
         }
         /// <summary>
         /// 解析Json String对象
@@ -182,6 +168,43 @@ namespace LHZ.FastJson
             int index = (int)(_curPoint - _startPoint);
             return new JsonString(ReadStringLiteral(index, "string"), index);
         }
+        private JsonPropertyName ReadPropertyNameString()
+        {
+            if (*_curPoint != '"')
+            {
+                int index = (int)(_curPoint - _startPoint);
+                throw new JsonReadException(index, "字符位置[" + index + "]处，Json字符串解析属性名错误");
+            }
+            _curPoint++;
+            int startIndex = (int)(_curPoint - _startPoint);
+            uint hash = 5381;
+            while (true)
+            {
+                if (_curPoint >= _endPoint)
+                {
+                    int curIndex = (int)(_curPoint - _startPoint);
+                    throw new JsonReadException(curIndex, "字符位置[" + curIndex + "]处，Json字符串解析错误，字符串未闭合");
+                }
+                if (*_curPoint < 0x20)
+                {
+                    int curIndex = (int)(_curPoint - _startPoint);
+                    throw new JsonReadException(curIndex, "字符位置[" + curIndex + "]处，Json字符串解析错误，字符串中存在未转义控制字符");
+                }
+                if (*_curPoint == '"')
+                {
+                    int endIndex = (int)(_curPoint - _startPoint - 1);
+                    if(endIndex < startIndex)
+                    {
+                        int curIndex = (int)(_curPoint - _startPoint);
+                        throw new JsonReadException(curIndex, "字符位置[" + curIndex + "]处，Json字符串解析错误，属性名不能为空");
+                    }
+                    MoveNext(1);
+                    return new JsonPropertyName(new StringView(_jsonString, startIndex, endIndex), (int)hash);
+                }
+                hash = (hash << 5) + hash + (*_curPoint);
+                _curPoint++;
+            }
+        }
 
         private string ReadStringLiteral(int index, string targetName)
         {
@@ -191,7 +214,7 @@ namespace LHZ.FastJson
             }
 
             StringBuilder stringBuilder = new StringBuilder();
-            MoveNext();
+            MoveNext(1);
 
             while (true)
             {
@@ -204,7 +227,7 @@ namespace LHZ.FastJson
                 char current = *_curPoint;
                 if (current == '"')
                 {
-                    MoveNext();
+                    MoveNext(1);
                     return stringBuilder.ToString();
                 }
 
@@ -213,10 +236,9 @@ namespace LHZ.FastJson
                     int curIndex = (int)(_curPoint - _startPoint);
                     throw new JsonReadException(curIndex, "字符位置[" + curIndex + "]处，Json字符串解析错误，字符串中存在未转义控制字符");
                 }
-
                 if (current == '\\')
                 {
-                    MoveNext();
+                    MoveNext(1);
                     if (_curPoint >= _endPoint)
                     {
                         int curIndex = (int)(_curPoint - _startPoint);
@@ -238,12 +260,12 @@ namespace LHZ.FastJson
                             int curIndex = (int)(_curPoint - _startPoint);
                             throw new JsonReadException(curIndex, "字符位置[" + curIndex + "]处，Json字符串解析错误，'\\" + *_curPoint + "'转义失败");
                     }
-                    MoveNext();
+                    MoveNext(1);
                     continue;
                 }
 
                 stringBuilder.Append(current);
-                MoveNext();
+                MoveNext(1);
             }
         }
 
@@ -252,7 +274,7 @@ namespace LHZ.FastJson
             int value = 0;
             for (int i = 0; i < 4; i++)
             {
-                MoveNext();
+                MoveNext(1);
                 if (_curPoint >= _endPoint || !IsHexDigit(*_curPoint))
                 {
                     int index = (int)(_curPoint - _startPoint);
@@ -306,7 +328,7 @@ namespace LHZ.FastJson
 
             if (*_curPoint == '-')
             {
-                MoveNext();
+                MoveNext(1);
                 if (_curPoint >= _endPoint || !IsDigit(*_curPoint))
                 {
                     throw new JsonReadException(index, "字符位置[" + index + "]处，Json字符串解析错误，负号后缺少数字，解析number出错");
@@ -315,7 +337,7 @@ namespace LHZ.FastJson
 
             if (*_curPoint == '0')
             {
-                MoveNext();
+                MoveNext(1);
                 if (_curPoint < _endPoint && IsDigit(*_curPoint))
                 {
                     throw new JsonReadException(index, "字符位置[" + index + "]处，Json字符串解析错误，number不能包含前导零");
@@ -323,9 +345,9 @@ namespace LHZ.FastJson
             }
             else if (IsOneToNine(*_curPoint))
             {
-                while (_curPoint < _endPoint && IsDigit(*_curPoint))
+                while (_curPoint <= _endPoint && IsDigit(*_curPoint))
                 {
-                    MoveNext();
+                    MoveNext(1);
                 }
             }
             else
@@ -336,24 +358,24 @@ namespace LHZ.FastJson
             if (_curPoint < _endPoint && *_curPoint == '.')
             {
                 hasPoint = true;
-                MoveNext();
+                MoveNext(1);
                 if (_curPoint >= _endPoint || !IsDigit(*_curPoint))
                 {
                     throw new JsonReadException(index, "字符位置[" + index + "]处，Json字符串解析错误，小数点后缺少数字，解析number出错");
                 }
                 while (_curPoint < _endPoint && IsDigit(*_curPoint))
                 {
-                    MoveNext();
+                    MoveNext(1);
                 }
             }
 
             if (_curPoint < _endPoint && (*_curPoint == 'e' || *_curPoint == 'E'))
             {
                 hasExponent = true;
-                MoveNext();
+                MoveNext(1);
                 if (_curPoint < _endPoint && (*_curPoint == '+' || *_curPoint == '-'))
                 {
-                    MoveNext();
+                    MoveNext(1);
                 }
                 if (_curPoint >= _endPoint || !IsDigit(*_curPoint))
                 {
@@ -361,11 +383,11 @@ namespace LHZ.FastJson
                 }
                 while (_curPoint < _endPoint && IsDigit(*_curPoint))
                 {
-                    MoveNext();
+                    MoveNext(1);
                 }
             }
-            string numberStr = new string(startPorint, 0, (int)(_curPoint - startPorint));
-            return new JsonNumber(hasPoint || hasExponent ? Enum.NumberType.Double: Enum.NumberType.Long, numberStr, index);
+            return new JsonNumber(hasPoint || hasExponent ? Enum.NumberType.Double: Enum.NumberType.Long, 
+            new StringView(_jsonString, index, (int)(_curPoint - _startPoint - 1)), index);
         }
         /// <summary>
         /// 解析Json Boolean对象
@@ -375,28 +397,20 @@ namespace LHZ.FastJson
         {
             int index = (int)(_curPoint - _startPoint);
             char * startPorint = _curPoint;
-            
             if (*_curPoint == 't')
             {
-                MoveNext();
-                MoveNext();
-                MoveNext();
-                MoveNext();
+                MoveNext(4);
             }
             else
             {
-                MoveNext();
-                MoveNext();
-                MoveNext();
-                MoveNext();
-                MoveNext();
+                MoveNext(5);
             }
-            string boolStr = new string(startPorint, 0, (int)(_curPoint - startPorint));
-            if (boolStr != "true" && boolStr != "false")
+            StringView boolStr = new StringView(_jsonString, index, (int)(_curPoint - _startPoint -1));
+            if (boolStr != JsonBoolean.True && boolStr != JsonBoolean.False)
             {
                 throw new JsonReadException(index, "字符位置[" + index + "]处，Json字符串解析boolean错误");
             }
-            return new JsonBoolean(boolStr == "true" ? Enum.BooleanType.True : Enum.BooleanType.False, boolStr, index);
+            return new JsonBoolean(boolStr == JsonBoolean.True ? Enum.BooleanType.True : Enum.BooleanType.False, index);
         }
         /// <summary>
         /// 解析Json Null
@@ -407,18 +421,15 @@ namespace LHZ.FastJson
             int index = (int)(_curPoint - _startPoint);
             char* startPorint = _curPoint;
 
-            MoveNext();
-            MoveNext();
-            MoveNext();
-            MoveNext();
+            MoveNext(4);
 
-            string nullStr = new string(startPorint, 0, (int)(_curPoint - startPorint));
+            StringView nullStr = new StringView(_jsonString, index, (int)(_curPoint - _startPoint - 1));
 
-            if (nullStr != "null")
+            if (nullStr != JsonNull.Null)
             {
                 throw new JsonReadException(index, "字符位置[" + index + "]处，Json字符串解析null错误");
             }
-            return new JsonNull(nullStr, index);
+            return new JsonNull(index);
         }
         /// <summary>
         /// 解析Json Content对象
@@ -428,32 +439,32 @@ namespace LHZ.FastJson
         {
             int index = (int)(_curPoint - _startPoint);
             JsonContent content = new JsonContent(index);
-            MoveNext();
+            MoveNext(1);
             SkipWhitespace();
             if (*_curPoint == '}')
             {
-                MoveNext();
+                MoveNext(1);
                 return content;
             }
             while (true)
             {
-                string attrName = GetAttrName();
+                JsonPropertyName propertyName = ReadPropertyNameString();
                 SkipWhitespace();
                 if (*_curPoint != ':')
                 {
                     index = (int)(_curPoint - _startPoint);
                     throw new JsonReadException(index, "字符位置[" + index + "]处出现意外字符‘"+*_curPoint+"’，期望字符‘:’，Json字符串解析content出错");
                 }
-                MoveNext();
+                MoveNext(1);
                 SkipWhitespace();
 
                 JsonObject value = GetJsonObject();
-                content.AddJsonAttr(attrName, value);
+                content.AddJsonProperty(propertyName, value);
 
                 SkipWhitespace();
                 if (*_curPoint == ',')
                 {
-                    MoveNext();
+                    MoveNext(1);
                     SkipWhitespace();
                     continue;
                 }
@@ -467,7 +478,7 @@ namespace LHZ.FastJson
                     throw new JsonReadException(index, "字符位置[" + index + "]处出现意外字符‘" + *_curPoint + "’，期望字符‘:’或‘}’，Json字符串解析content出错");
                 }
             }
-            MoveNext();
+            MoveNext(1);
             return content;
         }
         /// <summary>
@@ -479,7 +490,7 @@ namespace LHZ.FastJson
             int index = (int)(_curPoint - _startPoint);
             JsonArray jsonArray = new JsonArray(index);
 
-            MoveNext();
+            MoveNext(1);
             SkipWhitespace();
 
             while (*_curPoint != ']')
@@ -488,7 +499,7 @@ namespace LHZ.FastJson
                 SkipWhitespace();
                 if (*_curPoint == ',')
                 {
-                    MoveNext();
+                    MoveNext(1);
                     SkipWhitespace();
                     if (*_curPoint == ']')
                     {
@@ -507,7 +518,7 @@ namespace LHZ.FastJson
                     throw new JsonReadException(index, "字符位置[" + index + "]处，Json字符串解析Array错");
                 }
             }
-            MoveNext();
+            MoveNext(1);
             return jsonArray;
         }
     }

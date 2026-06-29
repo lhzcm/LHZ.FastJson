@@ -1,9 +1,9 @@
-﻿using LHZ.FastJson.Enum;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
+using LHZ.FastJson.Enum;
 
 namespace LHZ.FastJson.JsonClass
 {
@@ -12,34 +12,31 @@ namespace LHZ.FastJson.JsonClass
     /// </summary>
     public abstract class JsonObject : IJsonObject
     {
-        private int _position;
 
-        public JsonObject(int position)
+        internal protected int _position;
+
+        internal JsonObject(int position)
         {
             this._position = position;
         }
-
+        internal JsonObject()
+        {
+            _position = -1;
+        }
         /// <summary>
         /// Json对象类型
         /// </summary>
-        public JsonType Type { get; protected set; }
-
+        public abstract JsonType Type { get;}
         /// <summary>
         /// 通过字符串索引获取对象
         /// </summary>
         /// <param name="index">字符串索引</param>
         /// <returns>Json对象</returns>
-        public IJsonObject this[string index]
+        public virtual IJsonObject this[string index]
         {
             get
             {
-                IJsonObject result = null;
-                if (this.Type != JsonType.Content)
-                {
-                    throw new InvalidOperationException($"{this.Type}并非是{JsonType.Content}无法调用该索引方法！");
-                }
-               ((Dictionary<string, IJsonObject>)this.Value).TryGetValue(index, out result);
-                return result;
+                throw new InvalidOperationException($"{this.Type}并非是{JsonType.Content}无法调用该索引方法！");
             }
         }
         /// <summary>
@@ -47,30 +44,18 @@ namespace LHZ.FastJson.JsonClass
         /// </summary>
         /// <param name="index">下标串索引</param>
         /// <returns>Json对象</returns>
-        public IJsonObject this[int index]
+        public virtual IJsonObject this[int index]
         {
             get
             {
-                IJsonObject result = null;
-                if (this.Type == JsonType.Array)
-                {
-                    result = ((List<IJsonObject>)this.Value)[index];
-                    return result;
-                }
-                else if (this.Type == JsonType.Content)
-                {
-                    int i = 0;
-                    foreach (var item in (Dictionary<string, IJsonObject>)this.Value)
-                    {
-                        if (index == i)
-                        {
-                            return item.Value;
-                        }
-                        i++;
-                    }
-                    throw new ArgumentOutOfRangeException();
-                }
                 throw new InvalidOperationException($"{this.Type}并非是{JsonType.Array}或{JsonType.Content}无法调用该索引方法！");
+            }
+        }
+        public virtual IJsonObject this[JsonPropertyName index]
+        {
+            get
+            {
+                throw new InvalidOperationException($"{this.Type}并非是{JsonType.Content}无法调用该索引方法！");
             }
         }
 
@@ -117,6 +102,10 @@ namespace LHZ.FastJson.JsonClass
         /// 把对象转化成Json字符串
         /// </summary>
         /// <returns>Json字符串</returns>
-        public abstract string ToJsonString();
+        public virtual string ToJsonString()
+        {
+            return ToJsonStringBuilder().ToString();
+        }
+        public abstract StringBuilder ToJsonStringBuilder(StringBuilder stringBuilder = null);
     }
 }
