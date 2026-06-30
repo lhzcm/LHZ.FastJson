@@ -12,7 +12,9 @@ namespace LHZ.FastJson.JsonClass
     /// </summary>
     public abstract class JsonObject : IJsonObject
     {
-
+        /// <summary>
+        /// 解析字符串，对象在字符串的起始位置，-1表示并非字符串解析获得对象
+        /// </summary>
         internal protected int _position;
 
         internal JsonObject(int position)
@@ -51,6 +53,11 @@ namespace LHZ.FastJson.JsonClass
                 throw new InvalidOperationException($"{this.Type}并非是{JsonType.Array}或{JsonType.Content}无法调用该索引方法！");
             }
         }
+        /// <summary>
+        /// 通过JsonPropertyName索引获取对象
+        /// </summary>
+        /// <param name="index">属性名索引</param>
+        /// <returns>Json对象</returns>
         public virtual IJsonObject this[JsonPropertyName index]
         {
             get
@@ -106,6 +113,9 @@ namespace LHZ.FastJson.JsonClass
         {
             return ToJsonStringBuilder().ToString();
         }
+        /// <summary>
+        /// 将Json对象序列化为StringBuilder
+        /// </summary>
         public abstract StringBuilder ToJsonStringBuilder(StringBuilder stringBuilder = null);
     }
 }

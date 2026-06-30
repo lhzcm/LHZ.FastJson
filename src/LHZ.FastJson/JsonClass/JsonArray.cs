@@ -13,7 +13,11 @@ namespace LHZ.FastJson.JsonClass
     public class JsonArray : JsonObject, IEnumerable<IJsonObject>
     {
         private List<IJsonObject> _value;
+        /// <inheritdoc/>
         public override object Value => _value;
+        /// <summary>
+        /// 获取数组列表（已废弃，请使用 Value 属性）
+        /// </summary>
         [Obsolete("This method is deprecated and will be removed in the next official release.")]
         public List<IJsonObject> GetValue()
         {
@@ -23,11 +27,17 @@ namespace LHZ.FastJson.JsonClass
         {
             this._value = new List<IJsonObject>();
         }
+        /// <summary>
+        /// 默认构造函数
+        /// </summary>
         public JsonArray()
         {
             this._value = new List<IJsonObject>();
         }
 
+        /// <summary>
+        /// 数组长度
+        /// </summary>
         public int Length => _value.Count;
 
         /// <summary>
@@ -39,6 +49,7 @@ namespace LHZ.FastJson.JsonClass
             this._value.Add(obj);
         }
 
+        /// <inheritdoc/>
         public override StringBuilder ToJsonStringBuilder(StringBuilder stringBuilder = null)
         {
             if(stringBuilder == null)
@@ -58,7 +69,10 @@ namespace LHZ.FastJson.JsonClass
             stringBuilder.Append("]");
             return stringBuilder;
         }
-
+/// <summary>
+        /// 获取Json数组的枚举器
+        /// </summary>
+        
         public IEnumerator<IJsonObject> GetEnumerator()
         {
             return _value.GetEnumerator();

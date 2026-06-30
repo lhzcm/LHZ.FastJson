@@ -48,10 +48,9 @@ namespace LHZ.FastJson.Interface
         object Deserialize(IJsonObject jsonObject);
 
         /// <summary>
-        /// 自定义转换类型
+        /// 自定义转换的目标类型
         /// </summary>
         Type ConvertType { get; }
-
         /// <summary>
         /// 包含的自定义项（序列化|反序列化）
         /// </summary>

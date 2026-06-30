@@ -13,12 +13,16 @@ namespace LHZ.FastJson.JsonClass
     public class JsonContent : JsonObject, IEnumerable<KeyValuePair<JsonPropertyName, IJsonObject>>
     {
         private readonly Dictionary<JsonPropertyName, IJsonObject> _value;
+        /// <inheritdoc/>
         public override object Value => _value;
 
         /// <summary>
         /// 获取Dictionary类型的值
         /// </summary>
         /// <returns></returns>
+        /// <summary>
+        /// 获取字典值（已废弃，请使用 Value 属性）
+        /// </summary>
         [Obsolete("This method is deprecated and will be removed in the next official release.")]
         public Dictionary<string, IJsonObject> GetValue()
         {
@@ -64,7 +68,7 @@ namespace LHZ.FastJson.JsonClass
             #endif
         }
          /// <summary>
-        /// 向Json容器里添加Json对象属性
+        /// 向Json容器里添加Json对象属性（字符串名称重载）
         /// </summary>
         /// <param name="name">属性名称</param>
         /// <param name="value">属性值</param>
@@ -74,7 +78,7 @@ namespace LHZ.FastJson.JsonClass
             AddJsonProperty(new JsonPropertyName(name), value);
         }
         /// <summary>
-        /// 
+        /// 将Json容器序列化为Json字符串
         /// </summary>
         /// <returns></returns>
         public override StringBuilder ToJsonStringBuilder(StringBuilder stringBuilder = null)
@@ -100,6 +104,9 @@ namespace LHZ.FastJson.JsonClass
             stringBuilder.Append("}");
             return stringBuilder;
         }
+        /// <summary>
+        /// 获取Json容器的枚举器
+        /// </summary>
         public IEnumerator<KeyValuePair<JsonPropertyName, IJsonObject>> GetEnumerator()
         {
             return _value.GetEnumerator();
@@ -121,6 +128,7 @@ namespace LHZ.FastJson.JsonClass
                return this[new JsonPropertyName(index)];
             }
         }
+        /// <inheritdoc/>
         public override IJsonObject this[JsonPropertyName jsonPropertyName]
         {
             get

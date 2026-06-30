@@ -12,11 +12,22 @@ namespace LHZ.FastJson.Exceptions
     public class JsonCustomConverterException : Exception
     {
         private IJsonCustomConverter _customConverter;
+        /// <summary>
+        /// 初始化自定义转换异常
+        /// </summary>
+        /// <param name="customConverter">自定义转换器</param>
+        /// <param name="message">异常消息</param>
         public JsonCustomConverterException(IJsonCustomConverter customConverter, string message) : base(message)
         {
             _customConverter = customConverter;
         }
 
+        /// <summary>
+        /// 初始化自定义转换异常（包含内部异常）
+        /// </summary>
+        /// <param name="customConverter">自定义转换器</param>
+        /// <param name="message">异常消息</param>
+        /// <param name="innerException">内部异常</param>
         public JsonCustomConverterException(IJsonCustomConverter customConverter, string message, Exception innerException) : base(message, innerException)
         {
             _customConverter = customConverter;

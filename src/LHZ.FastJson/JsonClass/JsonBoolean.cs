@@ -10,12 +10,16 @@ namespace LHZ.FastJson.JsonClass
     /// </summary>
     public class JsonBoolean : JsonObject
     {
+        /// <inheritdoc/>
         public override object Value => ToJsonString();
         private static readonly StringView _true = new StringView("true");
         private static readonly StringView _false = new StringView("false");
         internal static StringView True => _true;
         internal static StringView False => _false;
 
+        /// <summary>
+        /// 获取布尔值字符串（已废弃，请使用 Value 属性）
+        /// </summary>
         [Obsolete("This method is deprecated and will be removed in the next official release.")]
         public string GetValue()
         {
@@ -29,14 +33,19 @@ namespace LHZ.FastJson.JsonClass
         {
             this.BooleanType = type;
         }
+        /// <summary>
+        /// 默认构造函数
+        /// </summary>
         public JsonBoolean()
         {
         }
+        /// <inheritdoc/>
         public override StringBuilder ToJsonStringBuilder(StringBuilder stringBuilder = null)
         {
             return stringBuilder == null ? new StringBuilder(BooleanType == BooleanType.True ? "true" : "false")
             : stringBuilder.Append(BooleanType == BooleanType.True ? "true" : "false");
         }
+        /// <inheritdoc/>
         public override string ToJsonString()
         {
             return BooleanType == BooleanType.True ? "true" : "false";

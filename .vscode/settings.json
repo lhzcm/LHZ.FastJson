@@ -9,6 +9,8 @@
         "dotnet restore": true,
         "dotnet build": true,
         "dotnet run": true,
-        "dotnet pack": true
+        "dotnet pack": true,
+        "ForEach-Object": true,
+        "Set-Content": true
     }
 }

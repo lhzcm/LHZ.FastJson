@@ -20,8 +20,17 @@ namespace LHZ.FastJson
         /// Json对象值
         /// </summary>
         object Value { get; }
+        /// <summary>
+        /// 通过字符串名称索引获取子节点
+        /// </summary>
         IJsonObject this[string index] { get; }
+        /// <summary>
+        /// 通过属性名索引获取子节点
+        /// </summary>
         IJsonObject this[JsonPropertyName index] {get;}
+        /// <summary>
+        /// 通过下标索引获取子节点
+        /// </summary>
         IJsonObject this[int index] { get; }
         /// <summary>
         /// 判断是否存在指定名称的子节点
@@ -43,6 +52,9 @@ namespace LHZ.FastJson
         ///字符串起始位置
         /// </summary>
         int Position { get; }
+        /// <summary>
+        /// 返回对象的字符串表示
+        /// </summary>
         string ToString();
     }
 }

@@ -34,10 +34,19 @@ namespace LHZ.FastJson.Json
 
         private Dictionary<Type, IJsonCustomConverter> _customConverters;
 
+        /// <summary>
+        /// 使用对象初始化序列化器
+        /// </summary>
+        /// <param name="obj">待序列化对象</param>
         public JsonSerializer(object obj)
         {
             this._obj = obj;
         }
+        /// <summary>
+        /// 使用格式化器初始化（已废弃）
+        /// </summary>
+        /// <param name="obj">序列化对象</param>
+        /// <param name="formats">格式化器</param>
         [Obsolete]
         public JsonSerializer(object obj, IJsonFormat[] formats)
         {
@@ -45,6 +54,11 @@ namespace LHZ.FastJson.Json
             this._formater = new JsonFormatter(formats);
         }
 
+        /// <summary>
+        /// 使用自定义转换器初始化
+        /// </summary>
+        /// <param name="obj">序列化对象</param>
+        /// <param name="jsonCustomConverters">自定义转换器</param>
         public JsonSerializer(object obj, params IJsonCustomConverter[] jsonCustomConverters)
         {
             this._obj = obj;

@@ -4,6 +4,9 @@ using System.Text;
 
 namespace LHZ.FastJson.Enum
 {
+    /// <summary>
+    /// Json数据类型枚举
+    /// </summary>
     public enum JsonType
     {
         /// <summary>

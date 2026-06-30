@@ -14,6 +14,9 @@ namespace LHZ.FastJson.Json.Format
     {
         private string _fromatstr = "yyyy-MM-dd HH:mm:ss";
         private Func<DateTime, string> _formatFunc;
+        /// <summary>
+        /// 默认日期格式化构造函数
+        /// </summary>
         public DateTimeJsonFormat() { }
 
         /// <summary>
@@ -42,6 +45,9 @@ namespace LHZ.FastJson.Json.Format
         /// 格式化字符串如（yyyy-MM-dd）
         /// </summary>
         public string FormatString => _fromatstr;
+        /// <summary>
+        /// 格式化方法委托
+        /// </summary>
         public Func<DateTime, string> FormatFunc => _formatFunc;
 
     }

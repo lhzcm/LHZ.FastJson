@@ -15,6 +15,9 @@ namespace LHZ.FastJson.JsonClass
         private static readonly StringView _null = new StringView(_value);
         public static StringView Null => _null;
         public override object Value => _value;
+        /// <summary>
+        /// 获取null值（已废弃，请使用 Value 属性）
+        /// </summary>
         [Obsolete("This method is deprecated and will be removed in the next official release.")]
         public string GetValue()
         {
@@ -23,6 +26,9 @@ namespace LHZ.FastJson.JsonClass
         internal JsonNull(int position) : base(position)
         {
         }
+        /// <summary>
+        /// 默认构造函数
+        /// </summary>
         public JsonNull()
         {
         }

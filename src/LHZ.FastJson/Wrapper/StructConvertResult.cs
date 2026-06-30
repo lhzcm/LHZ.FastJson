@@ -11,12 +11,23 @@ namespace LHZ.FastJson.Wrapper
     /// <typeparam name="T">转换成目标的结构体</typeparam>
     public struct StructConvertResult<T> where T : struct
     {
+        /// <summary>
+        /// 初始化转换结果
+        /// </summary>
+        /// <param name="success">是否成功</param>
+        /// <param name="result">转换结果</param>
         public StructConvertResult(bool success, T result)
         {
             Success = success;
             Result = result;
         }
+        /// <summary>
+        /// 是否转换成功
+        /// </summary>
         public bool Success { get; set; }
+        /// <summary>
+        /// 转换结果
+        /// </summary>
         public T Result { get; set; }
 
         /// <summary>

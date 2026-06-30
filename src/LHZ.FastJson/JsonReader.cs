@@ -63,6 +63,10 @@ namespace LHZ.FastJson
             }
         }
 
+        /// <summary>
+        /// 初始化JsonReader
+        /// </summary>
+        /// <param name="jsonString">Json字符串</param>
         public JsonReader(string jsonString)
         {
             _jsonString = jsonString;

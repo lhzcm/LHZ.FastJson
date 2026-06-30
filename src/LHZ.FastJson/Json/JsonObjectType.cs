@@ -7,6 +7,9 @@ using System.Text;
 
 namespace LHZ.FastJson.Json
 {
+    /// <summary>
+    /// 对象类型映射表
+    /// </summary>
     internal static class JsonObjectType
     {
         private static readonly Dictionary<Type, ObjectType> _objectTypes = new Dictionary<Type, ObjectType>(Byte.MaxValue);
@@ -34,6 +37,9 @@ namespace LHZ.FastJson.Json
             _objectTypes.Add(typeof(Array), ObjectType.Array);
         }
 
+        /// <summary>
+        /// 获取类型到ObjectType的映射字典
+        /// </summary>
         internal static Dictionary<Type, ObjectType> GetObjectTypes()
         {
             return _objectTypes;

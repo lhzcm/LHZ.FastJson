@@ -7,6 +7,9 @@ using System.Text;
 
 namespace LHZ.FastJson
 {
+    /// <summary>
+    /// Json常用扩展方法
+    /// </summary>
     public static class JsonCommonExtend
     {
 

@@ -11,7 +11,11 @@ namespace LHZ.FastJson.JsonClass
     public class JsonString : JsonObject
     {
         private string _value;
+        /// <inheritdoc/>
         public override object Value => _value;
+        /// <summary>
+        /// 获取字符串值（已废弃，请使用 Value 属性）
+        /// </summary>
         [Obsolete("This method is deprecated and will be removed in the next official release.")]
         public string GetValue()
         {
@@ -21,6 +25,11 @@ namespace LHZ.FastJson.JsonClass
         {
             this._value = value;
         }
+        /// <summary>
+        /// 使用字符串值初始化
+        /// </summary>
+        /// <param name="value">字符串值，不可为null</param>
+        /// <exception cref="ArgumentNullException">value为null时抛出</exception>
         public JsonString(string value)
         {
             if(value == null)
@@ -29,6 +38,7 @@ namespace LHZ.FastJson.JsonClass
             }
             this._value = value;
         }
+        /// <inheritdoc/>
         public override StringBuilder ToJsonStringBuilder(StringBuilder stringBuilder = null)
         {
             if(stringBuilder == null)
@@ -79,7 +89,9 @@ namespace LHZ.FastJson.JsonClass
         /// <summary>
         /// Json对象类型
         /// </summary>
+        /// <inheritdoc/>
         public override JsonType Type => JsonType.String;
+        /// <inheritdoc/>
         public override string ToString()
         {
             return _value;

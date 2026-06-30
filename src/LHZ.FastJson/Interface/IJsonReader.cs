@@ -5,6 +5,9 @@ using System.Text;
 
 namespace LHZ.FastJson
 {
+    /// <summary>
+    /// Json读取器接口
+    /// </summary>
     public interface IJsonReader
     {
         /// <summary>

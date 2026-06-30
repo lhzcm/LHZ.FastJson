@@ -20,10 +20,18 @@ namespace LHZ.FastJson.Json.CustomConverter
         private readonly Type _type = typeof(T);
         private readonly JsonCustomConvertItem _item = JsonCustomConvertItem.None;
         private readonly bool _serializeValidate = false;
+        /// <summary>
+        /// 默认构造函数，使用内置序列化/反序列化
+        /// </summary>
         public JsonCustomConvert()
         {
         }
 
+        /// <summary>
+        /// 自定义序列化构造函数
+        /// </summary>
+        /// <param name="customSerializeMethod">自定义序列化方法</param>
+        /// <param name="serializeValidate">是否校验序列化结果</param>
         public JsonCustomConvert(Func<T, string> customSerializeMethod, bool serializeValidate = false)
         {
             if (customSerializeMethod == null)
@@ -35,6 +43,10 @@ namespace LHZ.FastJson.Json.CustomConverter
             _serializeValidate = serializeValidate;
         }
 
+        /// <summary>
+        /// 自定义反序列化构造函数
+        /// </summary>
+        /// <param name="customDeserializeMethod">自定义反序列化方法</param>
         public JsonCustomConvert(Func<IJsonObject, T> customDeserializeMethod)
         {
             if (customDeserializeMethod == null)
@@ -44,7 +56,11 @@ namespace LHZ.FastJson.Json.CustomConverter
             _item = JsonCustomConvertItem.CustomDeSerialize;
             _deserializeFunc = customDeserializeMethod;
         }
-
+        /// <summary>
+        /// 同时自定义序列化和反序列化构造函数
+        /// </summary>
+        /// <param name="customSerializeMethod">自定义序列化方法</param>
+        /// <param name="customDeserializeMethod">自定义反序列化方法</param>
         public JsonCustomConvert(Func<T, string> customSerializeMethod, Func<IJsonObject, T> customDeserializeMethod)
         {
             _item = JsonCustomConvertItem.All;

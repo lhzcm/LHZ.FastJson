@@ -13,6 +13,9 @@ namespace LHZ.FastJson.Json.Attributes
     public class JsonIgnoredAttribute : Attribute
     {
         private JsonMethods _jsonIgnoredMethods = JsonMethods.All;
+        /// <summary>
+        /// 默认构造函数，序列化和反序列化均忽略
+        /// </summary>
         public JsonIgnoredAttribute()
         { 
         }

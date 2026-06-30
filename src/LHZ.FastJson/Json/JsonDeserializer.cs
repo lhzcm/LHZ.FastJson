@@ -22,14 +22,26 @@ namespace LHZ.FastJson.Json
     public class JsonDeserializer<T>
     {
         private IJsonObject _obj;
+        /// <summary>
+        /// 使用Json对象初始化
+        /// </summary>
+        /// <param name="obj">已解析的Json对象</param>
         public JsonDeserializer(IJsonObject obj)
         {
             this._obj = obj;
         }
+        /// <summary>
+        /// 使用JsonReader初始化
+        /// </summary>
+        /// <param name="reader">Json读取器</param>
         public JsonDeserializer(JsonReader reader)
         {
             this._obj = reader.JsonRead();
         }
+        /// <summary>
+        /// 使用Json字符串初始化
+        /// </summary>
+        /// <param name="jsonString">Json字符串</param>
         public JsonDeserializer(string jsonString)
         {
             JsonReader reader = new JsonReader(jsonString);
