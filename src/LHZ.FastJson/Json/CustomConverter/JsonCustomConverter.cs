@@ -10,9 +10,9 @@ using System.Threading.Tasks;
 namespace LHZ.FastJson.Json.CustomConverter
 {
     /// <summary>
-    /// 自定义转换类型
+    /// Custom conversion type
     /// </summary>
-    /// <typeparam name="T">类型</typeparam>
+    /// <typeparam name="T">Type</typeparam>
     public sealed class JsonCustomConvert<T> : IJsonCustomConverter
     {
         private Func<T, string> _serializeFunc = (T dist) => (new JsonSerializer(dist)).Serialize();
@@ -21,17 +21,17 @@ namespace LHZ.FastJson.Json.CustomConverter
         private readonly JsonCustomConvertItem _item = JsonCustomConvertItem.None;
         private readonly bool _serializeValidate = false;
         /// <summary>
-        /// 默认构造函数，使用内置序列化/反序列化
+        /// Default constructor, using built-in serialization/deserialization
         /// </summary>
         public JsonCustomConvert()
         {
         }
 
         /// <summary>
-        /// 自定义序列化构造函数
+        /// Custom serialization constructor
         /// </summary>
-        /// <param name="customSerializeMethod">自定义序列化方法</param>
-        /// <param name="serializeValidate">是否校验序列化结果</param>
+        /// <param name="customSerializeMethod">Custom serialization method</param>
+        /// <param name="serializeValidate">Whether to validate serialization result</param>
         public JsonCustomConvert(Func<T, string> customSerializeMethod, bool serializeValidate = false)
         {
             if (customSerializeMethod == null)
@@ -44,9 +44,9 @@ namespace LHZ.FastJson.Json.CustomConverter
         }
 
         /// <summary>
-        /// 自定义反序列化构造函数
+        /// Custom deserialization constructor
         /// </summary>
-        /// <param name="customDeserializeMethod">自定义反序列化方法</param>
+        /// <param name="customDeserializeMethod">Custom deserialization method</param>
         public JsonCustomConvert(Func<IJsonObject, T> customDeserializeMethod)
         {
             if (customDeserializeMethod == null)
@@ -57,10 +57,10 @@ namespace LHZ.FastJson.Json.CustomConverter
             _deserializeFunc = customDeserializeMethod;
         }
         /// <summary>
-        /// 同时自定义序列化和反序列化构造函数
+        /// Constructor for custom serialization and deserialization
         /// </summary>
-        /// <param name="customSerializeMethod">自定义序列化方法</param>
-        /// <param name="customDeserializeMethod">自定义反序列化方法</param>
+        /// <param name="customSerializeMethod">Custom serialization method</param>
+        /// <param name="customDeserializeMethod">Custom deserialization method</param>
         public JsonCustomConvert(Func<T, string> customSerializeMethod, Func<IJsonObject, T> customDeserializeMethod)
         {
             _item = JsonCustomConvertItem.All;
@@ -77,23 +77,23 @@ namespace LHZ.FastJson.Json.CustomConverter
         }
 
         /// <summary>
-        /// 自定义转换的类型
+        /// The type for custom conversion
         /// </summary>
         public Type ConvertType => _type;
 
         Type IJsonCustomConverter.ConvertType => _type;
 
         /// <summary>
-        /// 自定义转换项
+        /// Custom conversion item
         /// </summary>
         public JsonCustomConvertItem CustomItem => _item;
         JsonCustomConvertItem IJsonCustomConverter.CustomItem => _item;
 
         /// <summary>
-        /// 自定义序列化方法
+        /// Custom serialization method
         /// </summary>
-        /// <param name="dist">序列化对象</param>
-        /// <returns>序列化字符串</returns>
+        /// <param name="dist">Object to serialize</param>
+        /// <returns>Serialized string</returns>
         public string Serialize(T dist)
         {
             var jsonStr = _serializeFunc(dist);
@@ -105,10 +105,10 @@ namespace LHZ.FastJson.Json.CustomConverter
         }
 
         /// <summary>
-        /// 自定义反序列方法
+        /// Custom deserialization method
         /// </summary>
-        /// <param name="jsonObject">json对象</param>
-        /// <returns>反序列化对象</returns>
+        /// <param name="jsonObject">JSON object</param>
+        /// <returns>Deserialized object</returns>
         public T Deserialize(IJsonObject jsonObject)
         {
             return _deserializeFunc(jsonObject);

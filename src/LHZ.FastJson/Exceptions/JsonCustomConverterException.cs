@@ -7,34 +7,34 @@ using System.Text;
 namespace LHZ.FastJson.Exceptions
 {
     /// <summary>
-    /// 自定义json转换异常类
+    /// Custom JSON conversion exception class
     /// </summary>
     public class JsonCustomConverterException : Exception
     {
         private IJsonCustomConverter _customConverter;
         /// <summary>
-        /// 初始化自定义转换异常
+        /// Initialize custom conversion exception
         /// </summary>
-        /// <param name="customConverter">自定义转换器</param>
-        /// <param name="message">异常消息</param>
+        /// <param name="customConverter">Custom converter</param>
+        /// <param name="message">Exception message</param>
         public JsonCustomConverterException(IJsonCustomConverter customConverter, string message) : base(message)
         {
             _customConverter = customConverter;
         }
 
         /// <summary>
-        /// 初始化自定义转换异常（包含内部异常）
+        /// Initialize custom conversion exception (with inner exception)
         /// </summary>
-        /// <param name="customConverter">自定义转换器</param>
-        /// <param name="message">异常消息</param>
-        /// <param name="innerException">内部异常</param>
+        /// <param name="customConverter">Custom converter</param>
+        /// <param name="message">Exception message</param>
+        /// <param name="innerException">Inner exception</param>
         public JsonCustomConverterException(IJsonCustomConverter customConverter, string message, Exception innerException) : base(message, innerException)
         {
             _customConverter = customConverter;
         }
 
         /// <summary>
-        /// 自定义Json转换
+        /// Custom JSON conversion
         /// </summary>
         public IJsonCustomConverter JsonCustomConverter => _customConverter;
     }

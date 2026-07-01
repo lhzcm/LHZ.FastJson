@@ -3,22 +3,22 @@ using System;
 namespace LHZ.FastJson.JsonClass
 {
     /// <summary>
-    /// Json属性名称结构体
+    /// JSON property name struct
     /// </summary>
     public struct JsonPropertyName
     {
         /// <summary>
-        /// 哈希码（惰性缓存）
+        /// Hash code (lazy caching)
         /// </summary>
         public int HashCode {get; private set;}
         /// <summary>
-        /// 属性名称
+        /// Property name
         /// </summary>
         internal StringView Name { get; }
         /// <summary>
-        /// 使用字符串初始化
+        /// Initialize with string
         /// </summary>
-        /// <param name="name">属性名称</param>
+        /// <param name="name">Property name</param>
         public JsonPropertyName(string name)
         {
             Name = new StringView(name);
@@ -36,14 +36,14 @@ namespace LHZ.FastJson.JsonClass
         }
 
         /// <summary>
-        /// 相等运算符
+        /// Equality operator
         /// </summary>
         public static bool operator ==(JsonPropertyName left, JsonPropertyName right)
         {
             return left.Name == right.Name;
         }
         /// <summary>
-        /// 不等运算符
+        /// Inequality operator
         /// </summary>
         public static bool operator !=(JsonPropertyName left, JsonPropertyName right)
         {
@@ -57,7 +57,7 @@ namespace LHZ.FastJson.JsonClass
             return this == other;
         }
         /// <summary>
-        /// 获取哈希码（惰性计算）
+        /// Get hash code (lazy computation)
         /// </summary>
         public override int GetHashCode()
         {
@@ -68,7 +68,7 @@ namespace LHZ.FastJson.JsonClass
             return HashCode;
         }
         /// <summary>
-        /// 返回属性名称的字符串表示
+        /// Returns the string representation of the property name
         /// </summary>
         public override string ToString()
         {

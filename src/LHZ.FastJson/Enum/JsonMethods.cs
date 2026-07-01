@@ -6,20 +6,20 @@ using System.Text;
 namespace LHZ.FastJson.Enum
 {
     /// <summary>
-    /// Json操作方法枚举
+    /// JSON operation method enumeration
     /// </summary>
     public enum JsonMethods
     {
         /// <summary>
-        /// 序列化
+        /// Serialize
         /// </summary>
         Serialize = 1,
         /// <summary>
-        /// 反序列化
+        /// Deserialize
         /// </summary>
         Deserialize = 2,
         /// <summary>
-        /// 全部
+        /// All
         /// </summary>
         All = 3,
     }

@@ -8,7 +8,7 @@ using System.Text;
 namespace LHZ.FastJson.JsonClass
 {
     /// <summary>
-    /// Json数组对象
+    /// JSON array object
     /// </summary>
     public class JsonArray : JsonObject, IEnumerable<IJsonObject>
     {
@@ -16,7 +16,7 @@ namespace LHZ.FastJson.JsonClass
         /// <inheritdoc/>
         public override object Value => _value;
         /// <summary>
-        /// 获取数组列表（已废弃，请使用 Value 属性）
+        /// Get the array list (deprecated, use Value property instead)
         /// </summary>
         [Obsolete("This method is deprecated and will be removed in the next official release.")]
         public List<IJsonObject> GetValue()
@@ -28,7 +28,7 @@ namespace LHZ.FastJson.JsonClass
             this._value = new List<IJsonObject>();
         }
         /// <summary>
-        /// 默认构造函数
+        /// Default constructor
         /// </summary>
         public JsonArray()
         {
@@ -36,14 +36,14 @@ namespace LHZ.FastJson.JsonClass
         }
 
         /// <summary>
-        /// 数组长度
+        /// Array length
         /// </summary>
         public int Length => _value.Count;
 
         /// <summary>
-        /// 向数组里添加Json对象
+        /// Add a JSON object to the array
         /// </summary>
-        /// <param name="obj">Json对象</param>
+        /// <param name="obj">JSON object</param>
         public void AddJsonObject(JsonObject obj)
         {
             this._value.Add(obj);
@@ -69,8 +69,8 @@ namespace LHZ.FastJson.JsonClass
             stringBuilder.Append("]");
             return stringBuilder;
         }
-/// <summary>
-        /// 获取Json数组的枚举器
+        /// <summary>
+        /// Get the enumerator for the JSON array
         /// </summary>
         
         public IEnumerator<IJsonObject> GetEnumerator()
@@ -83,10 +83,10 @@ namespace LHZ.FastJson.JsonClass
             return _value.GetEnumerator();
         }
         /// <summary>
-        /// 通过下标索引获取对象
+        /// Get object by index
         /// </summary>
-        /// <param name="index">下标串索引</param>
-        /// <returns>Json对象</returns>
+        /// <param name="index">Index</param>
+        /// <returns>JSON object</returns>
         public override IJsonObject this[int index]
         {
             get
@@ -95,7 +95,7 @@ namespace LHZ.FastJson.JsonClass
             }
         }
         /// <summary>
-        /// Json对象类型
+        /// JSON object type
         /// </summary>
         public override JsonType Type => JsonType.Array;
     }

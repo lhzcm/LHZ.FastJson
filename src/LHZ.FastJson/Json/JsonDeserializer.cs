@@ -16,32 +16,32 @@ using System.Text;
 namespace LHZ.FastJson.Json
 {
     /// <summary>
-    /// 反序列化类
+    /// Deserialization class
     /// </summary>
-    /// <typeparam name="T">需要进行反序列化的类</typeparam>
+    /// <typeparam name="T">The class to deserialize</typeparam>
     public class JsonDeserializer<T>
     {
         private IJsonObject _obj;
         /// <summary>
-        /// 使用Json对象初始化
+        /// Initialize with a JSON object
         /// </summary>
-        /// <param name="obj">已解析的Json对象</param>
+        /// <param name="obj">Parsed JSON object</param>
         public JsonDeserializer(IJsonObject obj)
         {
             this._obj = obj;
         }
         /// <summary>
-        /// 使用JsonReader初始化
+        /// Initialize with a JsonReader
         /// </summary>
-        /// <param name="reader">Json读取器</param>
+        /// <param name="reader">JSON reader</param>
         public JsonDeserializer(JsonReader reader)
         {
             this._obj = reader.JsonRead();
         }
         /// <summary>
-        /// 使用Json字符串初始化
+        /// Initialize with a JSON string
         /// </summary>
-        /// <param name="jsonString">Json字符串</param>
+        /// <param name="jsonString">JSON string</param>
         public JsonDeserializer(string jsonString)
         {
             JsonReader reader = new JsonReader(jsonString);
@@ -49,9 +49,9 @@ namespace LHZ.FastJson.Json
         }
 
         /// <summary>
-        /// 进行反序列化
+        /// Perform deserialization
         /// </summary>
-        /// <returns>返回反序列化类型对象</returns>
+        /// <returns>Returns the deserialized typed object</returns>
         public T Deserialize(params IJsonCustomConverter[] jsonCustomConverters)
         {
             Dictionary<Type, IJsonCustomConverter> customConverters = null;

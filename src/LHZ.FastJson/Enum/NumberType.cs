@@ -5,16 +5,16 @@ using System.Text;
 namespace LHZ.FastJson.Enum
 {
     /// <summary>
-    /// Json数值类型
+    /// JSON number type
     /// </summary>
     public enum NumberType
     {
         /// <summary>
-        /// 长整型
+        /// Long integer
         /// </summary>
         Long,
         /// <summary>
-        /// 双精度浮点型
+        /// Double-precision floating point
         /// </summary>
         Double,
     }

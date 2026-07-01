@@ -7,7 +7,7 @@ using System.Text;
 namespace LHZ.FastJson.Json.Format
 {
     /// <summary>
-    /// 日期格式化类
+    /// DateTime formatting class
     /// </summary>
     [Obsolete]
     public class DateTimeJsonFormat : IJsonFormat
@@ -15,38 +15,38 @@ namespace LHZ.FastJson.Json.Format
         private string _fromatstr = "yyyy-MM-dd HH:mm:ss";
         private Func<DateTime, string> _formatFunc;
         /// <summary>
-        /// 默认日期格式化构造函数
+        /// Default DateTime formatting constructor
         /// </summary>
         public DateTimeJsonFormat() { }
 
         /// <summary>
-        /// 日期格式化构造函数
+        /// DateTime formatting constructor
         /// </summary>
-        /// <param name="formatString">格式化字符串</param>
+        /// <param name="formatString">Format string</param>
         public DateTimeJsonFormat(string formatString)
         {
             this._fromatstr = formatString;
         }
 
         /// <summary>
-        /// 日期格式化构造函数
+        /// DateTime formatting constructor
         /// </summary>
-        /// <param name="formatFunc">格式化方法委托</param>
+        /// <param name="formatFunc">Format function delegate</param>
         public DateTimeJsonFormat(Func<DateTime, string> formatFunc)
         {
             this._formatFunc = formatFunc;
         }
         /// <summary>
-        /// 格式化类型
+        /// Format type
         /// </summary>
         public ObjectType Type => ObjectType.DateTime;
 
         /// <summary>
-        /// 格式化字符串如（yyyy-MM-dd）
+        /// Format string, e.g. (yyyy-MM-dd)
         /// </summary>
         public string FormatString => _fromatstr;
         /// <summary>
-        /// 格式化方法委托
+        /// Format function delegate
         /// </summary>
         public Func<DateTime, string> FormatFunc => _formatFunc;
 

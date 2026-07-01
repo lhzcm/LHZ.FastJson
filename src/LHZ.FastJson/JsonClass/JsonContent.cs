@@ -8,7 +8,7 @@ using LHZ.FastJson.Enum;
 namespace LHZ.FastJson.JsonClass
 {
     /// <summary>
-    /// Json容器对象
+    /// JSON container object
     /// </summary>
     public class JsonContent : JsonObject, IEnumerable<KeyValuePair<JsonPropertyName, IJsonObject>>
     {
@@ -17,11 +17,11 @@ namespace LHZ.FastJson.JsonClass
         public override object Value => _value;
 
         /// <summary>
-        /// 获取Dictionary类型的值
+        /// Get the Dictionary type value
         /// </summary>
         /// <returns></returns>
         /// <summary>
-        /// 获取字典值（已废弃，请使用 Value 属性）
+        /// Get dictionary value (deprecated, use Value property instead)
         /// </summary>
         [Obsolete("This method is deprecated and will be removed in the next official release.")]
         public Dictionary<string, IJsonObject> GetValue()
@@ -38,20 +38,20 @@ namespace LHZ.FastJson.JsonClass
             this._value = new Dictionary<JsonPropertyName, IJsonObject>();
         }
         /// <summary>
-        /// 向Json容器里添加Json对象属性
+        /// Add a JSON object property to the JSON container
         /// </summary>
-        /// <param name="attrName">属性名称</param>
-        /// <param name="obj">Json对象</param>
+        /// <param name="attrName">Property name</param>
+        /// <param name="obj">JSON object</param>
         [Obsolete("This method is deprecated and will be removed in the next official release. Please use the AddJsonProperty method instead.")]
         public void AddJsonAttr(string attrName, IJsonObject obj)
         {
             AddJsonProperty(attrName, obj);
         }
         /// <summary>
-        /// 向Json容器里添加Json对象属性
+        /// Add a JSON object property to the JSON container
         /// </summary>
-        /// <param name="jsonPropertyName">属性名称</param>
-        /// <param name="value">Json对象</param>
+        /// <param name="jsonPropertyName">Property name</param>
+        /// <param name="value">JSON object</param>
         internal void AddJsonProperty(JsonPropertyName jsonPropertyName, IJsonObject value)
         {
             #if NET5_0_OR_GREATER
@@ -68,17 +68,17 @@ namespace LHZ.FastJson.JsonClass
             #endif
         }
          /// <summary>
-        /// 向Json容器里添加Json对象属性（字符串名称重载）
+        /// Add a JSON object property to the JSON container (string name overload)
         /// </summary>
-        /// <param name="name">属性名称</param>
-        /// <param name="value">属性值</param>
+        /// <param name="name">Property name</param>
+        /// <param name="value">Property value</param>
 
         public void AddJsonProperty(string name, IJsonObject value)
         {
             AddJsonProperty(new JsonPropertyName(name), value);
         }
         /// <summary>
-        /// 将Json容器序列化为Json字符串
+        /// Serialize the JSON container to a JSON string
         /// </summary>
         /// <returns></returns>
         public override StringBuilder ToJsonStringBuilder(StringBuilder stringBuilder = null)
@@ -105,7 +105,7 @@ namespace LHZ.FastJson.JsonClass
             return stringBuilder;
         }
         /// <summary>
-        /// 获取Json容器的枚举器
+        /// Get the enumerator for the JSON container
         /// </summary>
         public IEnumerator<KeyValuePair<JsonPropertyName, IJsonObject>> GetEnumerator()
         {
@@ -117,10 +117,10 @@ namespace LHZ.FastJson.JsonClass
         }
 
         /// <summary>
-        /// 通过字符串索引获取对象
+        /// Get object by string index
         /// </summary>
-        /// <param name="index">字符串索引</param>
-        /// <returns>Json对象</returns>
+        /// <param name="index">String index</param>
+        /// <returns>JSON object</returns>
         public override IJsonObject this[string index]
         {
             get
@@ -155,10 +155,10 @@ namespace LHZ.FastJson.JsonClass
             }
         }
         /// <summary>
-        /// 通过下标索引获取对象
+        /// Get object by numeric index
         /// </summary>
-        /// <param name="index">下标串索引</param>
-        /// <returns>Json对象</returns>
+        /// <param name="index">Index</param>
+        /// <returns>JSON object</returns>
         public override IJsonObject this[int index]
         {
             get
@@ -176,7 +176,7 @@ namespace LHZ.FastJson.JsonClass
             }
         }
         /// <summary>
-        /// Json对象类型
+        /// JSON object type
         /// </summary>
         public override JsonType Type => JsonType.Content;
     }

@@ -49,7 +49,7 @@ namespace LHZ.FastJson.Json
         }
 
         /// <summary>
-        /// 获取反序列化表达树
+        /// Get deserialization expression tree
         /// </summary>
         /// <returns></returns>
         private static Expression<Func<IJsonObject, Dictionary<Type, IJsonCustomConverter>, T>> CreateExpression()
@@ -116,9 +116,9 @@ namespace LHZ.FastJson.Json
             }
         }
         /// <summary>
-        /// 获取对象的类型
+        /// Get the type of the object
         /// </summary>
-        /// <param name="type">反序列化对象类型</param>
+        /// <param name="type">Deserialization object type</param>
         /// <returns></returns>
         private static ObjectType GetObjectType(Type type)
         {
@@ -148,9 +148,9 @@ namespace LHZ.FastJson.Json
         }
 
         /// <summary>
-        /// 解析成bool类型
+        /// Parse to bool type
         /// </summary>
-        /// <param name="jsonObject">Json对象</param>
+        /// <param name="jsonObject">JSON object</param>
         /// <returns></returns>
         private static bool ConvertToBoolean(IJsonObject jsonObject)
         {
@@ -162,9 +162,9 @@ namespace LHZ.FastJson.Json
         }
 
         /// <summary>
-        /// 解析成byte类型
+        /// Parse to byte type
         /// </summary>
-        /// <param name="jsonObject">Json对象</param>
+        /// <param name="jsonObject">JSON object</param>
         /// <returns></returns>
         private static byte ConvertToByte(IJsonObject jsonObject)
         {
@@ -180,9 +180,9 @@ namespace LHZ.FastJson.Json
         }
 
         /// <summary>
-        /// 解析成char类型
+        /// Parse to char type
         /// </summary>
-        /// <param name="jsonObject">Json对象</param>
+        /// <param name="jsonObject">JSON object</param>
         /// <returns></returns>
         private static char ConvertToChar(IJsonObject jsonObject)
         {
@@ -198,9 +198,9 @@ namespace LHZ.FastJson.Json
         }
 
         /// <summary>
-        /// 解析成int16类型
+        /// Parse to int16 type
         /// </summary>
-        /// <param name="jsonObject">Json对象</param>
+        /// <param name="jsonObject">JSON object</param>
         /// <returns></returns>
         private static short ConvertToInt16(IJsonObject jsonObject)
         {
@@ -216,9 +216,9 @@ namespace LHZ.FastJson.Json
         }
 
         /// <summary>
-        /// 解析成uint16类型
+        /// Parse to uint16 type
         /// </summary>
-        /// <param name="jsonObject">Json对象</param>
+        /// <param name="jsonObject">JSON object</param>
         /// <returns></returns>
         private static ushort ConvertToUInt16(IJsonObject jsonObject)
         {
@@ -235,9 +235,9 @@ namespace LHZ.FastJson.Json
 
 
         /// <summary>
-        /// 解析成int32类型
+        /// Parse to int32 type
         /// </summary>
-        /// <param name="jsonObject">Json对象</param>
+        /// <param name="jsonObject">JSON object</param>
         /// <returns></returns>
         private static int ConvertToInt32(IJsonObject jsonObject)
         {
@@ -252,9 +252,9 @@ namespace LHZ.FastJson.Json
             return int.Parse(jsonObject.Value.ToString(), CultureInfo.InvariantCulture);
         }
         /// <summary>
-        /// 解析成uint32类型
+        /// Parse to uint32 type
         /// </summary>
-        /// <param name="jsonObject">Json对象</param>
+        /// <param name="jsonObject">JSON object</param>
         /// <returns></returns>
         private static uint ConvertToUInt32(IJsonObject jsonObject)
         {
@@ -270,9 +270,9 @@ namespace LHZ.FastJson.Json
         }
 
         /// <summary>
-        /// 解析成int64类型
+        /// Parse to int64 type
         /// </summary>
-        /// <param name="jsonObject">Json对象</param>
+        /// <param name="jsonObject">JSON object</param>
         /// <returns></returns>
         private static long ConvertToInt64(IJsonObject jsonObject)
         {
@@ -288,9 +288,9 @@ namespace LHZ.FastJson.Json
         }
 
         /// <summary>
-        /// 解析成uint64类型
+        /// Parse to uint64 type
         /// </summary>
-        /// <param name="jsonObject">Json对象</param>
+        /// <param name="jsonObject">JSON object</param>
         /// <returns></returns>
         private static ulong ConvertToUInt64(IJsonObject jsonObject)
         {
@@ -306,9 +306,9 @@ namespace LHZ.FastJson.Json
         }
 
         /// <summary>
-        /// 解析成单精度浮点类型
+        /// Parse to single-precision floating-point type
         /// </summary>
-        /// <param name="jsonObject">Json对象</param>
+        /// <param name="jsonObject">JSON object</param>
         /// <returns></returns>
         private static float ConvertToFloat(IJsonObject jsonObject)
         {
@@ -319,9 +319,9 @@ namespace LHZ.FastJson.Json
             return float.Parse(jsonObject.Value.ToString(), CultureInfo.InvariantCulture);
         }
         /// <summary>
-        /// 解析成双精度浮点类型
+        /// Parse to double-precision floating-point type
         /// </summary>
-        /// <param name="jsonObject">Json对象</param>
+        /// <param name="jsonObject">JSON object</param>
         /// <returns></returns>
         private static double ConvertToDouble(IJsonObject jsonObject)
         {
@@ -332,9 +332,9 @@ namespace LHZ.FastJson.Json
             return double.Parse(jsonObject.Value.ToString(), CultureInfo.InvariantCulture);
         }
         /// <summary>
-        /// 解析成数字类型
+        /// Parse to decimal type
         /// </summary>
-        /// <param name="jsonObject">Json对象</param>
+        /// <param name="jsonObject">JSON object</param>
         /// <returns></returns>
         private static decimal ConvertToDecimal(IJsonObject jsonObject)
         {
@@ -346,9 +346,9 @@ namespace LHZ.FastJson.Json
         }
 
         /// <summary>
-        /// 解析成时间类型
+        /// Parse to DateTime type
         /// </summary>
-        /// <param name="jsonObject">Json对象</param>
+        /// <param name="jsonObject">JSON object</param>
         /// <returns></returns>
         private static DateTime ConvertToDateTime(IJsonObject jsonObject)
         {
@@ -360,10 +360,10 @@ namespace LHZ.FastJson.Json
         }
 
         /// <summary>
-        /// 解析成枚举
+        /// Parse to enum
         /// </summary>
         /// <param name="type"></param>
-        /// <param name="jsonObject">Json对象</param>
+        /// <param name="jsonObject">JSON object</param>
         /// <returns></returns>
         private static object ConvertToEnum(Type type, IJsonObject jsonObject)
         {
@@ -387,9 +387,9 @@ namespace LHZ.FastJson.Json
             }
         }
         /// <summary>
-        /// 解析成GUID类型
+        /// Parse to GUID type
         /// </summary>
-        /// <param name="jsonObject">Json对象</param>
+        /// <param name="jsonObject">JSON object</param>
         /// <returns></returns>
         private static Guid ConvertToGuid(IJsonObject jsonObject)
         {
@@ -400,9 +400,9 @@ namespace LHZ.FastJson.Json
             return Guid.Parse(jsonObject.Value.ToString());
         }
         /// <summary>
-        /// 解析成枚举
+        /// Parse to enum
         /// </summary>
-        /// <returns>枚举</returns>
+        /// <returns>Enum</returns>
         private static Expression<Func<IJsonObject, Dictionary<Type, IJsonCustomConverter>, T>> ConvertToEnum()
         {
             ParameterExpression jsonObjectParameter = Expression.Parameter(typeof(IJsonObject), "jsonObjectParameter");
@@ -412,7 +412,7 @@ namespace LHZ.FastJson.Json
             List<Expression> expres = new List<Expression>();
             var result = Expression.Variable(typeof(StructConvertResult<>).MakeGenericType(curType));
 
-            //判断是否是JsonContent 如果不是抛出异常
+            //Determine if it is JsonContent; if not, throw an exception
             expres.Add(Expression.IfThen(Expression.AndAlso(Expression.NotEqual(Expression.Property(jsonObjectParameter, "Type"), Expression.Constant(JsonType.String)),
                     Expression.NotEqual(Expression.Property(jsonObjectParameter, "Type"), Expression.Constant(JsonType.Number))),
                 Expression.Throw(Expression.New(typeof(JsonDeserializationException).GetConstructor(new Type[] { typeof(IJsonObject), typeof(Type), typeof(string) }),
@@ -431,9 +431,9 @@ namespace LHZ.FastJson.Json
 
 
         /// <summary>
-        /// 解析成字符类型
+        /// Parse to string type
         /// </summary>
-        /// <param name="jsonObject">Json对象</param>
+        /// <param name="jsonObject">JSON object</param>
         /// <returns></returns>
         private static string ConvertToString(IJsonObject jsonObject)
         {
@@ -449,9 +449,9 @@ namespace LHZ.FastJson.Json
         }
 
         /// <summary>
-        /// 解析成字典类型
+        /// Parse to dictionary type
         /// </summary>
-        /// <returns>解析数字典达式</returns>
+        /// <returns>Deserialized dictionary expression</returns>
         private static Expression<Func<IJsonObject, Dictionary<Type, IJsonCustomConverter>, T>> ConvertToDictionary()
         {
             ParameterExpression jsonObjectParameter = Expression.Parameter(typeof(IJsonObject), "jsonObjectParameter");
@@ -480,16 +480,16 @@ namespace LHZ.FastJson.Json
             List<Expression> expres = new List<Expression>();
             List<Expression> loopexpres = new List<Expression>();
 
-            //判断json是否为null
+            //Determine if the JSON object is null
             expres.Add(Expression.IfThen(Expression.Equal(Expression.Property(jsonObjectParameter, "Type"), Expression.Constant(JsonType.Null)),
                 Expression.Return(returnLabel)));
 
-            //判断是否是JsonContent 如果不是抛出异常
+            //Determine if it is JsonContent; if not, throw an exception
             expres.Add(Expression.IfThen(Expression.NotEqual(Expression.Property(jsonObjectParameter, "Type"), Expression.Constant(JsonType.Content)),
                 Expression.Throw(Expression.New(typeof(JsonDeserializationException).GetConstructor(new Type[] { typeof(IJsonObject), typeof(Type), typeof(string) }),
                 jsonObjectParameter, Expression.Constant(curType), Expression.Constant("Json对象不为Content类型不能解析成Dictionary类型")))));
 
-            //判断是否能够分配给Dictionary<string, IJsonObject>类型
+            //Determine if it can be assigned to Dictionary<string, IJsonObject> type
             if (curType.IsAssignableFrom(typeof(Dictionary<string, IJsonObject>)))
             {
                 expres.Add(Expression.Assign(result, Expression.Call(Expression.Convert(jsonObjectParameter, typeof(JsonContent)), "GetValue", new Type[] { })));
@@ -497,7 +497,7 @@ namespace LHZ.FastJson.Json
                 expres.Add(result);
                 return Expression.Lambda<Func<IJsonObject, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Block(new ParameterExpression[] { result }, expres), jsonObjectParameter, jsonCustomConvertersParameter);
             }
-            //判断是否可以实例化对象
+            //Determine if the object can be instantiated
             if (curType.GetConstructor(new Type[] { }) == null)
             {
                 expres.Add(Expression.Throw(Expression.New(typeof(JsonDeserializationException).GetConstructor(new Type[] { typeof(IJsonObject), typeof(Type), typeof(string) }),
@@ -511,9 +511,9 @@ namespace LHZ.FastJson.Json
             loopexpres.Add(Expression.IfThen(Expression.IsFalse(Expression.Call(enumerator, "MoveNext", new Type[] { })), Expression.Break(loopLabel)));
             loopexpres.Add(Expression.Assign(keyValue, Expression.Property(enumerator, "Current")));
 
-            //TODO 后期可以优化，如果是特殊类型如Dictionary类型，可直接调用Add<Tkey, Tvalue>()方法避免拆箱装箱和类型转换操作提升性能
+            //TODO: This can be optimized later. For special types like Dictionary, you can directly call Add<Tkey, Tvalue>() method to avoid boxing/unboxing and type conversion operations for better performance
 
-            //值类型需要装箱操作
+            //Value types require boxing
             if (genericType.IsValueType)
             {
                 loopexpres.Add(Expression.Call(result, typeof(IDictionary).GetMethod("Add", new Type[] { typeof(object), typeof(object) }), Expression.Property(keyValue, "Key"),
@@ -533,9 +533,9 @@ namespace LHZ.FastJson.Json
         }
 
         /// <summary>
-        /// 解析成数组
+        /// Parse to array
         /// </summary>
-        /// <returns>解析数组表达式</returns>
+        /// <returns>Deserialized array expression</returns>
         private static Expression<Func<IJsonObject, Dictionary<Type, IJsonCustomConverter>, T>> ConvertToArray()
         {
             ParameterExpression jsonObjectParameter = Expression.Parameter(typeof(IJsonObject), "jsonObjectParameter");
@@ -556,21 +556,21 @@ namespace LHZ.FastJson.Json
 
             List<Expression> expres = new List<Expression>();
             List<Expression> loopexpres = new List<Expression>();
-            //判断json是否为null
+            //Determine if the JSON object is null
             expres.Add(Expression.IfThen(Expression.Equal(Expression.Property(jsonObjectParameter, "Type"), Expression.Constant(JsonType.Null)),
                 Expression.Return(returnLabel)));
-            //判断Json对象是否是数组类型
+            //Determine if the JSON object is an array type
             expres.Add(
             Expression.IfThen(Expression.NotEqual(Expression.Property(jsonObjectParameter, "Type"), Expression.Constant(JsonType.Array)),
                 Expression.Throw(Expression.New(typeof(JsonDeserializationException).GetConstructor(new Type[] { typeof(IJsonObject), typeof(Type), typeof(string) }),
                 jsonObjectParameter, Expression.Constant(curType), Expression.Constant("Json对象不为Array类型不能解析成Array类型")))));
-            //初始化数组
+            //Initialize the array
             expres.Add(Expression.Assign(jsonArray, Expression.Convert(jsonObjectParameter, typeof(JsonArray))));
             expres.Add(Expression.Assign(length, Expression.Property(jsonArray, "Length")));
             expres.Add(Expression.Assign(jsonArrayValue, Expression.Call(jsonArray, "GetValue", new Type[] { })));
             expres.Add(Expression.Assign(result, Expression.NewArrayBounds(elementType, length)));
             expres.Add(Expression.Assign(i, Expression.Constant(0)));
-            //循环数组赋值
+            //Loop to assign array values
             loopexpres.Add(Expression.IfThen(Expression.GreaterThanOrEqual(i, length), Expression.Break(loopLabel)));
             var item = Expression.Call(jsonArrayValue, typeof(List<IJsonObject>).GetMethod("get_Item"), i);
             loopexpres.Add(Expression.Call(result, curType.GetMethod("Set"), i, Expression.Call(typeof(JsonDeserialzerExpression<>).MakeGenericType(elementType).GetMethod("Deserialzer", new Type[] { typeof(IJsonObject), typeof(Dictionary<Type, IJsonCustomConverter>) }), item, jsonCustomConvertersParameter)));
@@ -583,16 +583,16 @@ namespace LHZ.FastJson.Json
             return Expression.Lambda<Func<IJsonObject, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Block(new ParameterExpression[] { jsonArray, i, length, jsonArrayValue, result },expres), jsonObjectParameter, jsonCustomConvertersParameter);
         }
         /// <summary>
-        /// 解析成列表集合
+        /// Parse to list collection
         /// </summary>
-        /// <returns>列表集合</returns>
+        /// <returns>List collection</returns>
         private static Expression<Func<IJsonObject, Dictionary<Type, IJsonCustomConverter>, T>> ConvertToList()
         {
             ParameterExpression jsonObjectParameter = Expression.Parameter(typeof(IJsonObject), "jsonObjectParameter");
             ParameterExpression jsonCustomConvertersParameter = Expression.Parameter(typeof(Dictionary<Type, IJsonCustomConverter>), "jsonCustomConverters");
 
             var curType = _type;
-            //获取泛型类型
+            //Get the generic type
             var genericType = curType.GetGenericArguments().FirstOrDefault();
             
 
@@ -616,22 +616,22 @@ namespace LHZ.FastJson.Json
                 return Expression.Lambda<Func<IJsonObject, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Block(new ParameterExpression[] { result }, expres), jsonObjectParameter, jsonCustomConvertersParameter);
             }
 
-            //判断json是否为null
+            //Determine if the JSON object is null
             expres.Add(Expression.IfThen(Expression.Equal(Expression.Property(jsonObjectParameter, "Type"), Expression.Constant(JsonType.Null)),
                 Expression.Return(returnLabel)));
 
-            //判断Json对象是否是数组类型
+            //Determine if the JSON object is an array type
             expres.Add(
             Expression.IfThen(Expression.NotEqual(Expression.Property(jsonObjectParameter, "Type"), Expression.Constant(JsonType.Array)),
                 Expression.Throw(Expression.New(typeof(JsonDeserializationException).GetConstructor(new Type[] { typeof(IJsonObject), typeof(Type), typeof(string) }),
                 jsonObjectParameter, Expression.Constant(curType), Expression.Constant("Json对象不为Array类型不能解析成List类型")))));
-            //初始化List
+            //Initialize List
             expres.Add(Expression.Assign(jsonArray, Expression.Convert(jsonObjectParameter, typeof(JsonArray))));
             expres.Add(Expression.Assign(length, Expression.Property(jsonArray, "Length")));
             expres.Add(Expression.Assign(jsonArrayValue, Expression.Call(jsonArray, "GetValue", new Type[] { })));
             expres.Add(Expression.Assign(result, Expression.New(curType)));
             expres.Add(Expression.Assign(i, Expression.Constant(0)));
-            //循环List赋值
+            //Loop to assign List values
             loopexpres.Add(Expression.IfThen(Expression.GreaterThanOrEqual(i, length), Expression.Break(label)));
             var item = Expression.Call(jsonArrayValue, typeof(List<IJsonObject>).GetMethod("get_Item"), i);
             loopexpres.Add(Expression.Call(result, curType.GetMethod("Add", new Type[] { genericType }),
@@ -645,9 +645,9 @@ namespace LHZ.FastJson.Json
         }
 
         /// <summary>
-        /// 解析成对象
+        /// Parse to object
         /// </summary>
-        /// <returns>对象</returns>
+        /// <returns>Object</returns>
         private static Expression<Func<IJsonObject, Dictionary<Type, IJsonCustomConverter>, T>> ConvertToObject()
         {
             ParameterExpression jsonObjectParameter = Expression.Parameter(typeof(IJsonObject), "jsonObjectParameter");
@@ -664,7 +664,7 @@ namespace LHZ.FastJson.Json
 
             var returnLabel = Expression.Label("returnLable");
 
-            //判断json是否为null 值类型不能为null
+            //Determine if the JSON object is null; value types cannot be null
             if (curType.IsValueType)
             {
                expres.Add(Expression.IfThen(Expression.Equal(Expression.Property(jsonObjectParameter, "Type"), Expression.Constant(JsonType.Null)),
@@ -676,7 +676,7 @@ namespace LHZ.FastJson.Json
                 expres.Add(Expression.IfThen(Expression.Equal(Expression.Property(jsonObjectParameter, "Type"), Expression.Constant(JsonType.Null)),
                 Expression.Return(returnLabel)));
             }
-            //对象可以指派IJsonObject类型变量 
+            //The object can be assigned to an IJsonObject type variable 
             if (curType.IsAssignableFrom(typeof(IJsonObject)))
             {
                 expres.Add(Expression.Assign(result, jsonObjectParameter));
@@ -698,7 +698,7 @@ namespace LHZ.FastJson.Json
                 expres.Add(result);
                 return Expression.Lambda<Func<IJsonObject, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Block(new ParameterExpression[] { result }, expres), jsonObjectParameter, jsonCustomConvertersParameter);
             }
-            //判断是否是接口或者抽象类型
+            //Check if the type is an interface or abstract type
             if (curType.IsInterface || curType.IsAbstract)
             {
                 expres.Add(Expression.Throw(Expression.New(typeof(JsonDeserializationException).GetConstructor(new Type[] { typeof(IJsonObject), typeof(Type), typeof(string) }),
@@ -707,7 +707,7 @@ namespace LHZ.FastJson.Json
                 expres.Add(result);
                 return Expression.Lambda<Func<IJsonObject, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Block(new ParameterExpression[] { result }, expres), jsonObjectParameter, jsonCustomConvertersParameter);
             }
-            //判断是否有默认的构造函数
+            //Check if the type has a default constructor
             if (curType.GetConstructor(new Type[] { }) == null)
             {
                 expres.Add(Expression.Throw(Expression.New(typeof(JsonDeserializationException).GetConstructor(new Type[] { typeof(IJsonObject), typeof(Type), typeof(string) }),
@@ -716,16 +716,16 @@ namespace LHZ.FastJson.Json
                 expres.Add(result);
                 return Expression.Lambda<Func<IJsonObject, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Block(new ParameterExpression[] { result }, expres), jsonObjectParameter, jsonCustomConvertersParameter);
             }
-            //初始化赋值每个属性
+            //Initialize and assign each property
             foreach (var item in curType.GetProperties().Where(n=>n.CanWrite))
             {
-                //判断是否忽略反序列化
+                //Check if deserialization should be ignored
                 var jsonIgnored = Attribute.GetCustomAttribute(item, typeof(JsonIgnoredAttribute)) as JsonIgnoredAttribute;
                 if (jsonIgnored != null && (jsonIgnored.JsonIgnoredMethod & JsonMethods.Deserialize) == JsonMethods.Deserialize)
                 {
                     continue;
                 }
-                #region 自定义属性名称处理
+                #region Custom property name handling
                 StringView jsonPropertyNameStringView = new StringView(JsonUtility.GetPropertyName(item));
                 var jsonPropertyName = new JsonPropertyName(jsonPropertyNameStringView, jsonPropertyNameStringView.GetHashCode());
                 #endregion
@@ -738,7 +738,7 @@ namespace LHZ.FastJson.Json
                 expres.Add(Expression.Assign(propertyValue, getJsonObjItem));
                 //members.Add()
                 members.Add(Expression.Bind(item, propertyValue));
-                //TODO 如有三元运算表达式，可替换成三元表达式
+                //TODO: If ternary expression is available, it can be replaced with ternary expression
                 //members.Add(Expression.Bind(item, Expression.IfThenElse(Expression.IsTrue(hasChildrenNode), getJsonObjItem, Expression.Default(item.PropertyType))));
 
 
@@ -761,14 +761,14 @@ namespace LHZ.FastJson.Json
             var result = Expression.Variable(curType, "result");
             var returnLabel = Expression.Label("returnLable");
 
-            //获取泛型类型
+            //Get the generic type
             var genericType = curType.GetGenericArguments().FirstOrDefault();
             if (genericType == null)
             {
                 return Expression.Lambda<Func<IJsonObject, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Throw(Expression.New(typeof(JsonDeserializationException).GetConstructor(new Type[] { typeof(IJsonObject),
                     typeof(Type), typeof(string) }), jsonObjectParameter, Expression.Constant(curType), Expression.Constant("反序列化出错获取，获取Nullable泛型出错！"))), jsonObjectParameter, jsonCustomConvertersParameter);
             }
-            //判断json是否为null
+            //Determine if the JSON object is null
             expres.Add(Expression.IfThen(Expression.Equal(Expression.Property(jsonObjectParameter, "Type"), Expression.Constant(JsonType.Null)),
                 Expression.Return(returnLabel)));
             expres.Add(Expression.Assign(result, Expression.New(curType.GetConstructor(new Type[] { genericType }),

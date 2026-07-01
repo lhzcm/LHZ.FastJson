@@ -18,7 +18,7 @@ using LHZ.FastJson.Json.Utils;
 namespace LHZ.FastJson.Json
 {
     /// <summary>
-    /// Json序列化类
+    /// JSON serialization class
     /// </summary>
     public class JsonSerializer
     {
@@ -35,18 +35,18 @@ namespace LHZ.FastJson.Json
         private Dictionary<Type, IJsonCustomConverter> _customConverters;
 
         /// <summary>
-        /// 使用对象初始化序列化器
+        /// Initialize the serializer with an object
         /// </summary>
-        /// <param name="obj">待序列化对象</param>
+        /// <param name="obj">Object to serialize</param>
         public JsonSerializer(object obj)
         {
             this._obj = obj;
         }
         /// <summary>
-        /// 使用格式化器初始化（已废弃）
+        /// Initialize with formatters (deprecated)
         /// </summary>
-        /// <param name="obj">序列化对象</param>
-        /// <param name="formats">格式化器</param>
+        /// <param name="obj">Object to serialize</param>
+        /// <param name="formats">Formatters</param>
         [Obsolete]
         public JsonSerializer(object obj, IJsonFormat[] formats)
         {
@@ -55,10 +55,10 @@ namespace LHZ.FastJson.Json
         }
 
         /// <summary>
-        /// 使用自定义转换器初始化
+        /// Initialize with custom converters
         /// </summary>
-        /// <param name="obj">序列化对象</param>
-        /// <param name="jsonCustomConverters">自定义转换器</param>
+        /// <param name="obj">Object to serialize</param>
+        /// <param name="jsonCustomConverters">Custom converters</param>
         public JsonSerializer(object obj, params IJsonCustomConverter[] jsonCustomConverters)
         {
             this._obj = obj;
@@ -84,9 +84,9 @@ namespace LHZ.FastJson.Json
         }
 
         /// <summary>
-        /// 序列化方法
+        /// Serialization method
         /// </summary>
-        /// <returns>Json字符串</returns>
+        /// <returns>JSON string</returns>
         public string Serialize()
         {
             if (_obj == null)
@@ -99,44 +99,44 @@ namespace LHZ.FastJson.Json
         }
 
         /// <summary>
-        /// 通过对象类型获取对象序列化的方法
+        /// Get the serialization method for the given object type
         /// </summary>
-        /// <param name="objType">对象类型</param>
-        /// <returns>对象序列化委托方法</returns>
+        /// <param name="objType">Object type</param>
+        /// <returns>Serialization delegate method</returns>
         private Action<JsonSerializer, object> GetSerializationAction(Type objType)
         {
             return _serializationActions.GetOrAdd(objType, type => CreateSerializationExpression(type).Compile());
         }
 
         /// <summary>
-        /// 通过对象类型创建对象序列化的表达式
+        /// Create a serialization expression for the given object type
         /// </summary>
-        /// <param name="objType">对象类型</param>
-        /// <returns>对象序列化表达式</returns>
+        /// <param name="objType">Object type</param>
+        /// <returns>Serialization expression</returns>
         private Expression<Action<JsonSerializer, object>> CreateObjectSerializationExpression(Type objType)
         {
-            //当前对象
+            //Current object
             var thisObjParameter = Expression.Parameter(typeof(JsonSerializer), "thisObjParameter");
-            //序列化对象参数
+            //Serialization object parameter
             var objParameter = Expression.Parameter(typeof(object), "objParameter");
-            //jsonStrBuilder对象参数
+            //jsonStrBuilder object parameter
             var jsonStrBuilder = Expression.Parameter(typeof(StringBuilder), "strBuilder");
-            //循环引用栈对象参数
+            //Circular reference stack object parameter
             var stack = Expression.Parameter(typeof(Stack<object>), "stack");
-            //对对象进行转换
+            //Convert to target object
             var obj = Expression.Parameter(objType, "obj");
-            //表达式列表
+            //Expression list
             List<Expression> expList = new List<Expression>();
-            //最结尾的跳转LabelTarget
+            //End label target
             LabelTarget endLabelTarget = Expression.Label("endLabelTarget");
 
-            //是否可能循环引用
+            //Whether circular reference is possible
             bool maybeCircularReference = false;
-            //获取属性
+            //Get properties
             var properties = objType.GetProperties().Where(n => {
                 if (!n.CanRead)
                     return false;
-                //判断是否忽略序列化
+                //Check if serialization should be ignored
                 if (Attribute.GetCustomAttribute(n, typeof(JsonIgnoredAttribute)) is JsonIgnoredAttribute jsonIgnored && (jsonIgnored.JsonIgnoredMethod & JsonMethods.Serialize) == JsonMethods.Serialize)
                 {
                     return false;
@@ -144,24 +144,24 @@ namespace LHZ.FastJson.Json
                 return true;
             }).ToList();
 
-            //变量赋值
+            //Variable assignment
             expList.Add(Expression.Assign(obj, Expression.Convert(objParameter, objType)));
             expList.Add(Expression.Assign(jsonStrBuilder, Expression.Call(thisObjParameter, ((Func<StringBuilder>) GetStringBuilder).Method)));
 
-            ////自定义json格式（添加到上一层实现）
+            ////Custom JSON format (add to the parent level implementation)
             //List<Expression> customConvertersBody = new List<Expression>();
             //var customConvertersField = typeof(JsonSerializer).GetField("_customConverters", BindingFlags.NonPublic | BindingFlags.Instance);
             //var customConvertersFieldExp = Expression.Field(thisObjParameter, customConvertersField);
 
             //expList.Add(Expression.IfThen(Expression.NotEqual(customConvertersFieldExp, Expression.Constant(null)), Expression.Block(customConvertersBody)));
 
-            //判断是否有属性名称冲突
+            //Check for duplicate property names
             if (JsonUtility.HasSameNameProperty(properties, out string samePropertyName))
             {
                 throw new Exception($"序列化失败，类型{objType.FullName}不同的属性存在相同的属性名\"{samePropertyName}\"");
             }
 
-            //添加json对象类型左大括号
+            //Add left brace for JSON object type
             expList.Add(Expression.Call(jsonStrBuilder, typeof(StringBuilder).GetMethod("Append", new Type[] { typeof(char) }), Expression.Constant('{')));
 
             foreach (var item in properties)
@@ -171,7 +171,7 @@ namespace LHZ.FastJson.Json
                 Expression exp = null;
                 Func<Type, Action<JsonSerializer, object>> sact = GetSerializationAction;
 
-                #region 自定义属性名称处理
+                #region Custom property name handling
                 string jsonPropertyName = JsonUtility.GetPropertyName(item);
                 #endregion
                 expList.Add(Expression.Call(thisObjParameter, ((Action<string>)SerializePropertyName).Method, Expression.Constant(jsonPropertyName)));
@@ -213,7 +213,7 @@ namespace LHZ.FastJson.Json
                             break;
                         }
                 }
-                ////获取属性类型序列化 (该方法不会判断每个对象真实的类型)
+                ////Get property type serialization (this method does not determine the actual type of each object)
                 // var expressionMethods = this.GetType().GetMethods((BindingFlags) 0x7FFFFFFF).First(n => n.Name == "CreateSerializationExpression" && n.IsGenericMethod).MakeGenericMethod(item.PropertyType);
                 // var serializationExpression = expressionMethods.Invoke(this, null) as Expression;
                 // exp = Expression.Invoke(serializationExpression, new Expression[]{thisObjParameter, Expression.Property(obj, item.Name)});
@@ -223,26 +223,26 @@ namespace LHZ.FastJson.Json
                     maybeCircularReference = true;
                 }
 
-                //判断引用类型是否为空
+                //Check if reference type is null
                 if (objectType == ObjectType.String || objectType == ObjectType.Dictionary || objectType == ObjectType.Enumerable || objectType == ObjectType.Object)
                 {
-                    //需要进行循环引用判断
+                    //Need to check for circular reference
                     if(objectType != ObjectType.String)
                     {
                         maybeCircularReference = true;
                     }
-                    //进行null判断
+                    //Perform null check
                     var propertyNull = Expression.Call(jsonStrBuilder, typeof(StringBuilder).GetMethod("Append", new Type[] { typeof(string) }), Expression.Constant("null"));
                     exp = Expression.IfThenElse(Expression.Equal(Expression.Property(obj, item.Name), Expression.Constant(null)), propertyNull, exp);
                 }
                 expList.Add(exp);
-                //判断是否是最后一个字段，如果不是则需要加上“,”
+                //Check if it is the last field; if not, add ","
                 if (properties.IndexOf(item) < properties.Count - 1)
                 {
                     expList.Add(Expression.Call(jsonStrBuilder, typeof(StringBuilder).GetMethod("Append", new Type[] { typeof(string) }), Expression.Constant(",")));
                 }
             }
-            //循环引用判断
+            //Circular reference check
             if (maybeCircularReference && !objType.IsValueType)
             {
                 
@@ -254,26 +254,26 @@ namespace LHZ.FastJson.Json
                 expList.Insert(2, Expression.Call(stack, typeof(Stack<object>).GetMethod("Push", new Type[]{ typeof(object) }), objParameter));
                 expList.Add(Expression.Call(stack, typeof(Stack<object>).GetMethod("Pop")));
             }
-            //最后加上结尾标签
+            //Add closing label at the end
             expList.Add(Expression.Label(endLabelTarget));
 
             expList.Add(Expression.Call(jsonStrBuilder, typeof(StringBuilder).GetMethod("Append", new Type[] { typeof(string) }), Expression.Constant("}")));
             return  Expression.Lambda<Action<JsonSerializer, object>>(Expression.Block(new ParameterExpression[] { obj, jsonStrBuilder, stack}, expList), thisObjParameter, objParameter);
         }
         /// <summary>
-        /// 创建序列化的表达式
+        /// Create a serialization expression
         /// </summary>
-        /// <param name="objType">对象类型</param>
-        /// <returns>序列化表达式</returns>
+        /// <param name="objType">Object type</param>
+        /// <returns>Serialization expression</returns>
         private Expression<Action<JsonSerializer, object>> CreateSerializationExpression(Type objType)
         {
-            //当前对象
+            //Current object
             var thisObjParameter = Expression.Parameter(typeof(JsonSerializer), "thisObjParameter");
-            //序列化对象参数
+            //Serialization object parameter
             var objParameter = Expression.Parameter(typeof(object));
-            //对象进行转换
+            //Convert to target object
             var obj = Expression.Convert(objParameter, objType);
-            //表达式
+            //Expression
             Expression exp = null;
 
             ObjectType objectType = GetObjectType(objType);
@@ -301,8 +301,8 @@ namespace LHZ.FastJson.Json
                 default: exp = Expression.Invoke(CreateObjectSerializationExpression(objType), thisObjParameter, objParameter); break;
             }
 
-            #region 自定义序列化
-            //自定义序列化对象
+            #region Custom serialization
+            //Custom serialization object
             var method = typeof(IJsonCustomConverter).GetMethod("Serialize");
 
             List<Expression> customeConverterExpList = new List<Expression>();
@@ -326,20 +326,20 @@ namespace LHZ.FastJson.Json
         }
 
         /// <summary>
-        /// 创建序列化的表达式(泛型)
+        /// Create a serialization expression (generic)
         /// </summary>
-        /// <typeparam name="T">泛型</typeparam>
-        /// <returns>表达式</returns>
+        /// <typeparam name="T">Generic type</typeparam>
+        /// <returns>Expression</returns>
         private Expression<Action<JsonSerializer, T>> CreateSerializationExpression<T>()
         {
-            //对象类型
+            //Object type
             var objType = typeof(T);
-            //当前对象
+            //Current object
             var thisObjParameter = Expression.Parameter(typeof(JsonSerializer), "thisObjParameter");
-            //序列化对象参数
+            //Serialization object parameter
             var objParameter = Expression.Parameter(objType);
 
-            //表达式
+            //Expression
             Expression exp = null;
         
 
@@ -371,10 +371,10 @@ namespace LHZ.FastJson.Json
         }
 
         /// <summary>
-        /// 获取对象的类型
+        /// Get the type of the object
         /// </summary>
-        /// <param name="type">序列化对象类型</param>
-        /// <returns>对象类型</returns>
+        /// <param name="type">Serialization object type</param>
+        /// <returns>Object type</returns>
         private ObjectType GetObjectType(Type type)
         {
             ObjectType objType;
@@ -398,9 +398,9 @@ namespace LHZ.FastJson.Json
         }
 
         /// <summary>
-        /// bool类型序列化
+        /// bool type serialization
         /// </summary>
-        /// <param name="obj">需要序列化的对象</param>
+        /// <param name="obj">Object to serialize</param>
         private void SerializeBoolean(bool obj)
         {
             if ((bool)obj)
@@ -410,36 +410,36 @@ namespace LHZ.FastJson.Json
         }
 
         /// <summary>
-        /// byte类型序列化
+        /// byte type serialization
         /// </summary>
-        /// <param name="obj">需要序列化的对象</param>
+        /// <param name="obj">Object to serialize</param>
         private void SerializeByte(byte obj)
         {
             _jsonStrBuilder.Append(obj.ToString(CultureInfo.InvariantCulture));
         }
 
         /// <summary>
-        /// char类型序列化
+        /// char type serialization
         /// </summary>
-        /// <param name="obj">需要序列化的对象</param>
+        /// <param name="obj">Object to serialize</param>
         private void SerializeChar(char obj)
         {
             SerializeString(obj.ToString());
         }
 
         /// <summary>
-        /// int16类型序列化
+        /// int16 type serialization
         /// </summary>
-        /// <param name="obj">需要序列化的对象</param>
+        /// <param name="obj">Object to serialize</param>
         private void SerializeInt16(short obj)
         {
             _jsonStrBuilder.Append(obj.ToString(CultureInfo.InvariantCulture));
         }
 
         /// <summary>
-        /// uint16类型序列化
+        /// uint16 type serialization
         /// </summary>
-        /// <param name="obj">需要序列化的对象</param>
+        /// <param name="obj">Object to serialize</param>
         private void SerializeUInt16(ushort obj)
         {
             _jsonStrBuilder.Append(obj.ToString(CultureInfo.InvariantCulture));
@@ -447,43 +447,43 @@ namespace LHZ.FastJson.Json
 
 
         /// <summary>
-        /// int32类型序列化
+        /// int32 type serialization
         /// </summary>
-        /// <param name="obj">需要序列化的对象</param>
+        /// <param name="obj">Object to serialize</param>
         private void SerializeInt32(int obj)
         {
             _jsonStrBuilder.Append(obj.ToString(CultureInfo.InvariantCulture));
         }
 
         /// <summary>
-        /// uint32类型序列化
+        /// uint32 type serialization
         /// </summary>
-        /// <param name="obj">需要序列化的对象</param>
+        /// <param name="obj">Object to serialize</param>
         private void SerializeUInt32(uint obj)
         {
             _jsonStrBuilder.Append(obj.ToString(CultureInfo.InvariantCulture));
         }
 
         /// <summary>
-        /// int64类型序列化
+        /// int64 type serialization
         /// </summary>
-        /// <param name="obj">需要序列化的对象</param>
+        /// <param name="obj">Object to serialize</param>
         private void SerializeInt64(long obj)
         {
             _jsonStrBuilder.Append(obj.ToString(CultureInfo.InvariantCulture));
         }
 
         /// <summary>
-        /// uint64类型序列化
+        /// uint64 type serialization
         /// </summary>
-        /// <param name="obj">需要序列化的对象</param>
+        /// <param name="obj">Object to serialize</param>
         private void SerializeUInt64(ulong obj)
         {
             _jsonStrBuilder.Append(obj.ToString(CultureInfo.InvariantCulture));
         }
 
         /// <summary>
-        /// float类型序列化
+        /// float type serialization
         /// </summary>
         /// <param name="obj"></param>
         private void SerializeFloat(float obj)
@@ -492,9 +492,9 @@ namespace LHZ.FastJson.Json
         }
 
         /// <summary>
-        /// double类型序列
+        /// double type serialization
         /// </summary>
-        /// <param name="obj">需要序列化的对象</param>
+        /// <param name="obj">Object to serialize</param>
         private void SerializeDouble(double obj)
         {
             _jsonStrBuilder.Append(obj.ToString(CultureInfo.InvariantCulture));
@@ -504,9 +504,9 @@ namespace LHZ.FastJson.Json
             _jsonStrBuilder.Append(obj.ToString(CultureInfo.InvariantCulture));
         }
         /// <summary>
-        /// DateTime类型序列化
+        /// DateTime type serialization
         /// </summary>
-        /// <param name="obj">需要序列化的对象</param>
+        /// <param name="obj">Object to serialize</param>
         private void SerializeDateTime(DateTime obj)
         {
             if (_formater == null)
@@ -526,25 +526,25 @@ namespace LHZ.FastJson.Json
         }
 
         /// <summary>
-        /// Enum类型序列化
+        /// Enum type serialization
         /// </summary>
-        /// <param name="obj">需要序列化的对象</param>
+        /// <param name="obj">Object to serialize</param>
         private void SerializeEnum(System.Enum obj)
         {
             _jsonStrBuilder.Append(obj.ToString("D"));
         }
         /// <summary>
-        /// Guid类型序列化
+        /// Guid type serialization
         /// </summary>
-        /// <param name="obj">需要序列化的对象</param>
+        /// <param name="obj">Object to serialize</param>
         private void SerializeGuid(Guid obj)
         {
             SerializeString(obj.ToString());
         }
         /// <summary>
-        /// String类型序列化
+        /// String type serialization
         /// </summary>
-        /// <param name="obj">需要序列化的对象</param>
+        /// <param name="obj">Object to serialize</param>
         private void SerializeString(string obj)
         {
             if (obj == null)
@@ -585,9 +585,9 @@ namespace LHZ.FastJson.Json
         }
 
         /// <summary>
-        /// Dictionary类型序列化
+        /// Dictionary type serialization
         /// </summary>
-        /// <param name="obj">需要序列化的对象</param>
+        /// <param name="obj">Object to serialize</param>
         private void SerializeDictionary(IDictionary obj)
         {
             _jsonStrBuilder.Append('{');
@@ -607,9 +607,9 @@ namespace LHZ.FastJson.Json
             _jsonStrBuilder.Append('}');
         }
         /// <summary>
-        /// Enumerable类型序列化
+        /// Enumerable type serialization
         /// </summary>
-        /// <param name="obj">需要序列化的对象</param>
+        /// <param name="obj">Object to serialize</param>
         private void SerializeEnumerable(IEnumerable obj)
         {
             _jsonStrBuilder.Append('[');
@@ -625,10 +625,10 @@ namespace LHZ.FastJson.Json
         }
         
         /// <summary>
-        /// 是否循环引用判断
+        /// Check if circular reference exists
         /// </summary>
-        /// <param name="obj">判断对象</param>
-        /// <returns>是否循环引用</returns>
+        /// <param name="obj">Object to check</param>
+        /// <returns>Whether circular reference exists</returns>
         private bool IsCircularReference(object obj)
         {
             foreach (var item in _objStack)
@@ -662,10 +662,10 @@ namespace LHZ.FastJson.Json
         }
 
         /// <summary>
-        /// 字符转义
+        /// Character escaping
         /// </summary>
-        /// <param name="paraphrase">需要转义的字符</param>
-        /// <returns>转义好的字符串</returns>
+        /// <param name="paraphrase">Character to escape</param>
+        /// <returns>Escaped string</returns>
         private string CharParaphrase(char paraphrase)
         {
             switch (paraphrase)

@@ -10,10 +10,10 @@ namespace LHZ.FastJson.Json.Utils
     internal static class JsonUtility
     {
         /// <summary>
-        /// 判断是否存在相同名字的属性
+        /// Determine if properties with the same name exist
         /// </summary>
         /// <param name="properties"></param>
-        /// <param name="SameName">相同的名字</param>
+        /// <param name="SameName">The duplicate name</param>
         /// <returns></returns>
         public static bool HasSameNameProperty(IEnumerable<PropertyInfo> properties, out string SameName)
         {
@@ -37,10 +37,10 @@ namespace LHZ.FastJson.Json.Utils
             return false;
         }
         /// <summary>
-        /// 获取类型属性对应的Json属性名称
+        /// Get the JSON property name corresponding to the type property
         /// </summary>
-        /// <param name="propertyInfo">属性</param>
-        /// <returns>Json属性名称</returns>
+        /// <param name="propertyInfo">The property</param>
+        /// <returns>JSON property name</returns>
         public static string GetPropertyName(PropertyInfo propertyInfo)
         {
             string propertyName = propertyInfo.Name;

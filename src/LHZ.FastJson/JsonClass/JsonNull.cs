@@ -7,7 +7,7 @@ using System.Text;
 namespace LHZ.FastJson.JsonClass
 {
     /// <summary>
-    /// Json空对象
+    /// JSON null object
     /// </summary>
     class JsonNull : JsonObject
     {
@@ -16,7 +16,7 @@ namespace LHZ.FastJson.JsonClass
         public static StringView Null => _null;
         public override object Value => _value;
         /// <summary>
-        /// 获取null值（已废弃，请使用 Value 属性）
+        /// Get null value (deprecated, use Value property instead)
         /// </summary>
         [Obsolete("This method is deprecated and will be removed in the next official release.")]
         public string GetValue()
@@ -27,7 +27,7 @@ namespace LHZ.FastJson.JsonClass
         {
         }
         /// <summary>
-        /// 默认构造函数
+        /// Default constructor
         /// </summary>
         public JsonNull()
         {
@@ -44,7 +44,7 @@ namespace LHZ.FastJson.JsonClass
             : stringBuilder.Append(_value);
         }
         /// <summary>
-        /// Json对象类型
+        /// JSON object type
         /// </summary>
         public override JsonType Type => JsonType.Null;
     }

@@ -9,17 +9,17 @@ using System.Text;
 namespace LHZ.FastJson
 {
     /// <summary>
-    /// Json对象解析转换静态类型
-    /// 可以对Json String序列化成object
-    /// 可以对object反序列化成Json String
+    /// Static type for JSON object parsing and conversion.
+    /// Can serialize JSON String to object.
+    /// Can deserialize object to JSON String.
     /// </summary>
     public static class JsonConvert
     {
         /// <summary>
-        /// Json字符串反序列化成JsonObject类型
+        /// Deserialize JSON string to JsonObject type
         /// </summary>
-        /// <param name="jsonString">Json字符串</param>
-        /// <returns>JsonObject类型对象</returns>
+        /// <param name="jsonString">JSON string</param>
+        /// <returns>JsonObject type object</returns>
         public static IJsonObject Deserialize(string jsonString)
         {
             JsonReader reader = new JsonReader(jsonString);
@@ -27,11 +27,11 @@ namespace LHZ.FastJson
         }
 
         /// <summary>
-        ///  尝试Json字符串反序列化成T类型
+        /// Try to deserialize JSON string to T type
         /// </summary>
-        /// <param name="jsonString">Json字符串</param>
-        /// <param name="dist">反序列化目标对象</param>
-        /// <returns>是否反序列化成功</returns>
+        /// <param name="jsonString">JSON string</param>
+        /// <param name="dist">Deserialized target object</param>
+        /// <returns>Whether deserialization was successful</returns>
         public static bool TryDeserialize(string jsonString, out IJsonObject dist)
         {
             try
@@ -48,23 +48,23 @@ namespace LHZ.FastJson
         }
 
         /// <summary>
-        /// Json字符串反序列化成T类型
+        /// Deserialize JSON string to T type
         /// </summary>
-        /// <typeparam name="T">反序列化目标类型</typeparam>
-        /// <param name="jsonString">JsonObject类型</param>
-        /// <returns>反序列化目标对象</returns>
+        /// <typeparam name="T">Deserialization target type</typeparam>
+        /// <param name="jsonString">JsonObject type</param>
+        /// <returns>Deserialized target object</returns>
         public static T Deserialize<T>(string jsonString)
         {
             JsonDeserializer<T> deserializer = new JsonDeserializer<T>(jsonString);
             return deserializer.Deserialize();
         }
         /// <summary>
-        /// Json字符串反序列化成T类型
+        /// Deserialize JSON string to T type
         /// </summary>
-        /// <typeparam name="T">反序列化目标类型</typeparam>
-        /// <param name="jsonString">JsonObject类型</param>
-        /// <param name="jsonCustomConverters">自定义json转换器</param>
-        /// <returns>反序列化目标对象</returns>
+        /// <typeparam name="T">Deserialization target type</typeparam>
+        /// <param name="jsonString">JsonObject type</param>
+        /// <param name="jsonCustomConverters">Custom JSON converters</param>
+        /// <returns>Deserialized target object</returns>
         public static T Deserialize<T>(string jsonString, params IJsonCustomConverter[] jsonCustomConverters)
         {
             JsonDeserializer<T> deserializer = new JsonDeserializer<T>(jsonString);
@@ -72,12 +72,12 @@ namespace LHZ.FastJson
         }
 
         /// <summary>
-        ///  尝试Json字符串反序列化成T类型
+        /// Try to deserialize JSON string to T type
         /// </summary>
-        /// <typeparam name="T">反序列化目标类型</typeparam>
-        /// <param name="jsonString">Json字符串</param>
-        /// <param name="dist">反序列化目标对象</param>
-        /// <returns>是否反序列化成功</returns>
+        /// <typeparam name="T">Deserialization target type</typeparam>
+        /// <param name="jsonString">JSON string</param>
+        /// <param name="dist">Deserialized target object</param>
+        /// <returns>Whether deserialization was successful</returns>
         public static bool TryDeserialize<T>(string jsonString, out T dist)
         {
             try
@@ -94,10 +94,10 @@ namespace LHZ.FastJson
         }
 
         /// <summary>
-        /// 把对象进行序列化成Json字符串
+        /// Serialize an object to a JSON string
         /// </summary>
-        /// <param name="obj">需要序列化的对象</param>
-        /// <returns>Json字符串</returns>
+        /// <param name="obj">The object to serialize</param>
+        /// <returns>JSON string</returns>
         public static string Serialize(object obj)
         {
             JsonSerializer serializer = new JsonSerializer(obj);
@@ -105,11 +105,11 @@ namespace LHZ.FastJson
         }
 
         /// <summary>
-        /// 把对象进行序列化成Json字符串（带格式化）
+        /// Serialize an object to a JSON string (with formatting)
         /// </summary>
-        /// <param name="obj">需要序列化的对象</param>
-        /// <param name="formats">格式化类型</param>
-        /// <returns>Json字符串</returns>
+        /// <param name="obj">The object to serialize</param>
+        /// <param name="formats">Format types</param>
+        /// <returns>JSON string</returns>
         [Obsolete("This method is obsolete. Use Serialize(object obj) instead.")]
         public static string Serialize(object obj, params IJsonFormat[] formats)
         {

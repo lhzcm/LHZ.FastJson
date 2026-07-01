@@ -6,23 +6,23 @@ using System.Text;
 namespace LHZ.FastJson.Json.Attributes
 {
     /// <summary>
-    /// Json属性名称特性
+    /// JSON property name attribute
     /// </summary>
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
     public class JsonPropertyAttribute : Attribute
     {
         private readonly string _name;
         /// <summary>
-        /// 初始化
+        /// Initialize
         /// </summary>
-        /// <param name="name">自定义属性名称</param>
+        /// <param name="name">Custom property name</param>
         public JsonPropertyAttribute(string name)
         {
             _name = name ?? throw new ArgumentNullException(nameof(name));
         }
 
         /// <summary>
-        /// 属性名称
+        /// Property name
         /// </summary>
         public string PropertyName => _name;
     }

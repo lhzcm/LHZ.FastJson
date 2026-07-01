@@ -5,16 +5,16 @@ using System.Text;
 namespace LHZ.FastJson.Enum
 {
     /// <summary>
-    /// Json布尔值类型
+    /// JSON boolean value type
     /// </summary>
     public enum BooleanType
     {
         /// <summary>
-        /// 真
+        /// True
         /// </summary>
         True,
         /// <summary>
-        /// 假
+        /// False
         /// </summary>
         False,
     }

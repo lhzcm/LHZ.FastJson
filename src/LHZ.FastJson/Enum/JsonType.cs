@@ -5,32 +5,32 @@ using System.Text;
 namespace LHZ.FastJson.Enum
 {
     /// <summary>
-    /// Json数据类型枚举
+    /// JSON data type enumeration
     /// </summary>
     public enum JsonType
     {
         /// <summary>
-        /// Json的对象类型
+        /// JSON object type
         /// </summary>
         Content,
         /// <summary>
-        /// Json的数组类型
+        /// JSON array type
         /// </summary>
         Array,
         /// <summary>
-        /// json的字符串类型
+        /// JSON string type
         /// </summary>
         String,
         /// <summary>
-        /// json的数值类型
+        /// JSON number type
         /// </summary>
         Number,
         /// <summary>
-        /// json的布尔类型
+        /// JSON boolean type
         /// </summary>
         Boolean,
         /// <summary>
-        /// json的空类型
+        /// JSON null type
         /// </summary>
         Null
     }

@@ -6,7 +6,7 @@ using System.Text;
 namespace LHZ.FastJson.JsonClass
 {
     /// <summary>
-    /// Json布尔对象
+    /// JSON boolean object
     /// </summary>
     public class JsonBoolean : JsonObject
     {
@@ -18,7 +18,7 @@ namespace LHZ.FastJson.JsonClass
         internal static StringView False => _false;
 
         /// <summary>
-        /// 获取布尔值字符串（已废弃，请使用 Value 属性）
+        /// Get the boolean string (deprecated, use Value property instead)
         /// </summary>
         [Obsolete("This method is deprecated and will be removed in the next official release.")]
         public string GetValue()
@@ -26,7 +26,7 @@ namespace LHZ.FastJson.JsonClass
             return this.ToJsonString();
         }
         /// <summary>
-        /// bool类型（true or false）
+        /// Boolean type (true or false)
         /// </summary>
         public BooleanType BooleanType { get; }
         internal JsonBoolean(BooleanType type, int position) : base(position)
@@ -34,7 +34,7 @@ namespace LHZ.FastJson.JsonClass
             this.BooleanType = type;
         }
         /// <summary>
-        /// 默认构造函数
+        /// Default constructor
         /// </summary>
         public JsonBoolean()
         {
@@ -51,7 +51,7 @@ namespace LHZ.FastJson.JsonClass
             return BooleanType == BooleanType.True ? "true" : "false";
         }
         /// <summary>
-        /// Json对象类型
+        /// JSON object type
         /// </summary>
         public override JsonType Type => JsonType.Boolean;
     }

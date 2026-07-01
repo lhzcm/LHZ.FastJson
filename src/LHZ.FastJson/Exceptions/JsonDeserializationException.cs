@@ -7,7 +7,7 @@ using System.Text;
 namespace LHZ.FastJson.Exceptions
 {
     /// <summary>
-    /// Json反序列化异常
+    /// JSON deserialization exception
     /// </summary>
     public class JsonDeserializationException : JsonReadException
     {
@@ -15,11 +15,11 @@ namespace LHZ.FastJson.Exceptions
         //private ObjectType _objType;
         private Type _targetType;
         /// <summary>
-        /// 初始化Json反序列化异常
+        /// Initialize JSON deserialization exception
         /// </summary>
-        /// <param name="jsonObject">Json对象</param>
-        /// <param name="targetType">目标类型</param>
-        /// <param name="msg">异常消息</param>
+        /// <param name="jsonObject">JSON object</param>
+        /// <param name="targetType">Target type</param>
+        /// <param name="msg">Exception message</param>
         public JsonDeserializationException(IJsonObject jsonObject, Type targetType, string msg) : base(jsonObject.Position, msg)
         {
             this._jsonType = jsonObject.Type;
@@ -27,11 +27,11 @@ namespace LHZ.FastJson.Exceptions
         }
 
         /// <summary>
-        /// Json类型
+        /// JSON type
         /// </summary>
         public JsonType JsonType { get { return this._jsonType; } }
         /// <summary>
-        /// 目标类型
+        /// Target type
         /// </summary>
         public Type TargetType { get { return this._targetType; } }
     }

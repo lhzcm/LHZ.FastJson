@@ -9,7 +9,7 @@ using System.Text;
 namespace LHZ.FastJson.Json.Format
 {
     /// <summary>
-    /// 格式化类(已废弃，请使用JsonCoustomConvert)
+    /// Formatter class (deprecated, use JsonCustomConvert instead)
     /// </summary>
     [Obsolete]
     internal class JsonFormatter
@@ -29,11 +29,11 @@ namespace LHZ.FastJson.Json.Format
             }
         }
         /// <summary>
-        /// DateTime类型格式化转化
+        /// DateTime type format conversion
         /// </summary>
-        /// <param name="dateTime">日期时间对象</param>
-        /// <param name="execCharParaphrase">是否要执行字符串转换</param>
-        /// <returns>格式化日期时间字符串</returns>
+        /// <param name="dateTime">DateTime object</param>
+        /// <param name="execCharParaphrase">Whether to perform string conversion</param>
+        /// <returns>Formatted DateTime string</returns>
         public string DateTimeFormat(DateTime dateTime, out bool execCharParaphrase)
         {
             execCharParaphrase = false;

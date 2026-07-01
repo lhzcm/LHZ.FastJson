@@ -5,7 +5,7 @@ using System.Text;
 namespace LHZ.FastJson.Enum
 {
     /// <summary>
-    /// 可序列化和反序列化的对象类型枚举
+    /// Enumeration of serializable and deserializable object types
     /// </summary>
     public enum ObjectType
     {

@@ -8,12 +8,12 @@ using LHZ.FastJson.Enum;
 namespace LHZ.FastJson.JsonClass
 {
     /// <summary>
-    /// Json对象类
+    /// JSON object class
     /// </summary>
     public abstract class JsonObject : IJsonObject
     {
         /// <summary>
-        /// 解析字符串，对象在字符串的起始位置，-1表示并非字符串解析获得对象
+        /// Parsed string, the position of the object in the string, -1 indicates the object was not obtained from string parsing
         /// </summary>
         internal protected int _position;
 
@@ -26,14 +26,14 @@ namespace LHZ.FastJson.JsonClass
             _position = -1;
         }
         /// <summary>
-        /// Json对象类型
+        /// JSON object type
         /// </summary>
         public abstract JsonType Type { get;}
         /// <summary>
-        /// 通过字符串索引获取对象
+        /// Get object by string index
         /// </summary>
-        /// <param name="index">字符串索引</param>
-        /// <returns>Json对象</returns>
+        /// <param name="index">String index</param>
+        /// <returns>JSON object</returns>
         public virtual IJsonObject this[string index]
         {
             get
@@ -42,10 +42,10 @@ namespace LHZ.FastJson.JsonClass
             }
         }
         /// <summary>
-        /// 通过下标索引获取对象
+        /// Get object by numeric index
         /// </summary>
-        /// <param name="index">下标串索引</param>
-        /// <returns>Json对象</returns>
+        /// <param name="index">Index</param>
+        /// <returns>JSON object</returns>
         public virtual IJsonObject this[int index]
         {
             get
@@ -54,10 +54,10 @@ namespace LHZ.FastJson.JsonClass
             }
         }
         /// <summary>
-        /// 通过JsonPropertyName索引获取对象
+        /// Get object by JsonPropertyName index
         /// </summary>
-        /// <param name="index">属性名索引</param>
-        /// <returns>Json对象</returns>
+        /// <param name="index">Property name index</param>
+        /// <returns>JSON object</returns>
         public virtual IJsonObject this[JsonPropertyName index]
         {
             get
@@ -67,10 +67,10 @@ namespace LHZ.FastJson.JsonClass
         }
 
         /// <summary>
-        /// 判断是否存在指定名称的子节点
+        /// Determine if a child node with the specified name exists
         /// </summary>
-        /// <param name="name">节点名称</param>
-        /// <returns>是否存在</returns>
+        /// <param name="name">Node name</param>
+        /// <returns>Whether it exists</returns>
         public bool HasChildrenNode(string name)
         {
             Dictionary<string, IJsonObject> obj = Value as Dictionary<string, IJsonObject>;
@@ -82,11 +82,11 @@ namespace LHZ.FastJson.JsonClass
         }
 
         /// <summary>
-        /// Json对象值
+        /// JSON object value
         /// </summary>
         public virtual object Value => null;
         /// <summary>
-        ///字符串位置
+        /// String position
         /// </summary>
         public int Position
         {
@@ -97,24 +97,24 @@ namespace LHZ.FastJson.JsonClass
         }
 
         /// <summary>
-        /// 把对象转换成字符串
+        /// Convert object to string
         /// </summary>
-        /// <returns>字符串</returns>
+        /// <returns>String</returns>
         public override string ToString()
         {
             return Value.ToString();
         }
 
         /// <summary>
-        /// 把对象转化成Json字符串
+        /// Convert object to JSON string
         /// </summary>
-        /// <returns>Json字符串</returns>
+        /// <returns>JSON string</returns>
         public virtual string ToJsonString()
         {
             return ToJsonStringBuilder().ToString();
         }
         /// <summary>
-        /// 将Json对象序列化为StringBuilder
+        /// Serialize JSON object to StringBuilder
         /// </summary>
         public abstract StringBuilder ToJsonStringBuilder(StringBuilder stringBuilder = null);
     }

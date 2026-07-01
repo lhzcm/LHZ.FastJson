@@ -5,25 +5,25 @@ using System.Text;
 namespace LHZ.FastJson.Enum.CustomConverter
 {
     /// <summary>
-    /// 自定义转换项
+    /// Custom conversion items
     /// </summary>
     [Flags]
     public enum JsonCustomConvertItem
     {
         /// <summary>
-        /// 无
+        /// None
         /// </summary>
         None = 0,
         /// <summary>
-        /// 自定义序列化
+        /// Custom serialization
         /// </summary>
         CustomSerialize = 1,
         /// <summary>
-        /// 自定义反序列化
+        /// Custom deserialization
         /// </summary>
         CustomDeSerialize = 2,
         /// <summary>
-        /// 全部
+        /// All
         /// </summary>
         All = 3,
     }

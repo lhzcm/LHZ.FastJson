@@ -8,16 +8,16 @@ using System.Text;
 namespace LHZ.FastJson
 {
     /// <summary>
-    /// Json常用扩展方法
+    /// Common JSON extension methods
     /// </summary>
     public static class JsonCommonExtend
     {
 
         /// <summary>
-        /// 把Json对象转化成目标对象
+        /// Convert a JSON object to the target object
         /// </summary>
-        /// <typeparam name="T">需要转化的目标对象</typeparam>
-        /// <returns>目标对象</returns>
+        /// <typeparam name="T">The target object type to convert to</typeparam>
+        /// <returns>The target object</returns>
         public static T ToObject<T>(this IJsonObject jsonObj)
         {
             JsonDeserializer<T> deserializer = new JsonDeserializer<T>(jsonObj);
@@ -25,21 +25,21 @@ namespace LHZ.FastJson
         }
 
         /// <summary>
-        /// 把Json字符串反序列化成T对象
+        /// Deserialize a JSON string into a T object
         /// </summary>
-        /// <typeparam name="T">反序列化的对象类型</typeparam>
-        /// <param name="jsonString">Json字符串</param>
-        /// <returns>反序列化成的对象</returns>
+        /// <typeparam name="T">The type of object to deserialize to</typeparam>
+        /// <param name="jsonString">JSON string</param>
+        /// <returns>The deserialized object</returns>
         public static T FromJson<T>(this String jsonString)
         {
             return JsonConvert.Deserialize<T>(jsonString);
         }
 
         /// <summary>
-        /// 把对象序列化成Json字符串
+        /// Serialize an object to a JSON string
         /// </summary>
-        /// <param name="target">目标对象</param>
-        /// <returns>json字符串</returns>
+        /// <param name="target">The target object</param>
+        /// <returns>JSON string</returns>
         public static string ToJson(this Object target)
         {
             return JsonConvert.Serialize(target);

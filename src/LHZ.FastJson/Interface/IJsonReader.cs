@@ -6,18 +6,18 @@ using System.Text;
 namespace LHZ.FastJson
 {
     /// <summary>
-    /// Json读取器接口
+    /// JSON reader interface
     /// </summary>
     public interface IJsonReader
     {
         /// <summary>
-        /// 读取json
+        /// Read JSON
         /// </summary>
         /// <returns></returns>
         JsonObject JsonRead();
 
         /// <summary>
-        /// 是否是有效的Json字符串
+        /// Whether it is a valid JSON string
         /// </summary>
         bool IsValidJson { get; }
     }

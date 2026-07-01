@@ -7,53 +7,53 @@ using System.Text;
 namespace LHZ.FastJson
 {
     /// <summary>
-    /// Json对象类
+    /// JSON object interface
     /// </summary>
     public interface IJsonObject
     {
         /// <summary>
-        /// Json对象类型
+        /// JSON object type
         /// </summary>
         JsonType Type { get;}
 
         /// <summary>
-        /// Json对象值
+        /// JSON object value
         /// </summary>
         object Value { get; }
         /// <summary>
-        /// 通过字符串名称索引获取子节点
+        /// Get child node by string name index
         /// </summary>
         IJsonObject this[string index] { get; }
         /// <summary>
-        /// 通过属性名索引获取子节点
+        /// Get child node by property name index
         /// </summary>
         IJsonObject this[JsonPropertyName index] {get;}
         /// <summary>
-        /// 通过下标索引获取子节点
+        /// Get child node by numeric index
         /// </summary>
         IJsonObject this[int index] { get; }
         /// <summary>
-        /// 判断是否存在指定名称的子节点
+        /// Determine if a child node with the specified name exists
         /// </summary>
-        /// <param name="name">节点名称</param>
-        /// <returns>是否存在</returns>
+        /// <param name="name">Node name</param>
+        /// <returns>Whether it exists</returns>
         bool HasChildrenNode(string name);
         /// <summary>
-        /// 把Json对象转化成Json字符串
+        /// Convert JSON object to JSON string
         /// </summary>
-        /// <returns>Json字符串</returns>
+        /// <returns>JSON string</returns>
         string ToJsonString();
         /// <summary>
-        /// 把Json对象转化成Json字符串StringBuilder
+        /// Convert JSON object to JSON string StringBuilder
         /// </summary>
-        /// <returns>Json StringBuilder字符串</returns>
+        /// <returns>JSON StringBuilder string</returns>
         StringBuilder ToJsonStringBuilder(StringBuilder stringBuilder = null);
         /// <summary>
-        ///字符串起始位置
+        /// String start position
         /// </summary>
         int Position { get; }
         /// <summary>
-        /// 返回对象的字符串表示
+        /// Returns the string representation of the object
         /// </summary>
         string ToString();
     }

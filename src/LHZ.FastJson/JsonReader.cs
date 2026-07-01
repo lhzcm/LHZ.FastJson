@@ -9,7 +9,7 @@ using System.Text;
 namespace LHZ.FastJson
 {
     /// <summary>
-    /// Json字符串解析类
+    /// JSON string parsing class
     /// </summary>
     unsafe
     public class JsonReader : IJsonReader
@@ -22,10 +22,10 @@ namespace LHZ.FastJson
         private JsonObject _jsonObject;
 
         /// <summary>
-        /// 判断是否是Json字符串
+        /// Determine if it is a JSON string
         /// </summary>
-        /// <param name="jsonString">Json字符串</param>
-        /// <param name="exception">异常信息</param>
+        /// <param name="jsonString">JSON string</param>
+        /// <param name="exception">Exception information</param>
         /// <returns></returns>
         public static bool IsJsonString(string jsonString, out Exception exception)
         {
@@ -44,13 +44,13 @@ namespace LHZ.FastJson
         }
 
         /// <summary>
-        /// 是否是有效的json字符串
+        /// Whether it is a valid JSON string
         /// </summary>
         public bool IsValidJson
         {
             get
             {
-                //TODO 以后可以单独实现一个判断json是否有效的方法,提高性能
+                //TODO: A separate method for validating JSON can be implemented later to improve performance
                 try
                 {
                     JsonRead();
@@ -64,17 +64,17 @@ namespace LHZ.FastJson
         }
 
         /// <summary>
-        /// 初始化JsonReader
+        /// Initialize JsonReader
         /// </summary>
-        /// <param name="jsonString">Json字符串</param>
+        /// <param name="jsonString">JSON string</param>
         public JsonReader(string jsonString)
         {
             _jsonString = jsonString;
         }
         /// <summary>
-        /// 解析字符串
+        /// Parse string
         /// </summary>
-        /// <returns>Json对象</returns>
+        /// <returns>JSON object</returns>
         public JsonObject JsonRead()
         {
             if (_jsonObject != null)
@@ -104,9 +104,9 @@ namespace LHZ.FastJson
             return _jsonObject;
         }
         /// <summary>
-        /// 解析Json对象
+        /// Parse JSON object
         /// </summary>
-        /// <returns>Json对象</returns>
+        /// <returns>JSON object</returns>
         private JsonObject GetJsonObject()
         {
             SkipWhitespace();
@@ -142,7 +142,7 @@ namespace LHZ.FastJson
 
         }
         /// <summary>
-        /// 跳过空白字符
+        /// Skip whitespace characters
         /// </summary>
         private void SkipWhitespace()
         {
@@ -152,7 +152,7 @@ namespace LHZ.FastJson
             }
         }
         /// <summary>
-        /// 移动到下一个字符
+        /// Move to next character
         /// </summary>
         private void MoveNext(int step)
         {
@@ -164,9 +164,9 @@ namespace LHZ.FastJson
             }
         }
         /// <summary>
-        /// 解析Json String对象
+        /// Parse JSON String object
         /// </summary>
-        /// <returns>Json对象</returns>
+        /// <returns>JSON object</returns>
         private unsafe JsonObject GetJsonString()
         {
             int index = (int)(_curPoint - _startPoint);
@@ -320,9 +320,9 @@ namespace LHZ.FastJson
         }
 
         /// <summary>
-        /// 解析Json Number对象
+        /// Parse JSON Number object
         /// </summary>
-        /// <returns>Json对象</returns>
+        /// <returns>JSON object</returns>
         private JsonObject GetJsonNumber()
         {
             int index = (int)(_curPoint - _startPoint);
@@ -394,9 +394,9 @@ namespace LHZ.FastJson
             new StringView(_jsonString, index, (int)(_curPoint - _startPoint - 1)), index);
         }
         /// <summary>
-        /// 解析Json Boolean对象
+        /// Parse JSON Boolean object
         /// </summary>
-        /// <returns>Json对象</returns>
+        /// <returns>JSON object</returns>
         private JsonObject GetJsonBoolean()
         {
             int index = (int)(_curPoint - _startPoint);
@@ -417,9 +417,9 @@ namespace LHZ.FastJson
             return new JsonBoolean(boolStr == JsonBoolean.True ? Enum.BooleanType.True : Enum.BooleanType.False, index);
         }
         /// <summary>
-        /// 解析Json Null
+        /// Parse JSON Null
         /// </summary>
-        /// <returns>Json对象</returns>
+        /// <returns>JSON object</returns>
         private JsonObject GetJsonNull()
         {
             int index = (int)(_curPoint - _startPoint);
@@ -436,9 +436,9 @@ namespace LHZ.FastJson
             return new JsonNull(index);
         }
         /// <summary>
-        /// 解析Json Content对象
+        /// Parse JSON Content object
         /// </summary>
-        /// <returns>Json对象</returns>
+        /// <returns>JSON object</returns>
         private JsonObject GetJsonContent()
         {
             int index = (int)(_curPoint - _startPoint);
@@ -486,9 +486,9 @@ namespace LHZ.FastJson
             return content;
         }
         /// <summary>
-        /// 解析Json Array对象
+        /// Parse JSON Array object
         /// </summary>
-        /// <returns>Json对象</returns>
+        /// <returns>JSON object</returns>
         private JsonObject GetJsonArray()
         {
             int index = (int)(_curPoint - _startPoint);

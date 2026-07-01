@@ -7,52 +7,52 @@ using System.Text;
 namespace LHZ.FastJson.Interface
 {
     // /// <summary>
-    // /// 自定义转换类型
+    // /// Custom conversion type
     // /// </summary>
-    // /// <typeparam name="T">需要自定义转换的类型</typeparam>
+    // /// <typeparam name="T">The type requiring custom conversion</typeparam>
     // public interface IJsonCustomConverter<T> : IJsonCustomConverter
     // {
     //     /// <summary>
-    //     /// 自定义序列化方法
+    //     /// Custom serialization method
     //     /// </summary>
-    //     /// <param name="dist">序列化对象</param>
-    //     /// <returns>序列化字符串</returns>
+    //     /// <param name="dist">Object to serialize</param>
+    //     /// <returns>Serialized string</returns>
     //     public string Serialize(T dist);
 
     //     /// <summary>
-    //     /// 自定义反序列方法
+    //     /// Custom deserialization method
     //     /// </summary>
-    //     /// <param name="jsonObject">json对象</param>
-    //     /// <returns>反序列化对象</returns>
+    //     /// <param name="jsonObject">JSON object</param>
+    //     /// <returns>Deserialized object</returns>
     //     public T Deserialize(IJsonObject jsonObject);
     // }
 
 
     /// <summary>
-    /// 自定义转换类型
+    /// Custom conversion type
     /// </summary>
     public interface IJsonCustomConverter
     {
         /// <summary>
-        /// 自定义序列化方法
+        /// Custom serialization method
         /// </summary>
-        /// <param name="dist">序列化对象</param>
-        /// <returns>序列化字符串</returns>
+        /// <param name="dist">Object to serialize</param>
+        /// <returns>Serialized string</returns>
         string Serialize(object dist);
 
         /// <summary>
-        /// 自定义反序列方法
+        /// Custom deserialization method
         /// </summary>
-        /// <param name="jsonObject">json对象</param>
-        /// <returns>反序列化对象</returns>
+        /// <param name="jsonObject">JSON object</param>
+        /// <returns>Deserialized object</returns>
         object Deserialize(IJsonObject jsonObject);
 
         /// <summary>
-        /// 自定义转换的目标类型
+        /// The target type for custom conversion
         /// </summary>
         Type ConvertType { get; }
         /// <summary>
-        /// 包含的自定义项（序列化|反序列化）
+        /// Included custom items (serialization | deserialization)
         /// </summary>
         JsonCustomConvertItem CustomItem { get; }
     }

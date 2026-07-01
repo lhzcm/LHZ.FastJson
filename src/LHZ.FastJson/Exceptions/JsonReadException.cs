@@ -5,22 +5,22 @@ using System.Text;
 namespace LHZ.FastJson.Exceptions
 {
     /// <summary>
-    /// Json读取异常
+    /// JSON read exception
     /// </summary>
     public class JsonReadException : Exception
     {
         private int _position;
         /// <summary>
-        /// 初始化Json读取异常
+        /// Initialize JSON read exception
         /// </summary>
-        /// <param name="position">异常位置</param>
-        /// <param name="msg">异常消息</param>
+        /// <param name="position">Exception position</param>
+        /// <param name="msg">Exception message</param>
         public JsonReadException(int position, string msg) : base(msg)
         {
             this._position = position;
         }
         /// <summary>
-        /// 异常位置
+        /// Exception position
         /// </summary>
         public int Position { get { return _position; } }
     }

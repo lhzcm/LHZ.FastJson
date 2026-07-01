@@ -8,7 +8,7 @@ using System.Text;
 namespace LHZ.FastJson.Json
 {
     /// <summary>
-    /// 对象类型映射表
+    /// Object type mapping table
     /// </summary>
     internal static class JsonObjectType
     {
@@ -38,7 +38,7 @@ namespace LHZ.FastJson.Json
         }
 
         /// <summary>
-        /// 获取类型到ObjectType的映射字典
+        /// Get the mapping dictionary from type to ObjectType
         /// </summary>
         internal static Dictionary<Type, ObjectType> GetObjectTypes()
         {

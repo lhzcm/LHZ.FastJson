@@ -6,7 +6,7 @@ using System.Text;
 namespace LHZ.FastJson.JsonClass
 {
     /// <summary>
-    /// Json数字对象
+    /// JSON number object
     /// </summary>
     public class JsonNumber : JsonObject
     {
@@ -14,7 +14,7 @@ namespace LHZ.FastJson.JsonClass
         /// <inheritdoc/>
         public override object Value => _value;
         /// <summary>
-        /// 获取数值字符串（已废弃，请使用 Value 属性）
+        /// Get numeric string (deprecated, use Value property instead)
         /// </summary>
         [Obsolete("This method is deprecated and will be removed in the next official release.")]
         public string GetValue()
@@ -22,7 +22,7 @@ namespace LHZ.FastJson.JsonClass
             return this._value.ToString();
         }
         /// <summary>
-        /// 数字类型
+        /// Number type
         /// </summary>
         public NumberType NumberType { get; }
         internal JsonNumber(NumberType type, StringView value, int position) : base(position)
@@ -31,7 +31,7 @@ namespace LHZ.FastJson.JsonClass
             this._value = value;
         }
         /// <summary>
-        /// 使用long值初始化
+        /// Initialize with long value
         /// </summary>
         public JsonNumber(long value)
         {
@@ -39,7 +39,7 @@ namespace LHZ.FastJson.JsonClass
             _value = new StringView(value.ToString());
         }
         /// <summary>
-        /// 使用ulong值初始化
+        /// Initialize with ulong value
         /// </summary>
         public JsonNumber(ulong value)
         {
@@ -47,7 +47,7 @@ namespace LHZ.FastJson.JsonClass
             _value = new StringView(value.ToString());
         }
         /// <summary>
-        /// 使用double值初始化
+        /// Initialize with double value
         /// </summary>
         public JsonNumber(double value)
         {
@@ -71,7 +71,7 @@ namespace LHZ.FastJson.JsonClass
             return _value.ToString();
         }
         /// <summary>
-        /// Json对象类型
+        /// JSON object type
         /// </summary>
         public override JsonType Type => JsonType.Number;
     }

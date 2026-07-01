@@ -3,17 +3,17 @@ using System.Data;
 using System.Text;
 
 /// <summary>
-/// 轻量级字符串视图，避免字符串截取产生额外分配
+/// Lightweight string view that avoids extra allocations from string slicing
 /// </summary>
 internal struct StringView
 {
     private static char[] _charArrayEmpty = new char[0];
     /// <summary>
-    /// 使用指定范围初始化
+    /// Initialize with a specified range
     /// </summary>
-    /// <param name="sourceString">源字符串</param>
-    /// <param name="startIndex">起始索引</param>
-    /// <param name="endIndex">结束索引</param>
+    /// <param name="sourceString">Source string</param>
+    /// <param name="startIndex">Start index</param>
+    /// <param name="endIndex">End index</param>
     public StringView(string sourceString, int startIndex, int endIndex)
     {
         SourceString = sourceString;
@@ -21,9 +21,9 @@ internal struct StringView
         EndIndex = endIndex;
     }
     /// <summary>
-    /// 使用完整字符串初始化
+    /// Initialize with the full string
     /// </summary>
-    /// <param name="sourceString">源字符串</param>
+    /// <param name="sourceString">Source string</param>
     public StringView(string sourceString)
     {
         SourceString = sourceString;
@@ -31,19 +31,19 @@ internal struct StringView
         EndIndex = sourceString.Length - 1;
     }
     /// <summary>
-    /// 源字符串
+    /// Source string
     /// </summary>
     public string SourceString { get; }
     /// <summary>
-    /// 起始索引
+    /// Start index
     /// </summary>
     public int StartIndex { get; }
     /// <summary>
-    /// 视图长度
+    /// View length
     /// </summary>
     public int Length => EndIndex - StartIndex + 1; 
     /// <summary>
-    /// 结束索引
+    /// End index
     /// </summary>
     public int EndIndex { get; }
     public override string ToString()
