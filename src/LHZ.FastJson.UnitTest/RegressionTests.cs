@@ -174,6 +174,149 @@ namespace LHZ.FastJson.UnitTest
             }
             Assert.Fail();
         }
+
+        /// <summary>
+        /// 验证 TryDeserialize 对有效 JSON 返回 true。
+        /// </summary>
+        [Test]
+        public void TryDeserializeValidJsonReturnsTrue()
+        {
+            bool success = JsonConvert.TryDeserialize("{\"a\":1}", out IJsonObject result);
+            Assert.IsTrue(success);
+            Assert.IsNotNull(result);
+            Assert.AreEqual("1", result["a"].Value.ToString());
+        }
+
+        /// <summary>
+        /// 验证 TryDeserialize 对无效 JSON 返回 false。
+        /// </summary>
+        [Test]
+        public void TryDeserializeInvalidJsonReturnsFalse()
+        {
+            bool success = JsonConvert.TryDeserialize("{invalid json}", out IJsonObject result);
+            Assert.IsFalse(success);
+            Assert.IsNull(result);
+        }
+
+        /// <summary>
+        /// 验证 TryDeserialize&lt;T&gt; 对有效 JSON 返回 true。
+        /// </summary>
+        [Test]
+        public void TryDeserializeGenericValidJsonReturnsTrue()
+        {
+            bool success = JsonConvert.TryDeserialize("{\"Id\":42,\"Name\":\"test\"}", out SimpleObjectRootClass result);
+            Assert.IsTrue(success);
+            Assert.IsNotNull(result);
+            Assert.AreEqual(42, result.Id);
+            Assert.AreEqual("test", result.Name);
+        }
+
+        /// <summary>
+        /// 验证 TryDeserialize&lt;T&gt; 对无效 JSON 返回 false。
+        /// </summary>
+        [Test]
+        public void TryDeserializeGenericInvalidJsonReturnsFalse()
+        {
+            bool success = JsonConvert.TryDeserialize<SimpleObjectRootClass>("not json", out SimpleObjectRootClass result);
+            Assert.IsFalse(success);
+            Assert.AreEqual(default(SimpleObjectRootClass), result);
+        }
+
+        /// <summary>
+        /// 验证 JsonConvert.Deserialize 无泛型方法返回 IJsonObject。
+        /// </summary>
+        [Test]
+        public void DeserializeNonGenericReturnsJsonObject()
+        {
+            var result = JsonConvert.Deserialize("{\"a\":1,\"b\":\"test\"}");
+            Assert.IsNotNull(result);
+            Assert.AreEqual("1", result["a"].Value.ToString());
+            Assert.AreEqual("test", result["b"].Value.ToString());
+        }
+
+        /// <summary>
+        /// 验证深度嵌套结构可以正确序列化和反序列化。
+        /// </summary>
+        [Test]
+        public void DeeplyNestedObjectRoundTrip()
+        {
+            var obj = new DeepNestedClass
+            {
+                Level = 1,
+                Child = new DeepNestedClass
+                {
+                    Level = 2,
+                    Child = new DeepNestedClass
+                    {
+                        Level = 3,
+                        Child = null
+                    }
+                }
+            };
+            var json = JsonConvert.Serialize(obj);
+            var restored = JsonConvert.Deserialize<DeepNestedClass>(json);
+
+            Assert.AreEqual(1, restored.Level);
+            Assert.AreEqual(2, restored.Child.Level);
+            Assert.AreEqual(3, restored.Child.Child.Level);
+            Assert.IsNull(restored.Child.Child.Child);
+        }
+
+        /// <summary>
+        /// 验证反序列化时类型不匹配会抛出 JsonDeserializationException 异常。
+        /// </summary>
+        [Test]
+        public void DeserializeTypeMismatchThrowsException()
+        {
+            Assert.Throws<JsonDeserializationException>(() => JsonConvert.Deserialize<int>("\"not a number\""));
+        }
+
+        /// <summary>
+        /// 验证 JsonConvert.Serialize 对象的往返一致性。
+        /// </summary>
+        [Test]
+        public void ObjectRoundTripPreservesData()
+        {
+            var original = new SimpleObjectRootClass { Id = 100, Name = "RoundTrip" };
+            var json = JsonConvert.Serialize(original);
+            var restored = JsonConvert.Deserialize<SimpleObjectRootClass>(json);
+
+            Assert.AreEqual(original.Id, restored.Id);
+            Assert.AreEqual(original.Name, restored.Name);
+        }
+
+        /// <summary>
+        /// 验证 JsonArray 节点可正确迭代。
+        /// </summary>
+        [Test]
+        public void JsonArrayEnumeration()
+        {
+            var arr = (JsonArray)new JsonReader("[1,2,3]").JsonRead();
+            int sum = 0;
+            foreach (var item in arr)
+            {
+                sum += int.Parse(item.Value.ToString());
+            }
+            Assert.AreEqual(6, sum);
+        }
+
+        /// <summary>
+        /// 验证 JsonContent 节点可正确迭代。
+        /// </summary>
+        [Test]
+        public void JsonContentEnumeration()
+        {
+            var content = (JsonContent)new JsonReader("{\"a\":1,\"b\":2}").JsonRead();
+            int count = 0;
+            foreach (var kvp in content)
+            {
+                count++;
+                Assert.IsNotNull(kvp.Key);
+                Assert.IsNotNull(kvp.Value);
+            }
+            Assert.AreEqual(2, count);
+        }
+
         public class NullablePropertyClass
         {
             public int? Count { get; set; }
@@ -202,6 +345,12 @@ namespace LHZ.FastJson.UnitTest
         {
             public int Id { get; set; }
             public string Name { get; set; }
+        }
+
+        public class DeepNestedClass
+        {
+            public int Level { get; set; }
+            public DeepNestedClass Child { get; set; }
         }
     }
 }

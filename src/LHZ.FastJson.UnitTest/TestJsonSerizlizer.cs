@@ -198,6 +198,114 @@ namespace LHZ.FastJson.UnitTest
         }
 
         /// <summary>
+        /// 验证 Boolean 序列化。
+        /// </summary>
+        [Test]
+        public void TestBoolean()
+        {
+            Assert.AreEqual("true", JsonConvert.Serialize(true));
+            Assert.AreEqual("false", JsonConvert.Serialize(false));
+        }
+
+        /// <summary>
+        /// 验证 Byte/SByte 序列化。
+        /// </summary>
+        [Test]
+        public void TestByte()
+        {
+            Assert.AreEqual("255", JsonConvert.Serialize((byte)255));
+            Assert.AreEqual("0", JsonConvert.Serialize((byte)0));
+        }
+
+        /// <summary>
+        /// 验证 Int16/UInt16 序列化。
+        /// </summary>
+        [Test]
+        public void TestInt16()
+        {
+            Assert.AreEqual("-32768", JsonConvert.Serialize((short)(-32768)));
+            Assert.AreEqual("65535", JsonConvert.Serialize((ushort)65535));
+        }
+
+        /// <summary>
+        /// 验证 UInt32/UInt64 序列化。
+        /// </summary>
+        [Test]
+        public void TestUInt()
+        {
+            Assert.AreEqual("4294967295", JsonConvert.Serialize(4294967295u));
+            Assert.AreEqual("18446744073709551615", JsonConvert.Serialize(18446744073709551615ul));
+        }
+
+        /// <summary>
+        /// 验证 Char 序列化。
+        /// </summary>
+        [Test]
+        public void TestChar()
+        {
+            Assert.AreEqual("\"A\"", JsonConvert.Serialize('A'));
+        }
+
+        /// <summary>
+        /// 验证负数序列化。
+        /// </summary>
+        [Test]
+        public void TestNegativeNumbers()
+        {
+            Assert.AreEqual("-42", JsonConvert.Serialize(-42));
+            Assert.AreEqual("-3.14", JsonConvert.Serialize(-3.14d));
+            Assert.AreEqual("-2.5", JsonConvert.Serialize(-2.5f));
+        }
+
+        /// <summary>
+        /// 验证嵌套对象序列化。
+        /// </summary>
+        [Test]
+        public void TestNestedObject()
+        {
+            var obj = new NestedSerializeObj
+            {
+                Name = "parent",
+                Child = new NestedSerializeChild { Name = "child", Age = 10 }
+            };
+            var json = JsonConvert.Serialize(obj);
+            Assert.AreEqual("{\"Name\":\"parent\",\"Child\":{\"Name\":\"child\",\"Age\":10}}", json);
+        }
+
+        /// <summary>
+        /// 验证 JsonIgnored(All) 序列化时会忽略该属性。
+        /// </summary>
+        [Test]
+        public void TestJsonIgnoredAll()
+        {
+            var obj = new JsonIgnoredAllSerializeClass
+            {
+                Name = "test",
+                Age = 10,
+                Height = 170
+            };
+            var json = JsonConvert.Serialize(obj);
+            Assert.AreEqual("{\"Name\":\"test\",\"Age\":10}", json);
+        }
+
+        /// <summary>
+        /// 验证 JsonCustomConvert 同时自定义序列化和反序列化。
+        /// </summary>
+        [Test]
+        public void TestCustomConvertBoth()
+        {
+            var converter = new JsonCustomConvert<int>(
+                (int n) => (n * 2).ToString(),
+                (IJsonObject json) => int.Parse(json.Value.ToString()) + 10
+            );
+            var json = new JsonSerializer(5, converter).Serialize();
+            Assert.AreEqual("10", json);
+
+            var obj = JsonConvert.Deserialize<int>("5", converter);
+            Assert.AreEqual(15, obj);
+        }
+
+        /// <summary>
         /// 验证序列化时会忽略指定属性。
         /// </summary>
         [Test]
@@ -329,6 +437,26 @@ namespace LHZ.FastJson.UnitTest
             public DateTime? ExpiryDate { get; set; }
             public double? Rating { get; set; }
             public string Name { get; set; }
+        }
+
+        public class NestedSerializeObj
+        {
+            public string Name { get; set; }
+            public NestedSerializeChild Child { get; set; }
+        }
+
+        public class NestedSerializeChild
+        {
+            public string Name { get; set; }
+            public int Age { get; set; }
+        }
+
+        public class JsonIgnoredAllSerializeClass
+        {
+            public string Name { get; set; }
+            public int Age { get; set; }
+            [Json.Attributes.JsonIgnored(Enum.JsonMethods.All)]
+            public float Height { get; set; }
         }
     }
 }

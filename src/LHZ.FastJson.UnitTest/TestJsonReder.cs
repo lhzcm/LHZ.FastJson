@@ -1,4 +1,5 @@
 using LHZ.FastJson.Enum;
+using LHZ.FastJson.Exceptions;
 using LHZ.FastJson.JsonClass;
 using NUnit.Framework;
 using static LHZ.FastJson.UnitTest.TestJsonSerizlizer;
@@ -126,5 +127,117 @@ namespace LHZ.FastJson.UnitTest
             }
             throw new Exception("没有按照预期抛出 “ArgumentOutOfRangeException” 异常");
         }
-    }
+        /// <summary>
+        /// 验证 Unicode 转义序列读取。
+        /// </summary>
+        [Test]
+        public void JsonReadUnicodeEscapes()
+        {
+            var result = new JsonReader("\"\\u0041\\u0042\\u0043\"").JsonRead();
+            Assert.AreEqual("ABC", result.Value);
+
+            result = new JsonReader("\"\\u4e2d\\u6587\"").JsonRead();
+            Assert.AreEqual("中文", result.Value);
+        }
+
+        /// <summary>
+        /// 验证特殊转义字符读取。
+        /// </summary>
+        [Test]
+        public void JsonReadEscapeSequences()
+        {
+            var result = new JsonReader("\"line1\\nline2\\tindented\"").JsonRead();
+            Assert.AreEqual("line1\nline2\tindented", result.Value);
+
+            result = new JsonReader("\"quote\\\"inside\"").JsonRead();
+            Assert.AreEqual("quote\"inside", result.Value);
+
+            result = new JsonReader("\"backslash\\\\\"").JsonRead();
+            Assert.AreEqual("backslash\\", result.Value);
+        }
+
+        /// <summary>
+        /// 验证科学计数法数字读取。
+        /// </summary>
+        [Test]
+        public void JsonReadScientificNumbers()
+        {
+            var result = (JsonNumber)new JsonReader("1e10").JsonRead();
+            Assert.AreEqual(JsonType.Number, result.Type);
+            Assert.AreEqual(NumberType.Double, result.NumberType);
+
+            result = (JsonNumber)new JsonReader("-2.5E-3").JsonRead();
+            Assert.AreEqual(JsonType.Number, result.Type);
+        }
+
+        /// <summary>
+        /// 验证负数读取。
+        /// </summary>
+        [Test]
+        public void JsonReadNegativeNumbers()
+        {
+            var result = (JsonNumber)new JsonReader("-42").JsonRead();
+            Assert.AreEqual(JsonType.Number, result.Type);
+            Assert.AreEqual(NumberType.Long, result.NumberType);
+
+            result = (JsonNumber)new JsonReader("-3.14").JsonRead();
+            Assert.AreEqual(JsonType.Number, result.Type);
+            Assert.AreEqual(NumberType.Double, result.NumberType);
+        }
+
+        /// <summary>
+        /// 验证嵌套结构读取可还原为原始 JSON。
+        /// </summary>
+        [Test]
+        public void JsonReadNestedStructures()
+        {
+            string str = "{\"arr\":[1,2,{\"deep\":true}],\"obj\":{\"a\":null}}";
+            var result = new JsonReader(str).JsonRead();
+            Assert.AreEqual(str, result.ToString());
+
+            var arr = result["arr"];
+            Assert.AreEqual(JsonType.Array, arr.Type);
+
+            var deepObj = arr[2];
+            Assert.AreEqual(JsonType.Content, deepObj.Type);
+            Assert.AreEqual(true, deepObj["deep"].Value);
+        }
+
+        /// <summary>
+        /// 验证 IsValidJson 属性。
+        /// </summary>
+        [Test]
+        public void JsonReadIsValidJson()
+        {
+            Assert.IsTrue(new JsonReader("{}").IsValidJson);
+            Assert.IsTrue(new JsonReader("[]").IsValidJson);
+            Assert.IsTrue(new JsonReader("\"hello\"").IsValidJson);
+            Assert.IsTrue(new JsonReader("42").IsValidJson);
+            Assert.IsTrue(new JsonReader("true").IsValidJson);
+            Assert.IsTrue(new JsonReader("null").IsValidJson);
+            Assert.IsFalse(new JsonReader("{invalid}").IsValidJson);
+            Assert.IsFalse(new JsonReader("").IsValidJson);
+        }
+
+        /// <summary>
+        /// 验证空字符串会抛出异常。
+        /// </summary>
+        [Test]
+        public void JsonReadEmptyStringThrows()
+        {
+            Assert.Throws<Exception>(() => new JsonReader("").JsonRead());
+            Assert.Throws<Exception>(() => new JsonReader((string)null).JsonRead());
+        }
+
+        /// <summary>
+        /// 验证纯空白字符串处理。
+        /// </summary>
+        [Test]
+        public void JsonReadWhitespaceOnly()
+        {
+            Exception exception;
+            Assert.IsFalse(JsonReader.IsJsonString("   ", out exception));
+            Assert.IsNotNull(exception);
+            Assert.IsInstanceOf<LHZ.FastJson.Exceptions.JsonReadException>(exception);
+        }    }
 }

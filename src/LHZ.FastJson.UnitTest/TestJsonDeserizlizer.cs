@@ -34,6 +34,183 @@ namespace LHZ.FastJson.UnitTest
         }
 
         /// <summary>
+        /// 验证 Boolean 反序列化 (true/false)。
+        /// </summary>
+        [Test]
+        public void TestBoolean()
+        {
+            string testStr = "true";
+            bool obj = (new JsonDeserializer<bool>(testStr)).Deserialize();
+            Assert.IsTrue(obj);
+
+            testStr = "false";
+            obj = (new JsonDeserializer<bool>(testStr)).Deserialize();
+            Assert.IsFalse(obj);
+        }
+
+        /// <summary>
+        /// 验证 Byte 反序列化（通过 int 转换）。
+        /// </summary>
+        [Test]
+        public void TestByte()
+        {
+            int intVal = (new JsonDeserializer<int>("255")).Deserialize();
+            byte obj = (byte)intVal;
+            Assert.AreEqual((byte)255, obj);
+        }
+
+        /// <summary>
+        /// 验证 Int16 / UInt16 反序列化。
+        /// </summary>
+        [Test]
+        public void TestInt16()
+        {
+            short obj = (new JsonDeserializer<short>("-32768")).Deserialize();
+            Assert.AreEqual((short)(-32768), obj);
+
+            ushort uObj = (new JsonDeserializer<ushort>("65535")).Deserialize();
+            Assert.AreEqual((ushort)65535, uObj);
+        }
+
+        /// <summary>
+        /// 验证 UInt32 / UInt64 反序列化。
+        /// </summary>
+        [Test]
+        public void TestUInt()
+        {
+            uint obj = (new JsonDeserializer<uint>("4294967295")).Deserialize();
+            Assert.AreEqual(4294967295u, obj);
+
+            ulong uObj = (new JsonDeserializer<ulong>("18446744073709551615")).Deserialize();
+            Assert.AreEqual(18446744073709551615ul, uObj);
+        }
+
+        /// <summary>
+        /// 验证 Char 反序列化。
+        /// </summary>
+        [Test]
+        public void TestChar()
+        {
+            char obj = (new JsonDeserializer<char>("\"A\"")).Deserialize();
+            Assert.AreEqual('A', obj);
+        }
+
+        /// <summary>
+        /// 验证负数反序列化。
+        /// </summary>
+        [Test]
+        public void TestNegativeNumbers()
+        {
+            int obj = (new JsonDeserializer<int>("-42")).Deserialize();
+            Assert.AreEqual(-42, obj);
+
+            double dObj = (new JsonDeserializer<double>("-3.14")).Deserialize();
+            Assert.AreEqual(-3.14, dObj);
+
+            float fObj = (new JsonDeserializer<float>("-2.5")).Deserialize();
+            Assert.AreEqual(-2.5f, fObj);
+        }
+
+        /// <summary>
+        /// 验证科学计数法数值反序列化。
+        /// </summary>
+        [Test]
+        public void TestScientificNotation()
+        {
+            double obj = (new JsonDeserializer<double>("1.5e3")).Deserialize();
+            Assert.AreEqual(1500.0, obj);
+
+            obj = (new JsonDeserializer<double>("2.5E-2")).Deserialize();
+            Assert.AreEqual(0.025, obj);
+        }
+
+        /// <summary>
+        /// 验证嵌套对象反序列化。
+        /// </summary>
+        [Test]
+        public void TestNestedObject()
+        {
+            string testStr = "{\"Name\":\"parent\",\"Child\":{\"Name\":\"child\",\"Age\":10}}";
+            var obj = (new JsonDeserializer<NestedTestObj>(testStr)).Deserialize();
+            Assert.AreEqual("parent", obj.Name);
+            Assert.IsNotNull(obj.Child);
+            Assert.AreEqual("child", obj.Child.Name);
+            Assert.AreEqual(10, obj.Child.Age);
+        }
+
+        /// <summary>
+        /// 验证对象数组反序列化。
+        /// </summary>
+        [Test]
+        public void TestArrayOfObjects()
+        {
+            string testStr = "[{\"Id\":1,\"Name\":\"A\"},{\"Id\":2,\"Name\":\"B\"}]";
+            var obj = (new JsonDeserializer<TestObjClass[]>(testStr)).Deserialize();
+            Assert.AreEqual(2, obj.Length);
+            Assert.AreEqual(1, obj[0].Id);
+            Assert.AreEqual("A", obj[0].Name);
+            Assert.AreEqual(2, obj[1].Id);
+            Assert.AreEqual("B", obj[1].Name);
+        }
+
+        /// <summary>
+        /// 验证空数组和空对象反序列化。
+        /// </summary>
+        [Test]
+        public void TestEmptyStructures()
+        {
+            var emptyArray = (new JsonDeserializer<int[]>("[]")).Deserialize();
+            Assert.IsNotNull(emptyArray);
+            Assert.AreEqual(0, emptyArray.Length);
+
+            var emptyList = (new JsonDeserializer<List<string>>("[]")).Deserialize();
+            Assert.IsNotNull(emptyList);
+            Assert.AreEqual(0, emptyList.Count);
+
+            var emptyDict = (new JsonDeserializer<Dictionary<string, int>>("{}")).Deserialize();
+            Assert.IsNotNull(emptyDict);
+            Assert.AreEqual(0, emptyDict.Count);
+        }
+
+        /// <summary>
+        /// 验证嵌套字典反序列化。
+        /// </summary>
+        [Test]
+        public void TestNestedDictionary()
+        {
+            string testStr = "{\"outer\":{\"inner\":42}}";
+            var obj = (new JsonDeserializer<Dictionary<string, Dictionary<string, int>>>(testStr)).Deserialize();
+            Assert.IsTrue(obj.ContainsKey("outer"));
+            Assert.AreEqual(42, obj["outer"]["inner"]);
+        }
+
+        /// <summary>
+        /// 验证 JsonIgnored(All) 反序列化时会忽略该属性。
+        /// </summary>
+        [Test]
+        public void TestJsonIgnoredAllOnDeserialize()
+        {
+            var testStr = "{\"Name\":\"test\",\"Age\":10,\"Height\":170}";
+            var obj = (new JsonDeserializer<JsonIgnoredAllClass>(testStr)).Deserialize();
+            Assert.AreEqual("test", obj.Name);
+            Assert.AreEqual(10, obj.Age);
+            Assert.AreEqual(0, obj.Height); // ignored for deserialization
+        }
+
+        /// <summary>
+        /// 验证 JsonIgnored(Serialize) 反序列化时不会忽略该属性。
+        /// </summary>
+        [Test]
+        public void TestJsonIgnoredSerializeOnlyDoesNotAffectDeserialize()
+        {
+            var testStr = "{\"Name\":\"test\",\"Age\":10,\"Height\":170}";
+            var obj = (new JsonDeserializer<JsonIgnoredSerializeOnlyClass>(testStr)).Deserialize();
+            Assert.AreEqual("test", obj.Name);
+            Assert.AreEqual(10, obj.Age);
+            Assert.AreEqual(170, obj.Height); // only ignored for serialize, not deserialize
+        }
+
+        /// <summary>
         /// 验证 int 数值反序列化。
         /// </summary>
         [Test]
@@ -349,5 +526,33 @@ namespace LHZ.FastJson.UnitTest
         public DateTime? ExpiryDate { get; set; }
         public double? Rating { get; set; }
         public string Name { get; set; }
+    }
+
+    public class NestedTestObj
+    {
+        public string Name { get; set; }
+        public NestedChildObj Child { get; set; }
+    }
+
+    public class NestedChildObj
+    {
+        public string Name { get; set; }
+        public int Age { get; set; }
+    }
+
+    public class JsonIgnoredAllClass
+    {
+        public string Name { get; set; }
+        public int Age { get; set; }
+        [Json.Attributes.JsonIgnored(Enum.JsonMethods.All)]
+        public float Height { get; set; }
+    }
+
+    public class JsonIgnoredSerializeOnlyClass
+    {
+        public string Name { get; set; }
+        public int Age { get; set; }
+        [Json.Attributes.JsonIgnored(Enum.JsonMethods.Serialize)]
+        public float Height { get; set; }
     }
 }
