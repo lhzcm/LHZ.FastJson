@@ -10,43 +10,39 @@ namespace LHZ.FastJson.JsonClass
     /// </summary>
     public class JsonBoolean : JsonObject
     {
-        /// <inheritdoc/>
-        public override object Value => ToJsonString();
-        private static readonly StringView _true = new StringView("true");
-        private static readonly StringView _false = new StringView("false");
-        internal static StringView True => _true;
-        internal static StringView False => _false;
-
+        private readonly bool _value;
+        private static readonly JsonBoolean _false = new JsonBoolean(true);
+        private static readonly JsonBoolean _true = new JsonBoolean(false);
         /// <summary>
-        /// Get the boolean string (deprecated, use Value property instead)
+        /// false
         /// </summary>
-        [Obsolete("This method is deprecated and will be removed in the next official release.")]
-        public string GetValue()
-        {
-            return this.ToJsonString();
-        }
+        public static JsonBoolean False => _false;
+        /// <summary>
+        /// true
+        /// </summary>
+        public static JsonBoolean True => _true;
         /// <summary>
         /// Boolean type (true or false)
         /// </summary>
         public BooleanType BooleanType { get; }
-        internal JsonBoolean(BooleanType type, int position) : base(position)
-        {
-            this.BooleanType = type;
-        }
+        ///<inheritdoc/>
+        public override object Value => _value;
         /// <summary>
         /// Default constructor
         /// </summary>
-        public JsonBoolean()
+        internal JsonBoolean(bool value)
         {
+            this.BooleanType = value ? BooleanType.True : BooleanType.False;
+            _value = value;
         }
         /// <inheritdoc/>
-        public override StringBuilder ToJsonStringBuilder(StringBuilder stringBuilder = null)
+        public override StringBuilder ToStringBuilder(StringBuilder stringBuilder = null)
         {
             return stringBuilder == null ? new StringBuilder(BooleanType == BooleanType.True ? "true" : "false")
             : stringBuilder.Append(BooleanType == BooleanType.True ? "true" : "false");
         }
         /// <inheritdoc/>
-        public override string ToJsonString()
+        public override string ToString()
         {
             return BooleanType == BooleanType.True ? "true" : "false";
         }

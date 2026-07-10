@@ -9,38 +9,31 @@ namespace LHZ.FastJson.JsonClass
     /// <summary>
     /// JSON null object
     /// </summary>
-    class JsonNull : JsonObject
+    public class JsonNull : JsonObject
     {
-        private static readonly string _value = "null";
-        private static readonly StringView _null = new StringView(_value);
-        public static StringView Null => _null;
-        public override object Value => _value;
+        private static readonly string _valueStr = "null";
+        private static readonly JsonNull _value = new JsonNull();
         /// <summary>
-        /// Get null value (deprecated, use Value property instead)
+        /// Null value
         /// </summary>
-        [Obsolete("This method is deprecated and will be removed in the next official release.")]
-        public string GetValue()
-        {
-            return _value;
-        }
-        internal JsonNull(int position) : base(position)
-        {
-        }
+        public static JsonNull Null => _value;
         /// <summary>
         /// Default constructor
         /// </summary>
-        public JsonNull()
+        internal JsonNull()
         {
         }
-
-        public override string ToJsonString()
+        ///<inheritdoc/>
+        public override object Value => null;
+        /// <inheritdoc/>
+        public override string ToString()
         {
-            return _value;
+            return _valueStr;
         }
-
-        public override StringBuilder ToJsonStringBuilder(StringBuilder stringBuilder = null)
+        /// <inheritdoc/>
+        public override StringBuilder ToStringBuilder(StringBuilder stringBuilder = null)
         {
-            return stringBuilder == null ? new StringBuilder(_value)
+            return stringBuilder == null ? new StringBuilder(_valueStr)
             : stringBuilder.Append(_value);
         }
         /// <summary>

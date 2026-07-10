@@ -20,7 +20,7 @@ namespace LHZ.FastJson.Exceptions
         /// <param name="jsonObject">JSON object</param>
         /// <param name="targetType">Target type</param>
         /// <param name="msg">Exception message</param>
-        public JsonDeserializationException(IJsonObject jsonObject, Type targetType, string msg) : base(jsonObject.Position, msg)
+        public JsonDeserializationException(IJsonObject jsonObject, Type targetType, string msg) : base(((JsonObject)jsonObject).Position, msg)
         {
             this._jsonType = jsonObject.Type;
             this._targetType = targetType;

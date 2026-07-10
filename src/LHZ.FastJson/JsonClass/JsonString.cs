@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using LHZ.FastJson.Enum;
 
 namespace LHZ.FastJson.JsonClass
@@ -10,21 +11,9 @@ namespace LHZ.FastJson.JsonClass
     /// </summary>
     public class JsonString : JsonObject
     {
-        private string _value;
-        /// <inheritdoc/>
-        public override object Value => _value;
-        /// <summary>
-        /// Get string value (deprecated, use Value property instead)
-        /// </summary>
-        [Obsolete("This method is deprecated and will be removed in the next official release.")]
-        public string GetValue()
-        {
-            return this._value.ToString();
-        }
-        internal JsonString(string value, int position) : base(position)
-        {
-            this._value = value;
-        }
+        internal StringView _value;
+        ///<inheritdoc/>
+        public override object Value => _value.ToString();
         /// <summary>
         /// Initialize with string value
         /// </summary>
@@ -36,10 +25,14 @@ namespace LHZ.FastJson.JsonClass
             {
                 throw new ArgumentNullException(nameof(value), "value is not allow null");
             }
+            this._value = new StringView(value);
+        }
+        internal JsonString(StringView value)
+        {
             this._value = value;
         }
         /// <inheritdoc/>
-        public override StringBuilder ToJsonStringBuilder(StringBuilder stringBuilder = null)
+        public override StringBuilder ToStringBuilder(StringBuilder stringBuilder = null)
         {
             if(stringBuilder == null)
             {
@@ -47,7 +40,7 @@ namespace LHZ.FastJson.JsonClass
             }
 
             stringBuilder.Append('\"');
-            foreach(var item in _value)
+            foreach(var item in _value.SourceString)
             {
                 if (item == '"' || item == '\\' || item < 0x20)
                 {
@@ -91,10 +84,5 @@ namespace LHZ.FastJson.JsonClass
         /// </summary>
         /// <inheritdoc/>
         public override JsonType Type => JsonType.String;
-        /// <inheritdoc/>
-        public override string ToString()
-        {
-            return _value;
-        }
     }
 }

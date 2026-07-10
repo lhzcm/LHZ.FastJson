@@ -13,22 +13,11 @@ namespace LHZ.FastJson.JsonClass
     public abstract class JsonObject : IJsonObject
     {
         /// <summary>
-        /// Parsed string, the position of the object in the string, -1 indicates the object was not obtained from string parsing
-        /// </summary>
-        internal protected int _position;
-
-        internal JsonObject(int position)
-        {
-            this._position = position;
-        }
-        internal JsonObject()
-        {
-            _position = -1;
-        }
-        /// <summary>
         /// JSON object type
         /// </summary>
         public abstract JsonType Type { get;}
+        ///<inheritdoc/>
+        public abstract object Value { get; }
         /// <summary>
         /// Get object by string index
         /// </summary>
@@ -65,57 +54,27 @@ namespace LHZ.FastJson.JsonClass
                 throw new InvalidOperationException($"{this.Type}并非是{JsonType.Content}无法调用该索引方法！");
             }
         }
-
-        /// <summary>
-        /// Determine if a child node with the specified name exists
-        /// </summary>
-        /// <param name="name">Node name</param>
-        /// <returns>Whether it exists</returns>
-        public bool HasChildrenNode(string name)
-        {
-            Dictionary<string, IJsonObject> obj = Value as Dictionary<string, IJsonObject>;
-            if (obj == null)
-            {
-                return false;
-            }
-            return obj.ContainsKey(name);
-        }
-
-        /// <summary>
-        /// JSON object value
-        /// </summary>
-        public virtual object Value => null;
         /// <summary>
         /// String position
         /// </summary>
-        public int Position
+        internal virtual int Position 
         {
             get
             {
-                return _position;
+                throw new InvalidOperationException("Internal Class Exclusive Property");
             }
         }
-
         /// <summary>
-        /// Convert object to string
+        /// Convert object to JSON string
         /// </summary>
         /// <returns>String</returns>
         public override string ToString()
         {
-            return Value.ToString();
-        }
-
-        /// <summary>
-        /// Convert object to JSON string
-        /// </summary>
-        /// <returns>JSON string</returns>
-        public virtual string ToJsonString()
-        {
-            return ToJsonStringBuilder().ToString();
+            return ToStringBuilder().ToString();
         }
         /// <summary>
         /// Serialize JSON object to StringBuilder
         /// </summary>
-        public abstract StringBuilder ToJsonStringBuilder(StringBuilder stringBuilder = null);
+        public abstract StringBuilder ToStringBuilder(StringBuilder stringBuilder = null);
     }
 }

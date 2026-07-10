@@ -244,14 +244,14 @@ namespace LHZ.FastJson.UnitTest
             };
             var jsonStr = (new JsonSerializer(testObj)).Serialize();
             var jsonObj = (new JsonReader(jsonStr)).JsonRead();
-            Assert.AreEqual(jsonObj["studentName"].ToString(), name);
+            Assert.AreEqual(jsonObj["studentName"].Value, name);
         }
         [Test]
         public void TestEnumSerialize()
         {
             var obj = new TestEnumClass() { ObjectType = ObjectType.Enum, Name = "枚举类型" };
             var jsonStr = JsonConvert.Serialize(obj);
-            Assert.AreEqual(jsonStr, "{\"ObjectType\":14,\"Name\":\"枚举类型\"}");
+            Assert.AreEqual(jsonStr, "{\"ObjectType\":"+ ((int)ObjectType.Enum).ToString() + ",\"Name\":\"枚举类型\"}");
         }
         [Test]
         public void TestDitionarySerialize()

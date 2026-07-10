@@ -158,7 +158,7 @@ namespace LHZ.FastJson.Json
             {
                 throw new JsonDeserializationException(jsonObject, typeof(bool), "Json对象不为Boolean类型不能解析成Boolean类型");
             }
-            return Boolean.Parse(jsonObject.Value.ToString());
+            return (bool)jsonObject.Value;
         }
 
         /// <summary>
@@ -168,15 +168,15 @@ namespace LHZ.FastJson.Json
         /// <returns></returns>
         private static byte ConvertToByte(IJsonObject jsonObject)
         {
-            if (jsonObject.Type != JsonType.Number)
+            if (!(jsonObject is JsonNumber jsonNumber))
             {
                 throw new JsonDeserializationException(jsonObject, typeof(Byte), "Json对象不为Number类型不能解析成Byte类型");
             }
-            if (((JsonNumber)jsonObject).NumberType != NumberType.Long)
+            if (jsonNumber.NumberType != NumberType.Long)
             {
                 throw new JsonDeserializationException(jsonObject, typeof(Byte), "Json对象Number类型不为Long不能解析成Byte类型");
             }
-            return Byte.Parse(jsonObject.Value.ToString(), CultureInfo.InvariantCulture);
+            return jsonNumber.ToByte(CultureInfo.InvariantCulture);
         }
 
         /// <summary>
@@ -419,7 +419,7 @@ namespace LHZ.FastJson.Json
                 jsonObjectParameter, Expression.Constant(curType), Expression.Constant("Json对象不为string，number不能解析成枚举类型")))));
 
             var method = typeof(StructConvertResult<>).MakeGenericType(curType).GetMethod("ConvertToEnum", new Type[] { typeof(string) });
-            expres.Add(Expression.Assign(result, Expression.Call(method, Expression.Call(jsonObjectParameter, "ToString", new Type[] { }))));
+            expres.Add(Expression.Assign(result, Expression.Call(method, Expression.Call(Expression.Property(jsonObjectParameter, "Value"), "ToString", new Type[] { }))));
             expres.Add(Expression.IfThen(Expression.IsFalse(Expression.Property(result, "Success")), 
                 Expression.Throw(Expression.New(typeof(JsonDeserializationException).GetConstructor(new Type[] { typeof(IJsonObject), typeof(Type), typeof(string) }),
                 jsonObjectParameter, Expression.Constant(curType), Expression.Constant("Json对象不能解析成枚举类型")))));
@@ -469,11 +469,11 @@ namespace LHZ.FastJson.Json
                 genericType = genericTypes[1];
             }
 
-            var jsonDictionaryValue = Expression.Variable(typeof(Dictionary<string, IJsonObject>), "jsonDictionaryValue");
+            var jsonDictionaryValue = Expression.Variable(typeof(Dictionary<JsonPropertyName, IJsonObject>), "jsonDictionaryValue");
             var result = Expression.Variable(curType, "result");
 
-            var enumerator = Expression.Variable(typeof(Dictionary<string, IJsonObject>.Enumerator), "enumerator");
-            var keyValue = Expression.Variable(typeof(KeyValuePair<string, IJsonObject>), "keyValue");
+            var enumerator = Expression.Variable(typeof(Dictionary<JsonPropertyName, IJsonObject>.Enumerator), "enumerator");
+            var keyValue = Expression.Variable(typeof(KeyValuePair<JsonPropertyName, IJsonObject>), "keyValue");
             var returnLabel = Expression.Label("returnLable");
             var loopLabel = Expression.Label("loopLabel");
 
@@ -489,10 +489,10 @@ namespace LHZ.FastJson.Json
                 Expression.Throw(Expression.New(typeof(JsonDeserializationException).GetConstructor(new Type[] { typeof(IJsonObject), typeof(Type), typeof(string) }),
                 jsonObjectParameter, Expression.Constant(curType), Expression.Constant("Json对象不为Content类型不能解析成Dictionary类型")))));
 
-            //Determine if it can be assigned to Dictionary<string, IJsonObject> type
-            if (curType.IsAssignableFrom(typeof(Dictionary<string, IJsonObject>)))
+            //Determine if it can be assigned to Dictionary<JsonPropertyName, IJsonObject> type
+            if (curType.IsAssignableFrom(typeof(Dictionary<JsonPropertyName, IJsonObject>)))
             {
-                expres.Add(Expression.Assign(result, Expression.Call(Expression.Convert(jsonObjectParameter, typeof(JsonContent)), "GetValue", new Type[] { })));
+                expres.Add(Expression.Assign(result, Expression.Convert(Expression.Property(jsonObjectParameter, "Value") ,typeof(Dictionary<JsonPropertyName, IJsonObject>))));
                 expres.Add(Expression.Label(returnLabel));
                 expres.Add(result);
                 return Expression.Lambda<Func<IJsonObject, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Block(new ParameterExpression[] { result }, expres), jsonObjectParameter, jsonCustomConvertersParameter);
@@ -505,7 +505,7 @@ namespace LHZ.FastJson.Json
                 return Expression.Lambda<Func<IJsonObject, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Block(expres), jsonObjectParameter, jsonCustomConvertersParameter);
             }
             expres.Add(Expression.Assign(result, Expression.New(curType)));
-            expres.Add(Expression.Assign(jsonDictionaryValue, Expression.Call(Expression.Convert(jsonObjectParameter, typeof(JsonContent)), "GetValue", new Type[] { })));
+            expres.Add(Expression.Assign(jsonDictionaryValue, Expression.Convert(Expression.Property(jsonObjectParameter, "Value"), typeof(Dictionary<JsonPropertyName, IJsonObject>))));
             expres.Add(Expression.Assign(enumerator, Expression.Call(jsonDictionaryValue, "GetEnumerator", new Type[] { })));
 
             loopexpres.Add(Expression.IfThen(Expression.IsFalse(Expression.Call(enumerator, "MoveNext", new Type[] { })), Expression.Break(loopLabel)));
@@ -516,12 +516,12 @@ namespace LHZ.FastJson.Json
             //Value types require boxing
             if (genericType.IsValueType)
             {
-                loopexpres.Add(Expression.Call(result, typeof(IDictionary).GetMethod("Add", new Type[] { typeof(object), typeof(object) }), Expression.Property(keyValue, "Key"),
+                loopexpres.Add(Expression.Call(result, typeof(IDictionary).GetMethod("Add", new Type[] { typeof(object), typeof(object) }), Expression.Call(Expression.Property(keyValue, "Key"), "ToString", new Type[0]),
                     Expression.Convert(Expression.Call(typeof(JsonDeserialzerExpression<>).MakeGenericType(genericType).GetMethod("Deserialzer", new Type[] { typeof(IJsonObject), typeof(Dictionary<Type, IJsonCustomConverter>) }), Expression.Property(keyValue, "Value"), jsonCustomConvertersParameter), typeof(object))));
             }
             else
             {
-                loopexpres.Add(Expression.Call(result, typeof(IDictionary).GetMethod("Add", new Type[] { typeof(object), typeof(object) }), Expression.Property(keyValue, "Key"),
+                loopexpres.Add(Expression.Call(result, typeof(IDictionary).GetMethod("Add", new Type[] { typeof(object), typeof(object) }), Expression.Call(Expression.Property(keyValue, "Key"), "ToString", new Type[0]),
                     Expression.Call(typeof(JsonDeserialzerExpression<>).MakeGenericType(genericType).GetMethod("Deserialzer", new Type[] { typeof(IJsonObject), typeof(Dictionary<Type, IJsonCustomConverter>) }), Expression.Property(keyValue, "Value"), jsonCustomConvertersParameter)));
             }
 
@@ -567,7 +567,7 @@ namespace LHZ.FastJson.Json
             //Initialize the array
             expres.Add(Expression.Assign(jsonArray, Expression.Convert(jsonObjectParameter, typeof(JsonArray))));
             expres.Add(Expression.Assign(length, Expression.Property(jsonArray, "Length")));
-            expres.Add(Expression.Assign(jsonArrayValue, Expression.Call(jsonArray, "GetValue", new Type[] { })));
+            expres.Add(Expression.Assign(jsonArrayValue, Expression.Convert(Expression.Property(jsonObjectParameter, "Value"), typeof(List<IJsonObject>))));
             expres.Add(Expression.Assign(result, Expression.NewArrayBounds(elementType, length)));
             expres.Add(Expression.Assign(i, Expression.Constant(0)));
             //Loop to assign array values
@@ -628,7 +628,7 @@ namespace LHZ.FastJson.Json
             //Initialize List
             expres.Add(Expression.Assign(jsonArray, Expression.Convert(jsonObjectParameter, typeof(JsonArray))));
             expres.Add(Expression.Assign(length, Expression.Property(jsonArray, "Length")));
-            expres.Add(Expression.Assign(jsonArrayValue, Expression.Call(jsonArray, "GetValue", new Type[] { })));
+            expres.Add(Expression.Assign(jsonArrayValue, Expression.Convert(Expression.Property(jsonObjectParameter, "Value"), typeof(List<IJsonObject>))));
             expres.Add(Expression.Assign(result, Expression.New(curType)));
             expres.Add(Expression.Assign(i, Expression.Constant(0)));
             //Loop to assign List values
@@ -691,9 +691,9 @@ namespace LHZ.FastJson.Json
                 expres.Add(result);
                 return Expression.Lambda<Func<IJsonObject, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Block(new ParameterExpression[] { result }, expres), jsonObjectParameter, jsonCustomConvertersParameter);
             }
-            if (curType.IsAssignableFrom(typeof(Dictionary<string, IJsonObject>)))
+            if (curType.IsAssignableFrom(typeof(Dictionary<JsonPropertyName, IJsonObject>)))
             {
-                expres.Add(Expression.Assign(result, Expression.Call(Expression.Convert(jsonObjectParameter, typeof(JsonContent)), "GetValue", new Type[] { })));
+                expres.Add(Expression.Assign(result, Expression.Convert(Expression.Property(jsonObjectParameter, "Value"), typeof(Dictionary<JsonPropertyName, IJsonObject>))));
                 expres.Add(Expression.Label(returnLabel));
                 expres.Add(result);
                 return Expression.Lambda<Func<IJsonObject, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Block(new ParameterExpression[] { result }, expres), jsonObjectParameter, jsonCustomConvertersParameter);

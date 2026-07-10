@@ -129,9 +129,6 @@ namespace LHZ.FastJson.Json
             List<Expression> expList = new List<Expression>();
             //End label target
             LabelTarget endLabelTarget = Expression.Label("endLabelTarget");
-
-            //Whether circular reference is possible
-            bool maybeCircularReference = false;
             //Get properties
             var properties = objType.GetProperties().Where(n => {
                 if (!n.CanRead)
@@ -197,19 +194,16 @@ namespace LHZ.FastJson.Json
                     case ObjectType.Dictionary:
                         {
                             exp = Expression.Call(thisObjParameter, ((Action<IDictionary>)SerializeDictionary).Method, Expression.Property(obj, item.Name));
-                            maybeCircularReference = true; 
                             break;
                         }
                     case ObjectType.Enumerable:
                         {
                             exp = Expression.Call(thisObjParameter, ((Action<IEnumerable>)SerializeEnumerable).Method, Expression.Property(obj, item.Name));
-                            maybeCircularReference = true;
                             break;
                         }
                     default:
                         {
                             exp = Expression.Invoke(Expression.Call(thisObjParameter, sact.Method, Expression.Call(Expression.Property(obj, item.Name), typeof(object).GetMethod("GetType"))), thisObjParameter, Expression.Property(obj, item.Name));
-                            maybeCircularReference = true;
                             break;
                         }
                 }
@@ -218,19 +212,9 @@ namespace LHZ.FastJson.Json
                 // var serializationExpression = expressionMethods.Invoke(this, null) as Expression;
                 // exp = Expression.Invoke(serializationExpression, new Expression[]{thisObjParameter, Expression.Property(obj, item.Name)});
 
-                if(objectType == ObjectType.Dictionary || objectType == ObjectType.Enumerable || objectType == ObjectType.Object)
-                {
-                    maybeCircularReference = true;
-                }
-
                 //Check if reference type is null
                 if (objectType == ObjectType.String || objectType == ObjectType.Dictionary || objectType == ObjectType.Enumerable || objectType == ObjectType.Object)
                 {
-                    //Need to check for circular reference
-                    if(objectType != ObjectType.String)
-                    {
-                        maybeCircularReference = true;
-                    }
                     //Perform null check
                     var propertyNull = Expression.Call(jsonStrBuilder, typeof(StringBuilder).GetMethod("Append", new Type[] { typeof(string) }), Expression.Constant("null"));
                     exp = Expression.IfThenElse(Expression.Equal(Expression.Property(obj, item.Name), Expression.Constant(null)), propertyNull, exp);
@@ -243,7 +227,7 @@ namespace LHZ.FastJson.Json
                 }
             }
             //Circular reference check
-            if (maybeCircularReference && !objType.IsValueType)
+            if (!objType.IsValueType)
             {
                 
                 var isCircularReference = Expression.Call(thisObjParameter, ((Func<object, bool>)IsCircularReference).Method, objParameter);
@@ -324,52 +308,6 @@ namespace LHZ.FastJson.Json
 
             return Expression.Lambda<Action<JsonSerializer, object>>(exp, thisObjParameter, objParameter);
         }
-
-        /// <summary>
-        /// Create a serialization expression (generic)
-        /// </summary>
-        /// <typeparam name="T">Generic type</typeparam>
-        /// <returns>Expression</returns>
-        private Expression<Action<JsonSerializer, T>> CreateSerializationExpression<T>()
-        {
-            //Object type
-            var objType = typeof(T);
-            //Current object
-            var thisObjParameter = Expression.Parameter(typeof(JsonSerializer), "thisObjParameter");
-            //Serialization object parameter
-            var objParameter = Expression.Parameter(objType);
-
-            //Expression
-            Expression exp = null;
-        
-
-            ObjectType objectType = GetObjectType(objType);
-            switch (objectType)
-            {
-                case ObjectType.Boolean: exp = Expression.Call(thisObjParameter, ((Action<bool>)SerializeBoolean).Method, objParameter); break;
-                case ObjectType.Int32: exp = Expression.Call(thisObjParameter, ((Action<int>)SerializeInt32).Method, objParameter); break;
-                case ObjectType.Int64: exp = Expression.Call(thisObjParameter, ((Action<long>)SerializeInt64).Method, objParameter); break;
-                case ObjectType.UInt32: exp = Expression.Call(thisObjParameter, ((Action<uint>)SerializeUInt32).Method, objParameter); break;
-                case ObjectType.UInt64: exp = Expression.Call(thisObjParameter, ((Action<ulong>)SerializeUInt64).Method, objParameter); break;
-                case ObjectType.Int16: exp = Expression.Call(thisObjParameter, ((Action<short>)SerializeInt16).Method, objParameter); break;
-                case ObjectType.UInt16: exp = Expression.Call(thisObjParameter, ((Action<ushort>)SerializeUInt16).Method, objParameter); break;
-                case ObjectType.Byte: exp = Expression.Call(thisObjParameter, ((Action<byte>)SerializeByte).Method, objParameter); break;
-                case ObjectType.Char: exp = Expression.Call(thisObjParameter, ((Action<char>)SerializeChar).Method, objParameter); break;
-                case ObjectType.Float: exp = Expression.Call(thisObjParameter, ((Action<float>)SerializeFloat).Method, objParameter); break;
-                case ObjectType.Double: exp = Expression.Call(thisObjParameter, ((Action<double>)SerializeDouble).Method, objParameter); break;
-                case ObjectType.Decimal: exp = Expression.Call(thisObjParameter, ((Action<decimal>)SerializeDecimal).Method, objParameter); break;
-                case ObjectType.DateTime: exp = Expression.Call(thisObjParameter, ((Action<DateTime>)SerializeDateTime).Method, objParameter); break;
-                case ObjectType.Enum: exp = Expression.Call(thisObjParameter, ((Action<System.Enum>)SerializeEnum).Method, objParameter); break;
-                case ObjectType.String: exp = Expression.Call(thisObjParameter, ((Action<string>)SerializeString).Method, objParameter); break;
-                case ObjectType.Guid: exp = Expression.Call(thisObjParameter, ((Action<Guid>)SerializeGuid).Method, objParameter); break;
-                case ObjectType.Nullable: exp = Expression.Call(thisObjParameter, ((Action<object>)SerializeAny).Method, Expression.Convert(objParameter, typeof(object))); break;
-                case ObjectType.Dictionary: exp = Expression.Call(thisObjParameter, ((Action<IDictionary>)SerializeDictionary).Method, objParameter); break;
-                case ObjectType.Enumerable: exp = Expression.Call(thisObjParameter, ((Action<IEnumerable>)SerializeEnumerable).Method, objParameter); break;
-                default: exp = Expression.Invoke(CreateObjectSerializationExpression(objType), thisObjParameter, objParameter); break;
-            }
-            return Expression.Lambda<Action<JsonSerializer, T>>(exp, thisObjParameter, objParameter);
-        }
-
         /// <summary>
         /// Get the type of the object
         /// </summary>
@@ -590,6 +528,11 @@ namespace LHZ.FastJson.Json
         /// <param name="obj">Object to serialize</param>
         private void SerializeDictionary(IDictionary obj)
         {
+            if (IsCircularReference(obj))
+            {
+                throw new Exception("循环引用");
+            }
+            this._objStack.Push(obj);
             _jsonStrBuilder.Append('{');
             int i = 0;
             foreach (DictionaryEntry item in obj)
@@ -605,6 +548,7 @@ namespace LHZ.FastJson.Json
                 i++;
             }
             _jsonStrBuilder.Append('}');
+            this._objStack.Pop();
         }
         /// <summary>
         /// Enumerable type serialization
@@ -612,6 +556,11 @@ namespace LHZ.FastJson.Json
         /// <param name="obj">Object to serialize</param>
         private void SerializeEnumerable(IEnumerable obj)
         {
+            if (IsCircularReference(obj))
+            {
+                throw new Exception("循环引用");
+            }
+            this._objStack.Push(obj);
             _jsonStrBuilder.Append('[');
             int i = 0;
             foreach (var item in obj)
@@ -622,6 +571,7 @@ namespace LHZ.FastJson.Json
                 i++;
             }
             _jsonStrBuilder.Append(']');
+            this._objStack.Pop();
         }
         
         /// <summary>

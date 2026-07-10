@@ -44,7 +44,7 @@ namespace LHZ.FastJson.UnitTest
             Assert.AreEqual("A", unicodeString.Value);
 
             var slashString = new JsonReader("\"c:\\\\temp\"").JsonRead();
-            Assert.AreEqual("\"c:\\\\temp\"", slashString.ToJsonString());
+            Assert.AreEqual("\"c:\\\\temp\"", slashString.ToString());
         }
 
         /// <summary>

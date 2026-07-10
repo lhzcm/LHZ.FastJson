@@ -15,7 +15,6 @@ namespace LHZ.FastJson
         /// JSON object type
         /// </summary>
         JsonType Type { get;}
-
         /// <summary>
         /// JSON object value
         /// </summary>
@@ -33,27 +32,12 @@ namespace LHZ.FastJson
         /// </summary>
         IJsonObject this[int index] { get; }
         /// <summary>
-        /// Determine if a child node with the specified name exists
-        /// </summary>
-        /// <param name="name">Node name</param>
-        /// <returns>Whether it exists</returns>
-        bool HasChildrenNode(string name);
-        /// <summary>
-        /// Convert JSON object to JSON string
-        /// </summary>
-        /// <returns>JSON string</returns>
-        string ToJsonString();
-        /// <summary>
         /// Convert JSON object to JSON string StringBuilder
         /// </summary>
         /// <returns>JSON StringBuilder string</returns>
-        StringBuilder ToJsonStringBuilder(StringBuilder stringBuilder = null);
+        StringBuilder ToStringBuilder(StringBuilder stringBuilder = null);
         /// <summary>
-        /// String start position
-        /// </summary>
-        int Position { get; }
-        /// <summary>
-        /// Returns the string representation of the object
+        /// Returns the JSON string representation of the object
         /// </summary>
         string ToString();
     }

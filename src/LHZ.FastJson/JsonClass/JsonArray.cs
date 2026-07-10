@@ -12,21 +12,7 @@ namespace LHZ.FastJson.JsonClass
     /// </summary>
     public class JsonArray : JsonObject, IEnumerable<IJsonObject>
     {
-        private List<IJsonObject> _value;
-        /// <inheritdoc/>
-        public override object Value => _value;
-        /// <summary>
-        /// Get the array list (deprecated, use Value property instead)
-        /// </summary>
-        [Obsolete("This method is deprecated and will be removed in the next official release.")]
-        public List<IJsonObject> GetValue()
-        {
-            return this._value;
-        }
-        internal JsonArray(int position) : base(position)
-        {
-            this._value = new List<IJsonObject>();
-        }
+        protected readonly List<IJsonObject> _value;
         /// <summary>
         /// Default constructor
         /// </summary>
@@ -34,12 +20,12 @@ namespace LHZ.FastJson.JsonClass
         {
             this._value = new List<IJsonObject>();
         }
-
+        ///<inheritdoc/>
+        public override object Value => this._value;
         /// <summary>
         /// Array length
         /// </summary>
         public int Length => _value.Count;
-
         /// <summary>
         /// Add a JSON object to the array
         /// </summary>
@@ -48,9 +34,16 @@ namespace LHZ.FastJson.JsonClass
         {
             this._value.Add(obj);
         }
-
+        /// <summary>
+        /// Add a JSON object to the array
+        /// </summary>
+        /// <param name="obj">JSON object</param>
+        public void AddJsonObject(IJsonObject obj)
+        {
+            this._value.Add(obj);
+        }
         /// <inheritdoc/>
-        public override StringBuilder ToJsonStringBuilder(StringBuilder stringBuilder = null)
+        public override StringBuilder ToStringBuilder(StringBuilder stringBuilder = null)
         {
             if(stringBuilder == null)
             {
@@ -59,7 +52,7 @@ namespace LHZ.FastJson.JsonClass
             stringBuilder.Append("[");
             for (int i = 0; i < _value.Count; i++)
             {
-                _value[i].ToJsonStringBuilder(stringBuilder);
+                _value[i].ToStringBuilder(stringBuilder);
                 stringBuilder.Append(",");
             }
             if (_value.Count > 0)
