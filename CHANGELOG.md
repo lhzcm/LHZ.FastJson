@@ -4,6 +4,43 @@
 
 This document records important changes to LHZ.FastJson.
 
+## 1.9.0 - 2026-07-11
+
+This release introduces a two-tier `JsonClass` architecture, zero-allocation string parsing, and comprehensive English documentation.
+
+### Features
+
+- Added `JsonClass.Internal` namespace with internal-only subclasses (`Internal.JsonArray`, `Internal.JsonBoolean`, `Internal.JsonContent`, `Internal.JsonNull`, `Internal.JsonNumber`, `Internal.JsonString`) that carry position metadata and support lazy escape-sequence resolution.
+- `StringView` now implements `System.IConvertible`, enabling deferred number parsing — `JsonNumber` stores a `StringView` and parses only when a specific numeric conversion is requested.
+
+### Improvements
+
+- **Zero-allocation string parsing**: `JsonReader.ReadStringLiteral` now returns `StringView` directly instead of building a `StringBuilder`, eliminating heap allocations during JSON string parsing.
+- **Faster boolean/null parsing**: `GetJsonBoolean` and `GetJsonNull` now compare characters directly via pointer arithmetic instead of creating intermediate `StringView` objects.
+- **Lazy escape resolution**: Escape sequences (`\n`, `\t`, `\uXXXX`, etc.) are no longer resolved during parsing; resolution is deferred to `Internal.JsonString.Value` and only performed on first access.
+- **JsonPropertyName hash caching**: Pre-computed DJB2 hash passed directly to `JsonPropertyName` constructor, avoiding duplicate hash computation during dictionary lookups.
+- **NET5+ optimization**: `JsonContent.AddJsonProperty` uses `Dictionary.TryAdd` on .NET 5+ for a lock-free fast path.
+- **Thread-safe expression caching**: `JsonDeserialzerExpression` now uses `Interlocked` for concurrent dictionary access, reducing race conditions during first-time deserialization.
+- `StringView` moved from global namespace to `LHZ.FastJson.JsonClass` for proper scoping.
+
+### Breaking Changes
+
+- `JsonBoolean` and `JsonNull` constructors are now `internal`. Use `JsonBoolean.True`, `JsonBoolean.False`, or `JsonNull.Null` static properties instead.
+- Removed deprecated `GetValue()` method from `JsonString`. Use `.Value` or `.ToString()` instead.
+- `JsonString.ToJsonStringBuilder()` renamed to `ToStringBuilder()` to match the `IJsonObject` interface contract.
+
+### Documentation
+
+- All XML doc comments translated from Chinese to English across the entire library.
+- Added new XML doc comments for previously undocumented members (`JsonReader` constructor, `StructConvertResult`, `StringView`, etc.).
+- Enabled `GenerateDocumentationFile` in `.csproj` to produce XML documentation on build.
+- Added `wiki.md` with comprehensive bilingual (Chinese/English) usage documentation.
+
+### Tests
+
+- Added `RegressionTests` class covering edge cases: trailing characters, malformed numbers, Unicode escapes, default `DateTime` formatting, nullable properties, null collection elements, and duplicate `[JsonProperty]` names.
+- Enhanced existing test coverage in `TestJsonDeserizlizer`, `TestJsonReder`, and `TestJsonSerizlizer`.
+
 ## 1.8.5 - 2026-06-29
 
 This release refactors the JSON parsing and JsonClass infrastructure, introducing `StringView` and `JsonPropertyName` for improved performance and code structure.

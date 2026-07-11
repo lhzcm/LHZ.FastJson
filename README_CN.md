@@ -39,24 +39,24 @@ Intel Core i7-9700K CPU 3.60GHz (Coffee Lake), 1 CPU, 8 logical and 8 physical c
 |    LHZFastJson v1.5.2 | 85.18 ms | 0.301 ms | 0.282 ms |
 
 # 如何安装 
-### 下面展示不同的安装方法，以安装[LHZ.FastJson 1.8.5](https://www.nuget.org/packages/LHZ.FastJson/1.8.5)版本为例
+### 下面展示不同的安装方法，以安装[LHZ.FastJson 1.9.0](https://www.nuget.org/packages/LHZ.FastJson/1.9.0)版本为例
 ### Package Manager
 ``` bash
-Install-Package LHZ.FastJson -Version 1.8.5
+Install-Package LHZ.FastJson -Version 1.9.0
 ```
 ### .NET CLI
 ``` bash
-dotnet add package LHZ.FastJson --Version 1.8.5
+dotnet add package LHZ.FastJson --Version 1.9.0
 ```
 
 ### package-reference
 ``` xml
-<PackageReference Include="LHZ.FastJson" Version="1.8.5" />
+<PackageReference Include="LHZ.FastJson" Version="1.9.0" />
 ```
 
 ### Paket CLI
 ``` bash
-paket add LHZ.FastJson --version 1.8.5
+paket add LHZ.FastJson --version 1.9.0
 ```
 
 # 如何使用

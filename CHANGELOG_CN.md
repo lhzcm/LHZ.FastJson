@@ -4,6 +4,43 @@
 
 本文档记录 LHZ.FastJson 的重要变更。
 
+## 1.9.0 - 2026-07-11
+
+本版本引入双层 JsonClass 架构、零分配字符串解析以及全面的英文文档。
+
+### 功能
+
+- 新增 `JsonClass.Internal` 命名空间，包含内部子类（`Internal.JsonArray`、`Internal.JsonBoolean`、`Internal.JsonContent`、`Internal.JsonNull`、`Internal.JsonNumber`、`Internal.JsonString`），携带位置元数据并支持延迟转义解析。
+- `StringView` 现实现 `System.IConvertible` 接口，支持延迟数字解析 — `JsonNumber` 存储 `StringView`，仅在请求具体数值转换时才进行解析。
+
+### 改进
+
+- **零分配字符串解析**：`JsonReader.ReadStringLiteral` 现在直接返回 `StringView`，不再构建 `StringBuilder`，消除 JSON 字符串解析过程中的堆内存分配。
+- **更快的布尔/null 解析**：`GetJsonBoolean` 和 `GetJsonNull` 现通过指针运算直接比较字符，不再创建中间 `StringView` 对象。
+- **延迟转义解析**：转义序列（`\n`、`\t`、`\uXXXX` 等）不再在解析时处理，而是延迟到 `Internal.JsonString.Value` 首次访问时才解析。
+- **JsonPropertyName 哈希缓存**：预计算的 DJB2 哈希值直接传入 `JsonPropertyName` 构造函数，避免字典查找时重复计算哈希。
+- **NET5+ 优化**：`JsonContent.AddJsonProperty` 在 .NET 5+ 上使用 `Dictionary.TryAdd` 实现无锁快速路径。
+- **线程安全表达式缓存**：`JsonDeserialzerExpression` 现使用 `Interlocked` 进行并发字典访问，减少首次反序列化时的竞态风险。
+- `StringView` 从全局命名空间移至 `LHZ.FastJson.JsonClass`，实现正确的命名空间作用域。
+
+### 破坏性变更
+
+- `JsonBoolean` 和 `JsonNull` 的构造函数现为 `internal`。请改用 `JsonBoolean.True`、`JsonBoolean.False` 或 `JsonNull.Null` 静态属性。
+- 移除 `JsonString` 中已弃用的 `GetValue()` 方法，请使用 `.Value` 或 `.ToString()`。
+- `JsonString.ToJsonStringBuilder()` 重命名为 `ToStringBuilder()`，与 `IJsonObject` 接口约定保持一致。
+
+### 文档
+
+- 整个库的 XML 文档注释从中文翻译为英文。
+- 为之前未文档化的成员添加了 XML 文档注释（`JsonReader` 构造函数、`StructConvertResult`、`StringView` 等）。
+- 在 `.csproj` 中启用 `GenerateDocumentationFile`，构建时生成 XML 文档文件。
+- 新增 `wiki.md`，提供全面的中英双语使用文档。
+
+### 测试
+
+- 新增 `RegressionTests` 类，覆盖边界情况：尾部多余字符、非法数字格式、Unicode 转义、默认 `DateTime` 格式、可空属性、集合 null 元素以及重复 `[JsonProperty]` 名称检测。
+- 增强 `TestJsonDeserizlizer`、`TestJsonReder` 和 `TestJsonSerizlizer` 中的现有测试覆盖。
+
 ## 1.8.5 - 2026-06-29
 
 本版本重构了 Json 解析与 JsonClass 基础设施，引入 `StringView` 和 `JsonPropertyName`，提升性能并优化代码结构。
