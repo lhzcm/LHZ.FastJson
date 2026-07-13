@@ -11,6 +11,7 @@
 - [快速入门 | Quick Start](#快速入门--quick-start)
 - [序列化 | Serialization](#序列化--serialization)
 - [反序列化 | Deserialization](#反序列化--deserialization)
+- [JSON 解析器 | JsonReader](#json-解析器--jsonreader)
 - [API 参考 | API Reference](#api-参考--api-reference)
 - [JSON 类型系统 | JSON Type System](#json-类型系统--json-type-system)
 - [特性注解 | Attributes](#特性注解--attributes)
@@ -202,6 +203,177 @@ else
 
 ---
 
+## JSON 解析器 | JsonReader
+
+`JsonReader` 是 LHZ.FastJson 的底层 JSON 解析引擎，基于 `unsafe` 指针操作实现零分配的 JSON 字符串解析。它将 JSON 字符串解析为 `IJsonObject` 树结构，支持动态遍历和访问。
+
+> `JsonReader` is the low-level JSON parsing engine of LHZ.FastJson, implementing zero-allocation JSON string parsing via `unsafe` pointer operations. It parses a JSON string into an `IJsonObject` tree for dynamic traversal and access.
+
+### 基本用法 | Basic Usage
+
+```csharp
+using LHZ.FastJson;
+
+string json = @"{""name"":""Alice"",""age"":25,""items"":[1,2,3]}";
+
+// 创建 JsonReader 实例 | Create a JsonReader instance
+var reader = new JsonReader(json);
+
+// 解析 JSON 字符串 | Parse the JSON string
+IJsonObject obj = reader.JsonRead();
+
+// 访问解析后的数据 | Access the parsed data
+Console.WriteLine(obj["name"].Value);    // Alice
+Console.WriteLine(obj["age"].Value);     // 25
+Console.WriteLine(obj["items"][0].Value); // 1
+Console.WriteLine(obj["items"][1].Value); // 2
+```
+
+### 验证 JSON 有效性 | Validating JSON
+
+`JsonReader` 提供两种验证 JSON 有效性的方式：
+
+#### 实例属性 `IsValidJson`
+
+```csharp
+var reader = new JsonReader(@"{""key"":""value""}");
+bool isValid = reader.IsValidJson;  // true
+
+var reader2 = new JsonReader(@"{""key"":}");
+bool isValid2 = reader2.IsValidJson; // false
+```
+
+> **注意**：`IsValidJson` 内部调用 `JsonRead()` 进行完整解析，会缓存解析结果。若仅需验证而不需要后续访问解析结果，建议使用静态方法 `IsJsonString`。
+
+#### 静态方法 `IsJsonString`
+
+```csharp
+string jsonString = @"{""name"":""Alice""}";
+
+bool isJson = JsonReader.IsJsonString(jsonString, out Exception exception);
+if (isJson)
+{
+    Console.WriteLine("Valid JSON");
+}
+else
+{
+    Console.WriteLine($"Invalid JSON: {exception.Message}");
+}
+```
+
+### 解析结果缓存 | Result Caching
+
+`JsonReader.JsonRead()` 会缓存首次解析的结果，重复调用不会重新解析：
+
+```csharp
+var reader = new JsonReader(@"[1, 2, 3]");
+
+IJsonObject obj1 = reader.JsonRead(); // 首次调用，执行解析
+IJsonObject obj2 = reader.JsonRead(); // 直接返回缓存结果
+
+Console.WriteLine(object.ReferenceEquals(obj1, obj2)); // True
+```
+
+### 解析结果类型映射 | Parsed Type Mapping
+
+解析后的 `IJsonObject` 实际类型取决于 JSON 值：
+
+| JSON 值 | 运行时类型 | `.Value` 类型 | `.JsonType` |
+|---------|-----------|---------------|-------------|
+| `{"a":1}` | `JsonContent` | `Dictionary<string, IJsonObject>` | `Content` |
+| `[1,2,3]` | `JsonArray` | `List<IJsonObject>` | `Array` |
+| `"hello"` | `JsonString` | `string` | `String` |
+| `123` | `JsonNumber` | `IConvertible` (StringView) | `Number` |
+| `1.5` | `JsonNumber` | `IConvertible` (StringView) | `Number` |
+| `true` | `JsonBoolean` | `bool` (`true`) | `Boolean` |
+| `false` | `JsonBoolean` | `bool` (`false`) | `Boolean` |
+| `null` | `JsonNull` | `null` | `Null` |
+
+### 遍历解析树 | Traversing the Parse Tree
+
+```csharp
+string json = @"{
+  ""users"": [
+    {""id"":1,""name"":""Alice""},
+    {""id"":2,""name"":""Bob""}
+  ],
+  ""total"": 2
+}";
+
+var reader = new JsonReader(json);
+IJsonObject root = reader.JsonRead();
+
+// 遍历数组 | Iterating an array
+IJsonObject users = root["users"];
+for (int i = 0; i < users.Count; i++)
+{
+    Console.WriteLine($"User {users[i]["id"].Value}: {users[i]["name"].Value}");
+}
+
+// 访问标量值 | Accessing scalar value
+Console.WriteLine($"Total: {root["total"].Value}");
+```
+
+### 类型判断与安全访问 | Type Checking
+
+```csharp
+var reader = new JsonReader(jsonString);
+IJsonObject obj = reader.JsonRead();
+
+switch (obj.Type)
+{
+    case JsonType.Content:
+        var content = obj as JsonContent;
+        foreach (var kv in content) { /* ... */ }
+        break;
+    case JsonType.Array:
+        var arr = obj as JsonArray;
+        foreach (var item in arr) { /* ... */ }
+        break;
+    case JsonType.String:
+        string s = (string)obj.Value;
+        break;
+    case JsonType.Number:
+        // StringView implements IConvertible
+        int n = Convert.ToInt32(obj.Value);
+        break;
+    case JsonType.Boolean:
+        bool b = (bool)obj.Value;
+        break;
+    case JsonType.Null:
+        // obj.Value is null
+        break;
+}
+```
+
+### 错误处理 | Error Handling
+
+解析非法 JSON 时会抛出 `JsonReadException`，其中包含错误位置信息：
+
+```csharp
+try
+{
+    var reader = new JsonReader(@"{""key"": 123 extra}");
+    reader.JsonRead();
+}
+catch (JsonReadException ex)
+{
+    Console.WriteLine($"Parse error at position {ex.Index}: {ex.Message}");
+}
+```
+
+### 性能特征 | Performance Characteristics
+
+| 操作 | 特征 |
+|------|------|
+| 解析 | 零堆分配（字符串字面量不产生临时 `string`） |
+| 转义解析 | 延迟解析，仅在首次访问 `.Value` 时执行 |
+| 数字解析 | 延迟，通过 `StringView : IConvertible` 实现 |
+| 结果缓存 | `JsonRead()` 仅首次调用时解析 |
+| 线程安全 | 单个 `JsonReader` 实例非线程安全，不同实例间安全 |
+
+---
+
 ## API 参考 | API Reference
 
 ### `JsonConvert` (静态类)
@@ -348,6 +520,30 @@ Console.WriteLine(b.BooleanType);     // True
 ```csharp
 var n = JsonConvert.Deserialize(@"null") as JsonNull;
 Console.WriteLine(n.ToJsonString());  // null
+```
+
+### 手动构建 JSON 树 | Building JSON Trees Programmatically
+
+除了从字符串解析 JSON，还可以直接使用类型化 JSON 类手动构建 JSON 树：
+
+> In addition to parsing JSON from strings, you can construct JSON trees directly using the typed JSON classes:
+
+```csharp
+var jsonContent = new JsonContent();
+jsonContent.AddJsonProperty("Name", new JsonString("LHZ.FastJson"));
+jsonContent.AddJsonProperty("Size", new JsonNumber(1024));
+jsonContent.AddJsonProperty("IsRelease", JsonBoolean.True);
+jsonContent.AddJsonProperty("Exat", JsonNull.Null);
+
+var jsonVersionArray = new JsonArray();
+jsonVersionArray.AddJsonObject(new JsonString("1.9.0"));
+jsonVersionArray.AddJsonObject(new JsonString("1.8.5"));
+jsonVersionArray.AddJsonObject(new JsonString("1.8.4"));
+jsonVersionArray.AddJsonObject(new JsonString("1.8.3"));
+jsonContent.AddJsonProperty("Versions", jsonVersionArray);
+
+var json = jsonContent.ToString();
+// {"Name":"LHZ.FastJson","Size":1024,"IsRelease":true,"Exat":null,"Versions":["1.9.0","1.8.5","1.8.4","1.8.3"]}
 ```
 
 ---

@@ -113,3 +113,87 @@ Console.WriteLine("NO:{0},Name:{1},Age:{2},Brithday:{3}", student.NO, student.Na
 PS C:\Users\admin\source\repos\LHZ.FastJson\LHZ.FastJson.Test> dotnet run
 NO:1,Name:lhz,Age:18,Brithday:2000-1-1
 ```
+
+### Building JSON Trees Programmatically
+
+In addition to parsing JSON from strings, you can construct JSON trees directly using the `JsonContent`, `JsonArray`, `JsonString`, `JsonNumber`, `JsonBoolean`, and `JsonNull` classes:
+
+``` csharp
+//Object
+var jsonContent = new JsonContent();
+//Add String
+jsonContent.AddJsonProperty("Name", new JsonString("LHZ.FastJson"));
+//Add Number
+jsonContent.AddJsonProperty("Size", new JsonNumber(1024));
+//Add Boolean
+jsonContent.AddJsonProperty("IsRelease", JsonBoolean.True);
+//Add Null
+jsonContent.AddJsonProperty("Exat", JsonNull.Null);
+//Add Array
+var jsonVersionArray = new JsonArray();
+jsonVersionArray.AddJsonObject(new JsonString("1.9.0"));
+jsonVersionArray.AddJsonObject(new JsonString("1.8.5"));
+jsonVersionArray.AddJsonObject(new JsonString("1.8.4"));
+jsonVersionArray.AddJsonObject(new JsonString("1.8.3"));
+jsonContent.AddJsonProperty("Versions", jsonVersionArray);
+//To Json String
+var json = jsonContent.ToString();
+```
+OutPut
+``` powershell
+{"Name":"LHZ.FastJson","Size":1024,"IsRelease":true,"Exat":null,"Versions":["1.9.0","1.8.5","1.8.4","1.8.3"]}
+```
+
+### JSON Parsing with `JsonReader`
+
+`JsonReader` provides low-level, zero-allocation JSON parsing with `unsafe` pointer operations. It parses a JSON string into an `IJsonObject` tree that you can traverse dynamically.
+
+#### Basic Parsing
+
+``` csharp
+using LHZ.FastJson;
+
+string json = @"{""name"":""Alice"",""age"":25,""items"":[1,2,3]}";
+
+var reader = new JsonReader(json);
+IJsonObject obj = reader.JsonRead();
+
+// Access parsed data
+Console.WriteLine(obj["name"].Value);    // Alice
+Console.WriteLine(obj["age"].Value);     // 25
+Console.WriteLine(obj["items"][0].Value); // 1
+```
+
+#### Validate JSON
+
+``` csharp
+string json = @"{""key"":""value""}";
+
+var reader = new JsonReader(json);
+bool isValid = reader.IsValidJson;  // true
+
+string invalidJson = @"{""key"":}";
+var reader2 = new JsonReader(invalidJson);
+bool isValid2 = reader2.IsValidJson; // false
+```
+
+#### Static Validation
+
+``` csharp
+bool isJson = JsonReader.IsJsonString(jsonString, out Exception exception);
+if (!isJson)
+{
+    Console.WriteLine($"Invalid JSON: {exception.Message}");
+}
+```
+
+#### Parsed JSON Type Tree
+
+| JSON Value | `IJsonObject` Type | `.Value` Type |
+|------------|--------------------|---------------|
+| `{"a":1}` | `JsonContent` | `Dictionary<string, IJsonObject>` |
+| `[1,2]` | `JsonArray` | `List<IJsonObject>` |
+| `"text"` | `JsonString` | `string` |
+| `123` | `JsonNumber` | `IConvertible` (StringView) |
+| `true` / `false` | `JsonBoolean` | `bool` |
+| `null` | `JsonNull` | `null` |
