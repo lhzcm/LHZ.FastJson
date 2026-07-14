@@ -3,6 +3,7 @@ using LHZ.FastJson.JsonClass.Internal;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Security;
 using System.Text;
 
@@ -144,6 +145,9 @@ namespace LHZ.FastJson
         /// <summary>
         /// Skip whitespace characters
         /// </summary>
+        #if NET45_OR_GREATER
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        #endif
         private void SkipWhitespace()
         {
             while (*_curPoint == ' ' || *_curPoint == '\r' || *_curPoint == '\n' || *_curPoint == '\t')
@@ -154,6 +158,9 @@ namespace LHZ.FastJson
         /// <summary>
         /// Move to next character
         /// </summary>
+        #if NET45_OR_GREATER
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        #endif
         private void MoveNext(int step)
         {
             _curPoint += step;
@@ -167,6 +174,9 @@ namespace LHZ.FastJson
         /// Parse JSON String object
         /// </summary>
         /// <returns>JSON object</returns>
+        #if NET45_OR_GREATER
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        #endif
         private unsafe JsonClass.JsonObject GetJsonString()
         {
             int index = (int)(_curPoint - _startPoint);
@@ -210,7 +220,9 @@ namespace LHZ.FastJson
                 _curPoint++;
             }
         }
-
+        #if NET45_OR_GREATER
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        #endif
         private JsonClass.StringView ReadStringLiteral(int index, out int length)
         {
             length = 0;
@@ -285,6 +297,9 @@ namespace LHZ.FastJson
         /// Parse JSON Number object
         /// </summary>
         /// <returns>JSON object</returns>
+        #if NET45_OR_GREATER
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        #endif
         private JsonClass.JsonObject GetJsonNumber()
         {
             int index = (int)(_curPoint - _startPoint);
@@ -358,6 +373,9 @@ namespace LHZ.FastJson
         /// Parse JSON Boolean object
         /// </summary>
         /// <returns>JSON object</returns>
+        #if NET45_OR_GREATER
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        #endif
         private JsonClass.JsonObject GetJsonBoolean()
         {
             int index = (int)(_curPoint - _startPoint);
@@ -384,6 +402,9 @@ namespace LHZ.FastJson
         /// Parse JSON Null
         /// </summary>
         /// <returns>JSON object</returns>
+        #if NET45_OR_GREATER
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        #endif
         private JsonClass.JsonObject GetJsonNull()
         {
             int index = (int)(_curPoint - _startPoint);
@@ -400,6 +421,9 @@ namespace LHZ.FastJson
         /// Parse JSON Content object
         /// </summary>
         /// <returns>JSON object</returns>
+        #if NET45_OR_GREATER
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        #endif
         private JsonClass.JsonObject GetJsonContent()
         {
             int index = (int)(_curPoint - _startPoint);
@@ -450,6 +474,9 @@ namespace LHZ.FastJson
         /// Parse JSON Array object
         /// </summary>
         /// <returns>JSON object</returns>
+        #if NET45_OR_GREATER
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        #endif
         private JsonClass.JsonObject GetJsonArray()
         {
             int index = (int)(_curPoint - _startPoint);
@@ -480,7 +507,7 @@ namespace LHZ.FastJson
                 else
                 {
                     index = (int)(_curPoint - _startPoint);
-                    throw new JsonReadException(index, "字符位置[" + index + "]处，Json字符串解析Array错");
+                    throw new JsonReadException(index, "字符位置[" + index + "]处，Json字符串解析Array出错");
                 }
             }
             MoveNext(1);
