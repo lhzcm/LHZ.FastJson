@@ -2,7 +2,7 @@ using System;
 using System.Data;
 using System.Text;
 
-namespace LHZ.FastJson.JsonClass
+namespace LHZ.FastJson.JsonClass.Internal
 {
     /// <summary>
     /// Lightweight string view that avoids extra allocations from string slicing
