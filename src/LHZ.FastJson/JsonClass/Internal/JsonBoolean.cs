@@ -8,7 +8,7 @@ namespace LHZ.FastJson.JsonClass.Internal
     /// <summary>
     /// JSON boolean object
     /// </summary>
-    internal class JsonBoolean : JsonClass.JsonBoolean
+    internal sealed class JsonBoolean : JsonClass.JsonBoolean
     {
         private int _position;
         internal JsonBoolean(bool value, int position) : base(value)

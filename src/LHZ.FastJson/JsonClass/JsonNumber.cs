@@ -41,7 +41,7 @@ namespace LHZ.FastJson.JsonClass
             this.NumberType = NumberType.Double;
             _value = value;
         }
-        internal JsonNumber(StringView value, NumberType numberType)
+        internal JsonNumber(Internal.StringView value, NumberType numberType)
         {
             this.NumberType = numberType;
             _value = value;

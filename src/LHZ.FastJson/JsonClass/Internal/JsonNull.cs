@@ -9,7 +9,7 @@ namespace LHZ.FastJson.JsonClass.Internal
     /// <summary>
     /// JSON null object
     /// </summary>
-    internal class JsonNull : JsonClass.JsonNull
+    internal sealed class JsonNull : JsonClass.JsonNull
     {
         private int _position;
         internal JsonNull(int position)

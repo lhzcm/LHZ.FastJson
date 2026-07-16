@@ -11,7 +11,7 @@ namespace LHZ.FastJson.JsonClass
     /// </summary>
     public class JsonString : JsonObject
     {
-        internal StringView _value;
+        internal Internal.StringView _value;
         ///<inheritdoc/>
         public override object Value => _value.ToString();
         /// <summary>
@@ -25,9 +25,9 @@ namespace LHZ.FastJson.JsonClass
             {
                 throw new ArgumentNullException(nameof(value), "value is not allow null");
             }
-            this._value = new StringView(value);
+            this._value = new Internal.StringView(value);
         }
-        internal JsonString(StringView value)
+        internal JsonString(Internal.StringView value)
         {
             this._value = value;
         }

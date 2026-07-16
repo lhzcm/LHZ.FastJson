@@ -1,4 +1,5 @@
 using System;
+using LHZ.FastJson.JsonClass.Internal;
 
 namespace LHZ.FastJson.JsonClass
 {

@@ -191,7 +191,7 @@ if (!isJson)
 
 | JSON Value | `IJsonObject` Type | `.Value` Type |
 |------------|--------------------|---------------|
-| `{"a":1}` | `JsonContent` | `Dictionary<string, IJsonObject>` |
+| `{"a":1}` | `JsonContent` | `Dictionary<JsonPropertyName, IJsonObject>` |
 | `[1,2]` | `JsonArray` | `List<IJsonObject>` |
 | `"text"` | `JsonString` | `string` |
 | `123` | `JsonNumber` | `IConvertible` (StringView) |

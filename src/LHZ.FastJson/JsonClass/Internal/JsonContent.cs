@@ -10,7 +10,7 @@ namespace LHZ.FastJson.JsonClass.Internal
     /// <summary>
     /// JSON container object
     /// </summary>
-    internal class JsonContent : JsonClass.JsonContent
+    internal sealed class JsonContent : JsonClass.JsonContent
     {
         private int _position;
         public JsonContent(int position)

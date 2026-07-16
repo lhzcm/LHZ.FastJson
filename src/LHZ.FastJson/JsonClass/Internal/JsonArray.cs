@@ -10,7 +10,7 @@ namespace LHZ.FastJson.JsonClass.Internal
     /// <summary>
     /// JSON array object
     /// </summary>
-    internal class JsonArray : JsonClass.JsonArray
+    internal sealed class JsonArray : JsonClass.JsonArray
     {
         private int _position;
         public JsonArray(int position)

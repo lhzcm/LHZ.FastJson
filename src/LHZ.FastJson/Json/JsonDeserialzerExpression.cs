@@ -726,7 +726,7 @@ namespace LHZ.FastJson.Json
                     continue;
                 }
                 #region Custom property name handling
-                StringView jsonPropertyNameStringView = new StringView(JsonUtility.GetPropertyName(item));
+                JsonClass.Internal.StringView jsonPropertyNameStringView = new JsonClass.Internal.StringView(JsonUtility.GetPropertyName(item));
                 var jsonPropertyName = new JsonPropertyName(jsonPropertyNameStringView, jsonPropertyNameStringView.GetHashCode());
                 #endregion
                 

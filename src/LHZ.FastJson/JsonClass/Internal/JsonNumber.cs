@@ -8,7 +8,7 @@ namespace LHZ.FastJson.JsonClass.Internal
     /// <summary>
     /// JSON number object
     /// </summary>
-    internal class JsonNumber: JsonClass.JsonNumber
+    internal sealed class JsonNumber: JsonClass.JsonNumber
     {
         private int _position;
         internal JsonNumber(StringView value, NumberType numberType, int position) : base(value, numberType)

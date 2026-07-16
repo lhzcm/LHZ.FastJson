@@ -175,7 +175,7 @@ if (!isJson)
 
 | JSON 值 | `IJsonObject` 类型 | `.Value` 类型 |
 |------------|--------------------|---------------|
-| `{"a":1}` | `JsonContent` | `Dictionary<string, IJsonObject>` |
+| `{"a":1}` | `JsonContent` | `Dictionary<JsonPropertyName, IJsonObject>` |
 | `[1,2]` | `JsonArray` | `List<IJsonObject>` |
 | `"text"` | `JsonString` | `string` |
 | `123` | `JsonNumber` | `IConvertible` (StringView) |

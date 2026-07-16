@@ -9,7 +9,7 @@ namespace LHZ.FastJson.JsonClass.Internal
     /// <summary>
     /// JSON string type
     /// </summary>
-    public class JsonString : JsonClass.JsonString
+    internal sealed class JsonString : JsonClass.JsonString
     {
         private int _position;
         private int _realLength;
