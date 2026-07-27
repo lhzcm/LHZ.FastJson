@@ -1,5 +1,6 @@
 using System;
 using System.Data;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace LHZ.FastJson.JsonClass.Internal
@@ -14,13 +15,13 @@ namespace LHZ.FastJson.JsonClass.Internal
         /// Initialize with a specified range
         /// </summary>
         /// <param name="sourceString">Source string</param>
-        /// <param name="startIndex">Start index</param>
-        /// <param name="endIndex">End index</param>
-        public StringView(string sourceString, int startIndex, int endIndex)
+        /// <param name="offset">offset index</param>
+        /// <param name="length">string length</param>
+        public StringView(string sourceString, int offset, int length)
         {
             SourceString = sourceString;
-            StartIndex = startIndex;
-            EndIndex = endIndex;
+            Offset = offset;
+            Length = length;
         }
         /// <summary>
         /// Initialize with the full string
@@ -29,8 +30,8 @@ namespace LHZ.FastJson.JsonClass.Internal
         public StringView(string sourceString)
         {
             SourceString = sourceString;
-            StartIndex = 0;
-            EndIndex = sourceString.Length - 1;
+            Offset = 0;
+            Length = sourceString.Length;
         }
         /// <summary>
         /// Source string
@@ -39,53 +40,61 @@ namespace LHZ.FastJson.JsonClass.Internal
         /// <summary>
         /// Start index
         /// </summary>
-        public int StartIndex { get; }
+        public int Offset { get; }
         /// <summary>
         /// View length
         /// </summary>
-        public int Length => EndIndex - StartIndex + 1;
-        /// <summary>
-        /// End index
-        /// </summary>
-        public int EndIndex { get; }
+        public int Length {get;}
+        #if NET45_OR_GREATER
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        #endif
         public override string ToString()
         {
-            if (EndIndex < StartIndex)
+            if (Length == 0)
                 return string.Empty;
-            int leng = EndIndex - StartIndex + 1;
-            if (SourceString.Length == leng)
+            if (SourceString.Length == Length)
                 return SourceString;
-            return SourceString.Substring(StartIndex, leng);
+            return SourceString.Substring(Offset, Length);
         }
+        #if NET45_OR_GREATER
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        #endif
         public static bool operator ==(StringView left, StringView right)
         {
-            var length = left.EndIndex - left.StartIndex + 1;
-            if (length != (right.EndIndex - right.StartIndex + 1))
+            if (left.Length != right.Length)
                 return false;
-            for (var i = 0; i < length; i++)
+            for (var i = 0; i < left.Length; i++)
             {
-                if (left.SourceString[left.StartIndex + i] != right.SourceString[right.StartIndex + i])
+                if (left.SourceString[left.Offset + i] != right.SourceString[right.Offset + i])
                     return false;
-
             }
             return true;
         }
+        #if NET45_OR_GREATER
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        #endif
         public static bool operator !=(StringView left, StringView right)
         {
             return !(left == right);
         }
+        #if NET45_OR_GREATER
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        #endif
         public override bool Equals(object obj)
         {
             if (!(obj is StringView other))
                 return false;
             return this == other;
         }
+        #if NET45_OR_GREATER
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        #endif
         public override int GetHashCode()
         {
             uint hash = 5381;
-            if (EndIndex < StartIndex)
+            if (Length == 0)
                 return (int)hash;
-            for (int i = StartIndex; i <= EndIndex; i++)
+            for (int i = Offset; i < Offset + Length; i++)
             {
                 unchecked
                 {
@@ -94,40 +103,55 @@ namespace LHZ.FastJson.JsonClass.Internal
             }
             return (int)hash;
         }
+        #if NET45_OR_GREATER
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        #endif
         public StringBuilder ToStringBuilder()
         {
-            if (EndIndex < StartIndex)
+            if (Length == 0)
                 return new StringBuilder();
-            int leng = EndIndex - StartIndex + 1;
-            if (SourceString.Length == leng)
+            if (SourceString.Length == Length)
                 return new StringBuilder(SourceString);
-            return new StringBuilder(SourceString, StartIndex, leng, leng);
+            return new StringBuilder(SourceString, Offset, Length, Length);
         }
+        /// <summary>
+        /// Convert To Char Array
+        /// </summary>
+        /// <returns>Char Array</returns>
+        #if NET45_OR_GREATER
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        #endif
         public char[] ToCharArray()
         {
-            if (EndIndex < StartIndex)
+            if (Length == 0)
                 return _charArrayEmpty;
-            int length = EndIndex - StartIndex + 1;
-            if (SourceString.Length == length)
+            if (SourceString.Length == Length)
                 return SourceString.ToCharArray();
-            return SourceString.ToCharArray(StartIndex, length);
+            return SourceString.ToCharArray(Offset, Length);
         }
+        /// <summary>
+        /// Append into stringBuilder 
+        /// </summary>
+        /// <param name="stringBuilder"></param>
+        /// <exception cref="ArgumentNullException"></exception>
+        #if NET45_OR_GREATER
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        #endif
         public void AppendToStringBuilder(StringBuilder stringBuilder)
         {
             if (stringBuilder == null)
             {
                 throw new ArgumentNullException(nameof(stringBuilder));
             }
-            if (EndIndex < StartIndex)
+            if (Length == 0)
                 return;
-            int leng = EndIndex - StartIndex + 1;
-            if (SourceString.Length == leng)
+            if (SourceString.Length == Length)
             {
                 stringBuilder.Append(SourceString);
             }
             else
             {
-                stringBuilder.Append(SourceString, StartIndex, leng);
+                stringBuilder.Append(SourceString, Offset, Length);
             }
         }
         public TypeCode GetTypeCode()

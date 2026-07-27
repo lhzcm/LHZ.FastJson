@@ -14,10 +14,10 @@ namespace LHZ.FastJson.JsonClass.Internal
         private int _position;
         private int _realLength;
         internal override int Position => _position;
-        internal JsonString(StringView value, int _realLength) : base(value)
+        internal JsonString(StringView value, int realLength) : base(value)
         {
-            this._position = value.StartIndex;
-            this._realLength = _realLength;
+            this._position = value.Offset;
+            this._realLength = realLength;
         }
         /// <inheritdoc/>
         public override StringBuilder ToStringBuilder(StringBuilder stringBuilder = null)
@@ -41,8 +41,8 @@ namespace LHZ.FastJson.JsonClass.Internal
                     return _value.ToString();
                 }
                 char[] chars = new char[_realLength];
-                int charsIndex = 0, valueIndex = _value.StartIndex;
-                while (valueIndex <= _value.EndIndex) 
+                int charsIndex = 0, valueIndex = _value.Offset;
+                while (valueIndex < _value.Offset + _value.Length) 
                 {
                     char curChar = _value.SourceString[valueIndex++];
                     if (curChar == '\\')

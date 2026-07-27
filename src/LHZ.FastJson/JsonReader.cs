@@ -207,14 +207,14 @@ namespace LHZ.FastJson
                 }
                 if (*_curPoint == '"')
                 {
-                    int endIndex = (int)(_curPoint - _startPoint - 1);
-                    if(endIndex < startIndex)
+                    int length = (int)(_curPoint - _startPoint - startIndex);
+                    if(length < 0)
                     {
                         int curIndex = (int)(_curPoint - _startPoint);
                         throw new JsonReadException(curIndex, "字符位置[" + curIndex + "]处，Json字符串解析错误，属性名不能为空");
                     }
                     MoveNext(1);
-                    return new JsonClass.JsonPropertyName(new JsonClass.Internal.StringView(_jsonString, startIndex, endIndex), (int)hash);
+                    return new JsonClass.JsonPropertyName(new JsonClass.Internal.StringView(_jsonString, startIndex, length), (int)hash);
                 }
                 hash = (hash << 5) + hash + (*_curPoint);
                 _curPoint++;
@@ -243,7 +243,7 @@ namespace LHZ.FastJson
                 char current = *_curPoint;
                 if (current == '"')
                 {
-                    var ret = new JsonClass.Internal.StringView(_jsonString, (int)(startIndex - _startPoint), (int)(_curPoint - _startPoint - 1));
+                    var ret = new JsonClass.Internal.StringView(_jsonString, (int)(startIndex - _startPoint), (int)(_curPoint - startIndex));
                     length += ret.Length;
                     MoveNext(1);
                     return ret;
@@ -367,7 +367,7 @@ namespace LHZ.FastJson
                     MoveNext(1);
                 }
             }
-            return new JsonNumber(new JsonClass.Internal.StringView(_jsonString, index, (int)(_curPoint - _startPoint - 1)), hasPoint || hasExponent ? Enum.NumberType.Double : Enum.NumberType.Long, index);
+            return new JsonNumber(new JsonClass.Internal.StringView(_jsonString, index, (int)(_curPoint - startPorint)), hasPoint || hasExponent ? Enum.NumberType.Double : Enum.NumberType.Long, index);
         }
         /// <summary>
         /// Parse JSON Boolean object
