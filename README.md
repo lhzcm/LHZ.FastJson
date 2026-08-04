@@ -52,7 +52,7 @@ Install-Package LHZ.FastJson -Version 1.9.1
 ### .NET CLI
 
 ``` bash
-dotnet add package LHZ.FastJson --Version 1.9.1
+dotnet add package LHZ.FastJson --version 1.9.1
 ```
 
 ### Package Reference

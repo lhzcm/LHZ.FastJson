@@ -46,7 +46,7 @@ Install-Package LHZ.FastJson -Version 1.9.1
 ```
 ### .NET CLI
 ``` bash
-dotnet add package LHZ.FastJson --Version 1.9.1
+dotnet add package LHZ.FastJson --version 1.9.1
 ```
 
 ### package-reference
@@ -60,8 +60,8 @@ paket add LHZ.FastJson --version 1.9.1
 ```
 
 # 如何使用
-## 使用LHZ.FastJson进行序列�?
-### 序列化代码示�?
+## 使用LHZ.FastJson进行序列�?
+### 序列化代码示�?
 ``` cshap
 Student student = new Student
 {
@@ -98,9 +98,9 @@ PS C:\Users\admin\source\repos\LHZ.FastJson\LHZ.FastJson.Test> dotnet run
 NO:1,Name:lhz,Age:18,Brithday:2000-1-1
 ```
 
-### 手动构建 JSON �?
+### 手动构建 JSON �?
 
-除了从字符串解析 JSON，还可以直接使用 `JsonContent`、`JsonArray`、`JsonString`、`JsonNumber`、`JsonBoolean` �?`JsonNull` 类手动构�?JSON 树：
+除了从字符串解析 JSON，还可以直接使用 `JsonContent`、`JsonArray`、`JsonString`、`JsonNumber`、`JsonBoolean` �?`JsonNull` 类手动构�?JSON 树：
 
 ``` csharp
 //Object
@@ -130,7 +130,7 @@ var json = jsonContent.ToString();
 
 ## 使用 `JsonReader` 解析 JSON
 
-`JsonReader` 提供基于 `unsafe` 指针的零分配 JSON 解析。它�?JSON 字符串解析为 `IJsonObject` 树，支持动态遍历�?
+`JsonReader` 提供基于 `unsafe` 指针的零分配 JSON 解析。它�?JSON 字符串解析为 `IJsonObject` 树，支持动态遍历�?
 
 ### 基本解析
 
@@ -148,7 +148,7 @@ Console.WriteLine(obj["age"].Value);     // 25
 Console.WriteLine(obj["items"][0].Value); // 1
 ```
 
-### 验证 JSON 有效�?
+### 验证 JSON 有效�?
 
 ``` csharp
 string json = @"{""key"":""value""}";
@@ -161,7 +161,7 @@ var reader2 = new JsonReader(invalidJson);
 bool isValid2 = reader2.IsValidJson; // false
 ```
 
-### 静态验�?
+### 静态验�?
 
 ``` csharp
 bool isJson = JsonReader.IsJsonString(jsonString, out Exception exception);
@@ -173,7 +173,7 @@ if (!isJson)
 
 ### 解析结果类型映射
 
-| JSON �?| `IJsonObject` 类型 | `.Value` 类型 |
+| JSON �?| `IJsonObject` 类型 | `.Value` 类型 |
 |------------|--------------------|---------------|
 | `{"a":1}` | `JsonContent` | `Dictionary<JsonPropertyName, IJsonObject>` |
 | `[1,2]` | `JsonArray` | `List<IJsonObject>` |

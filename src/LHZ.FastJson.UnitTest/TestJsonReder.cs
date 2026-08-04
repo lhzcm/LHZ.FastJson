@@ -225,8 +225,8 @@ namespace LHZ.FastJson.UnitTest
         [Test]
         public void JsonReadEmptyStringThrows()
         {
-            Assert.Throws<Exception>(() => new JsonReader("").JsonRead());
-            Assert.Throws<Exception>(() => new JsonReader((string)null).JsonRead());
+            Assert.Throws<ArgumentNullException>(() => new JsonReader("").JsonRead());
+            Assert.Throws<ArgumentNullException>(() => new JsonReader((string)null).JsonRead());
         }
 
         /// <summary>

@@ -29,6 +29,10 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
+    <None Include="..\..\README_CN.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
     <None Include="logo.png">
       <Pack>True</Pack>
       <PackagePath />
