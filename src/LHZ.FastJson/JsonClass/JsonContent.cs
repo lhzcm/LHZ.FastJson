@@ -62,21 +62,21 @@ namespace LHZ.FastJson.JsonClass
             {
                 stringBuilder = new StringBuilder();
             }
-            stringBuilder.Append("{");
+            stringBuilder.Append('{');
             foreach (var item in this)
             {
                 stringBuilder.Append('"');
                 stringBuilder.Append(item.Key);
                 stringBuilder.Append('"');
-                stringBuilder.Append(":");
+                stringBuilder.Append(':');
                 item.Value.ToStringBuilder(stringBuilder);
-                stringBuilder.Append(",");
+                stringBuilder.Append(',');
             }
             if (_value.Count > 0)
             {
                 stringBuilder.Remove(stringBuilder.Length - 1, 1);
             }
-            stringBuilder.Append("}");
+            stringBuilder.Append('}');
             return stringBuilder;
         }
         /// <summary>

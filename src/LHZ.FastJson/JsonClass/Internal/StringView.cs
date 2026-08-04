@@ -45,7 +45,7 @@ namespace LHZ.FastJson.JsonClass.Internal
         /// View length
         /// </summary>
         public int Length {get;}
-        #if NET45_OR_GREATER
+        #if NET45_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         #endif
         public override string ToString()
@@ -56,7 +56,7 @@ namespace LHZ.FastJson.JsonClass.Internal
                 return SourceString;
             return SourceString.Substring(Offset, Length);
         }
-        #if NET45_OR_GREATER
+        #if NET45_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         #endif
         public static bool operator ==(StringView left, StringView right)
@@ -70,14 +70,14 @@ namespace LHZ.FastJson.JsonClass.Internal
             }
             return true;
         }
-        #if NET45_OR_GREATER
+        #if NET45_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         #endif
         public static bool operator !=(StringView left, StringView right)
         {
             return !(left == right);
         }
-        #if NET45_OR_GREATER
+        #if NET45_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         #endif
         public override bool Equals(object obj)
@@ -86,7 +86,7 @@ namespace LHZ.FastJson.JsonClass.Internal
                 return false;
             return this == other;
         }
-        #if NET45_OR_GREATER
+        #if NET45_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         #endif
         public override int GetHashCode()
@@ -103,7 +103,7 @@ namespace LHZ.FastJson.JsonClass.Internal
             }
             return (int)hash;
         }
-        #if NET45_OR_GREATER
+        #if NET45_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         #endif
         public StringBuilder ToStringBuilder()
@@ -118,7 +118,7 @@ namespace LHZ.FastJson.JsonClass.Internal
         /// Convert To Char Array
         /// </summary>
         /// <returns>Char Array</returns>
-        #if NET45_OR_GREATER
+        #if NET45_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         #endif
         public char[] ToCharArray()
@@ -134,7 +134,7 @@ namespace LHZ.FastJson.JsonClass.Internal
         /// </summary>
         /// <param name="stringBuilder"></param>
         /// <exception cref="ArgumentNullException"></exception>
-        #if NET45_OR_GREATER
+        #if NET45_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         #endif
         public void AppendToStringBuilder(StringBuilder stringBuilder)

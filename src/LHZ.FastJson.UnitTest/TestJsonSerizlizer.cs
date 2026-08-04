@@ -6,7 +6,6 @@ using LHZ.FastJson.Enum;
 using LHZ.FastJson.Json;
 using LHZ.FastJson.Json.Attributes;
 using LHZ.FastJson.Json.CustomConverter;
-using LHZ.FastJson.Json.Format;
 using NUnit.Framework;
 
 namespace LHZ.FastJson.UnitTest
@@ -85,22 +84,6 @@ namespace LHZ.FastJson.UnitTest
             testObj.Add("test2", new { Name = "test2", IsTeacher = true });
             string obj = (new JsonSerializer(testObj)).Serialize();
             Assert.IsTrue(obj != null);
-        }
-        /// <summary>
-        /// 验证 DateTime 支持格式化序列化。
-        /// </summary>
-        [Test]
-        public void TestDateTime()
-        {
-            DateTime testObj = new DateTime(2020, 7, 18);
-            IJsonFormat[] formats = { new DateTimeJsonFormat("yyyy-MM-dd") };
-            string obj = (new JsonSerializer(testObj, formats)).Serialize();
-            Assert.AreEqual(obj, "\"2020-07-18\"");
-
-            formats[0] = new DateTimeJsonFormat((n) => "test123");
-            obj = (new JsonSerializer(testObj, formats)).Serialize();
-            Assert.AreEqual(obj, "\"test123\"");
-
         }
         /// <summary>
         /// 验证字符串转义、空值和空串的序列化。

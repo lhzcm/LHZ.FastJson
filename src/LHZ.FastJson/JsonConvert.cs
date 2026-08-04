@@ -1,6 +1,5 @@
 ﻿using LHZ.FastJson.Interface;
 using LHZ.FastJson.Json;
-using LHZ.FastJson.Json.Format;
 using LHZ.FastJson.JsonClass;
 using System;
 using System.Collections.Generic;
@@ -101,19 +100,6 @@ namespace LHZ.FastJson
         public static string Serialize(object obj)
         {
             JsonSerializer serializer = new JsonSerializer(obj);
-            return serializer.Serialize();
-        }
-
-        /// <summary>
-        /// Serialize an object to a JSON string (with formatting)
-        /// </summary>
-        /// <param name="obj">The object to serialize</param>
-        /// <param name="formats">Format types</param>
-        /// <returns>JSON string</returns>
-        [Obsolete("This method is obsolete. Use Serialize(object obj) instead.")]
-        public static string Serialize(object obj, params IJsonFormat[] formats)
-        {
-            JsonSerializer serializer = new JsonSerializer(obj, formats);
             return serializer.Serialize();
         }
     }

@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  
   <PropertyGroup>
     <TARGETFRAMEWORKS>NET40;NET45;NET46;NETSTANDARD2.0;NET5;NET6</TARGETFRAMEWORKS>
     <!--<TargetFramework>NETSTANDARD2.0</TargetFramework>-->
@@ -19,14 +18,12 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <EffectiveAnalysisLevel>9</EffectiveAnalysisLevel>
+    <AnalysisMode>Recommended</AnalysisMode>
   </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-  </PropertyGroup>
-
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'" />
   <ItemGroup>
     <None Include="..\..\README.md">
       <Pack>True</Pack>
@@ -34,8 +31,13 @@
     </None>
     <None Include="logo.png">
       <Pack>True</Pack>
-      <PackagePath></PackagePath>
+      <PackagePath />
     </None>
   </ItemGroup>
-
+  <ItemGroup Condition="'$(TargetFramework)'=='net5.0' AND '$(Configuration)|$(Platform)'=='Debug|AnyCPU' ">
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="10.0.302">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
 </Project>

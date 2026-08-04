@@ -19,7 +19,7 @@ namespace LHZ.FastJson.Json.CustomConverter
         private Func<IJsonObject, T> _deserializeFunc = (IJsonObject jsonObject) => JsonDeserialzerExpression<T>.Deserialzer(jsonObject);
         private readonly Type _type = typeof(T);
         private readonly JsonCustomConvertItem _item = JsonCustomConvertItem.None;
-        private readonly bool _serializeValidate = false;
+        private readonly bool _serializeValidate;
         /// <summary>
         /// Default constructor, using built-in serialization/deserialization
         /// </summary>

@@ -49,17 +49,17 @@ namespace LHZ.FastJson.JsonClass
             {
                 stringBuilder = new StringBuilder();
             }
-            stringBuilder.Append("[");
+            stringBuilder.Append('[');
             for (int i = 0; i < _value.Count; i++)
             {
                 _value[i].ToStringBuilder(stringBuilder);
-                stringBuilder.Append(",");
+                stringBuilder.Append(',');
             }
             if (_value.Count > 0)
             {
                 stringBuilder.Remove(stringBuilder.Length - 1, 1);
             }
-            stringBuilder.Append("]");
+            stringBuilder.Append(']');
             return stringBuilder;
         }
         /// <summary>

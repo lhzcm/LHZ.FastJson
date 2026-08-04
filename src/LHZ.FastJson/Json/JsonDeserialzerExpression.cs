@@ -14,6 +14,7 @@ using LHZ.FastJson.Interface;
 using LHZ.FastJson.Json.Attributes;
 using LHZ.FastJson.Json.Utils;
 using LHZ.FastJson.JsonClass;
+using LHZ.FastJson.Utils;
 using LHZ.FastJson.Wrapper;
 
 namespace LHZ.FastJson.Json
@@ -356,7 +357,7 @@ namespace LHZ.FastJson.Json
             {
                 throw new JsonDeserializationException(jsonObject, typeof(DateTime), "Json对象不为String类型不能解析成DateTime类型");
             }
-            return DateTime.Parse(jsonObject.Value.ToString());
+            return DateTime.Parse(jsonObject.Value.ToString(), CultureInfo.CurrentCulture);
         }
 
         /// <summary>
@@ -419,7 +420,7 @@ namespace LHZ.FastJson.Json
                 jsonObjectParameter, Expression.Constant(curType), Expression.Constant("Json对象不为string，number不能解析成枚举类型")))));
 
             var method = typeof(StructConvertResult<>).MakeGenericType(curType).GetMethod("ConvertToEnum", new Type[] { typeof(string) });
-            expres.Add(Expression.Assign(result, Expression.Call(method, Expression.Call(Expression.Property(jsonObjectParameter, "Value"), "ToString", new Type[] { }))));
+            expres.Add(Expression.Assign(result, Expression.Call(method, Expression.Call(Expression.Property(jsonObjectParameter, "Value"), "ToString", EmptyArray<Type>.Value))));
             expres.Add(Expression.IfThen(Expression.IsFalse(Expression.Property(result, "Success")), 
                 Expression.Throw(Expression.New(typeof(JsonDeserializationException).GetConstructor(new Type[] { typeof(IJsonObject), typeof(Type), typeof(string) }),
                 jsonObjectParameter, Expression.Constant(curType), Expression.Constant("Json对象不能解析成枚举类型")))));
@@ -498,7 +499,7 @@ namespace LHZ.FastJson.Json
                 return Expression.Lambda<Func<IJsonObject, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Block(new ParameterExpression[] { result }, expres), jsonObjectParameter, jsonCustomConvertersParameter);
             }
             //Determine if the object can be instantiated
-            if (curType.GetConstructor(new Type[] { }) == null)
+            if (curType.GetConstructor(EmptyArray<Type>.Value) == null)
             {
                 expres.Add(Expression.Throw(Expression.New(typeof(JsonDeserializationException).GetConstructor(new Type[] { typeof(IJsonObject), typeof(Type), typeof(string) }),
                 jsonObjectParameter, Expression.Constant(curType), Expression.Constant("反序列化类型没有默认的构造函数，无法创建该类型对象"))));
@@ -506,9 +507,9 @@ namespace LHZ.FastJson.Json
             }
             expres.Add(Expression.Assign(result, Expression.New(curType)));
             expres.Add(Expression.Assign(jsonDictionaryValue, Expression.Convert(Expression.Property(jsonObjectParameter, "Value"), typeof(Dictionary<JsonPropertyName, IJsonObject>))));
-            expres.Add(Expression.Assign(enumerator, Expression.Call(jsonDictionaryValue, "GetEnumerator", new Type[] { })));
+            expres.Add(Expression.Assign(enumerator, Expression.Call(jsonDictionaryValue, "GetEnumerator", EmptyArray<Type>.Value)));
 
-            loopexpres.Add(Expression.IfThen(Expression.IsFalse(Expression.Call(enumerator, "MoveNext", new Type[] { })), Expression.Break(loopLabel)));
+            loopexpres.Add(Expression.IfThen(Expression.IsFalse(Expression.Call(enumerator, "MoveNext", EmptyArray<Type>.Value)), Expression.Break(loopLabel)));
             loopexpres.Add(Expression.Assign(keyValue, Expression.Property(enumerator, "Current")));
 
             //TODO: This can be optimized later. For special types like Dictionary, you can directly call Add<Tkey, Tvalue>() method to avoid boxing/unboxing and type conversion operations for better performance
@@ -516,12 +517,12 @@ namespace LHZ.FastJson.Json
             //Value types require boxing
             if (genericType.IsValueType)
             {
-                loopexpres.Add(Expression.Call(result, typeof(IDictionary).GetMethod("Add", new Type[] { typeof(object), typeof(object) }), Expression.Call(Expression.Property(keyValue, "Key"), "ToString", new Type[0]),
+                loopexpres.Add(Expression.Call(result, typeof(IDictionary).GetMethod("Add", new Type[] { typeof(object), typeof(object) }), Expression.Call(Expression.Property(keyValue, "Key"), "ToString", EmptyArray<Type>.Value),
                     Expression.Convert(Expression.Call(typeof(JsonDeserialzerExpression<>).MakeGenericType(genericType).GetMethod("Deserialzer", new Type[] { typeof(IJsonObject), typeof(Dictionary<Type, IJsonCustomConverter>) }), Expression.Property(keyValue, "Value"), jsonCustomConvertersParameter), typeof(object))));
             }
             else
             {
-                loopexpres.Add(Expression.Call(result, typeof(IDictionary).GetMethod("Add", new Type[] { typeof(object), typeof(object) }), Expression.Call(Expression.Property(keyValue, "Key"), "ToString", new Type[0]),
+                loopexpres.Add(Expression.Call(result, typeof(IDictionary).GetMethod("Add", new Type[] { typeof(object), typeof(object) }), Expression.Call(Expression.Property(keyValue, "Key"), "ToString", EmptyArray<Type>.Value),
                     Expression.Call(typeof(JsonDeserialzerExpression<>).MakeGenericType(genericType).GetMethod("Deserialzer", new Type[] { typeof(IJsonObject), typeof(Dictionary<Type, IJsonCustomConverter>) }), Expression.Property(keyValue, "Value"), jsonCustomConvertersParameter)));
             }
 
@@ -708,7 +709,7 @@ namespace LHZ.FastJson.Json
                 return Expression.Lambda<Func<IJsonObject, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Block(new ParameterExpression[] { result }, expres), jsonObjectParameter, jsonCustomConvertersParameter);
             }
             //Check if the type has a default constructor
-            if (curType.GetConstructor(new Type[] { }) == null)
+            if (curType.GetConstructor(EmptyArray<Type>.Value) == null)
             {
                 expres.Add(Expression.Throw(Expression.New(typeof(JsonDeserializationException).GetConstructor(new Type[] { typeof(IJsonObject), typeof(Type), typeof(string) }),
                 jsonObjectParameter, Expression.Constant(curType), Expression.Constant("反序列化类型没有默认的构造函数，无法创建该类型对象"))));

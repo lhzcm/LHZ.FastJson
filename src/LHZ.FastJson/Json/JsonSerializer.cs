@@ -12,7 +12,6 @@ using LHZ.FastJson.Enum;
 using LHZ.FastJson.Enum.CustomConverter;
 using LHZ.FastJson.Interface;
 using LHZ.FastJson.Json.Attributes;
-using LHZ.FastJson.Json.Format;
 using LHZ.FastJson.Json.Utils;
 
 namespace LHZ.FastJson.Json
@@ -24,9 +23,6 @@ namespace LHZ.FastJson.Json
     {
         private StringBuilder _jsonStrBuilder = new StringBuilder(128);
         private Stack<object> _objStack = new Stack<object>();
-        [Obsolete]
-        private JsonFormatter _formater;
-
         private static readonly Dictionary<Type, ObjectType> _objectTypes = JsonObjectType.GetObjectTypes();
         private static readonly ConcurrentDictionary<Type, Action<JsonSerializer, object>> _serializationActions = new ConcurrentDictionary<Type, Action<JsonSerializer, object>>();
 
@@ -42,18 +38,6 @@ namespace LHZ.FastJson.Json
         {
             this._obj = obj;
         }
-        /// <summary>
-        /// Initialize with formatters (deprecated)
-        /// </summary>
-        /// <param name="obj">Object to serialize</param>
-        /// <param name="formats">Formatters</param>
-        [Obsolete]
-        public JsonSerializer(object obj, IJsonFormat[] formats)
-        {
-            this._obj = obj;
-            this._formater = new JsonFormatter(formats);
-        }
-
         /// <summary>
         /// Initialize with custom converters
         /// </summary>
@@ -313,7 +297,7 @@ namespace LHZ.FastJson.Json
         /// </summary>
         /// <param name="type">Serialization object type</param>
         /// <returns>Object type</returns>
-        private ObjectType GetObjectType(Type type)
+        private static ObjectType GetObjectType(Type type)
         {
             ObjectType objType;
             if (_objectTypes.TryGetValue(type, out objType))
@@ -447,22 +431,9 @@ namespace LHZ.FastJson.Json
         /// <param name="obj">Object to serialize</param>
         private void SerializeDateTime(DateTime obj)
         {
-            if (_formater == null)
-            {
-                SerializeString(obj.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture));
-                return;
-            }
-            var dateStr = _formater.DateTimeFormat(obj, out bool execCharParaphrase);
-            if (execCharParaphrase)
-            {
-                SerializeString(dateStr);
-            }
-            else
-            {
-                _jsonStrBuilder.Append("\"" + dateStr + "\"");
-            }
+            SerializeString(obj.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture));
+            return;
         }
-
         /// <summary>
         /// Enum type serialization
         /// </summary>
@@ -558,7 +529,7 @@ namespace LHZ.FastJson.Json
         {
             if (IsCircularReference(obj))
             {
-                throw new Exception("循环引用");
+                throw new InvalidOperationException("循环引用");
             }
             this._objStack.Push(obj);
             _jsonStrBuilder.Append('[');
@@ -616,7 +587,7 @@ namespace LHZ.FastJson.Json
         /// </summary>
         /// <param name="paraphrase">Character to escape</param>
         /// <returns>Escaped string</returns>
-        private string CharParaphrase(char paraphrase)
+        private static string CharParaphrase(char paraphrase)
         {
             switch (paraphrase)
             {
