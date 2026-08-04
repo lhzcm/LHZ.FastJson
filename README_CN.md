@@ -39,29 +39,29 @@ Intel Core i7-9700K CPU 3.60GHz (Coffee Lake), 1 CPU, 8 logical and 8 physical c
 |    LHZFastJson v1.5.2 | 85.18 ms | 0.301 ms | 0.282 ms |
 
 # 如何安装 
-### 下面展示不同的安装方法，以安装[LHZ.FastJson 1.9.0](https://www.nuget.org/packages/LHZ.FastJson/1.9.0)版本为例
+### 下面展示不同的安装方法，以安装[LHZ.FastJson 1.9.1](https://www.nuget.org/packages/LHZ.FastJson/1.9.1)版本为例
 ### Package Manager
 ``` bash
-Install-Package LHZ.FastJson -Version 1.9.0
+Install-Package LHZ.FastJson -Version 1.9.1
 ```
 ### .NET CLI
 ``` bash
-dotnet add package LHZ.FastJson --Version 1.9.0
+dotnet add package LHZ.FastJson --Version 1.9.1
 ```
 
 ### package-reference
 ``` xml
-<PackageReference Include="LHZ.FastJson" Version="1.9.0" />
+<PackageReference Include="LHZ.FastJson" Version="1.9.1" />
 ```
 
 ### Paket CLI
 ``` bash
-paket add LHZ.FastJson --version 1.9.0
+paket add LHZ.FastJson --version 1.9.1
 ```
 
 # 如何使用
-## 使用LHZ.FastJson进行序列化
-### 序列化代码示例
+## 使用LHZ.FastJson进行序列�?
+### 序列化代码示�?
 ``` cshap
 Student student = new Student
 {
@@ -98,9 +98,9 @@ PS C:\Users\admin\source\repos\LHZ.FastJson\LHZ.FastJson.Test> dotnet run
 NO:1,Name:lhz,Age:18,Brithday:2000-1-1
 ```
 
-### 手动构建 JSON 树
+### 手动构建 JSON �?
 
-除了从字符串解析 JSON，还可以直接使用 `JsonContent`、`JsonArray`、`JsonString`、`JsonNumber`、`JsonBoolean` 和 `JsonNull` 类手动构建 JSON 树：
+除了从字符串解析 JSON，还可以直接使用 `JsonContent`、`JsonArray`、`JsonString`、`JsonNumber`、`JsonBoolean` �?`JsonNull` 类手动构�?JSON 树：
 
 ``` csharp
 //Object
@@ -115,7 +115,7 @@ jsonContent.AddJsonProperty("IsRelease", JsonBoolean.True);
 jsonContent.AddJsonProperty("Exat", JsonNull.Null);
 //Add Array
 var jsonVersionArray = new JsonArray();
-jsonVersionArray.AddJsonObject(new JsonString("1.9.0"));
+jsonVersionArray.AddJsonObject(new JsonString("1.9.1"));
 jsonVersionArray.AddJsonObject(new JsonString("1.8.5"));
 jsonVersionArray.AddJsonObject(new JsonString("1.8.4"));
 jsonVersionArray.AddJsonObject(new JsonString("1.8.3"));
@@ -125,12 +125,12 @@ var json = jsonContent.ToString();
 ```
 输出
 ``` powershell
-{"Name":"LHZ.FastJson","Size":1024,"IsRelease":true,"Exat":null,"Versions":["1.9.0","1.8.5","1.8.4","1.8.3"]}
+{"Name":"LHZ.FastJson","Size":1024,"IsRelease":true,"Exat":null,"Versions":["1.9.1","1.8.5","1.8.4","1.8.3"]}
 ```
 
 ## 使用 `JsonReader` 解析 JSON
 
-`JsonReader` 提供基于 `unsafe` 指针的零分配 JSON 解析。它将 JSON 字符串解析为 `IJsonObject` 树，支持动态遍历。
+`JsonReader` 提供基于 `unsafe` 指针的零分配 JSON 解析。它�?JSON 字符串解析为 `IJsonObject` 树，支持动态遍历�?
 
 ### 基本解析
 
@@ -148,7 +148,7 @@ Console.WriteLine(obj["age"].Value);     // 25
 Console.WriteLine(obj["items"][0].Value); // 1
 ```
 
-### 验证 JSON 有效性
+### 验证 JSON 有效�?
 
 ``` csharp
 string json = @"{""key"":""value""}";
@@ -161,7 +161,7 @@ var reader2 = new JsonReader(invalidJson);
 bool isValid2 = reader2.IsValidJson; // false
 ```
 
-### 静态验证
+### 静态验�?
 
 ``` csharp
 bool isJson = JsonReader.IsJsonString(jsonString, out Exception exception);
@@ -173,7 +173,7 @@ if (!isJson)
 
 ### 解析结果类型映射
 
-| JSON 值 | `IJsonObject` 类型 | `.Value` 类型 |
+| JSON �?| `IJsonObject` 类型 | `.Value` 类型 |
 |------------|--------------------|---------------|
 | `{"a":1}` | `JsonContent` | `Dictionary<JsonPropertyName, IJsonObject>` |
 | `[1,2]` | `JsonArray` | `List<IJsonObject>` |

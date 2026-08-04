@@ -4,6 +4,30 @@
 
 This document records important changes to LHZ.FastJson.
 
+## 1.9.1 - 2026-08-04
+
+This release removes the deprecated JSON formatting system and applies multiple performance optimizations.
+
+### Removed
+
+- Removed deprecated `IJsonFormat` interface, `JsonFormatter` class, `DateTimeJsonFormat` class, and `JsonFormatterException` exception. Use `IJsonCustomConverter` for custom formatting instead.
+- Removed deprecated `JsonSerializer` constructor and `_formater` field.
+- Removed commented-out generic `IJsonCustomConverter<T>` interface code.
+
+### Improvements
+
+- **StringBuilder.Append(char) optimization**: Replaced `Append("[")` with `Append('[')` in `JsonArray` and `JsonContent` to avoid string allocation overhead.
+- **Empty array caching**: Replaced `new Type[0]` / `new Type[] { }` with `EmptyArray<Type>.Value` in `JsonDeserialzerExpression` to eliminate repeated empty array allocations.
+- **Extended AggressiveInlining**: `StringView` now applies `[MethodImpl(MethodImplOptions.AggressiveInlining)]` for `NETSTANDARD2_0_OR_GREATER` and `NETCOREAPP2_0_OR_GREATER` in addition to `NET45_OR_GREATER`.
+- Simplified `SerializeDateTime` to always use standard `yyyy-MM-dd HH:mm:ss` format.
+- Made `GetObjectType` method static in `JsonSerializer`.
+- Removed unnecessary field initializer in `JsonCustomConverter` (`_serializeValidate = false`).
+- Added `CultureInfo.CurrentCulture` to `DateTime.Parse` call in `JsonDeserialzerExpression`.
+
+### New
+
+- Added `Utils/EmptyArray.cs` utility class providing cached empty typed arrays.
+
 ## 1.9.0 - 2026-07-11
 
 This release introduces a two-tier `JsonClass` architecture, zero-allocation string parsing, and comprehensive English documentation.

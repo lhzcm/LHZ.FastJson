@@ -4,6 +4,30 @@
 
 本文档记录 LHZ.FastJson 的重要变更。
 
+## 1.9.1 - 2026-08-04
+
+本版本移除废弃的 JSON 格式化系统并进行多项性能优化。
+
+### 移除
+
+- 移除已废弃的 `IJsonFormat` 接口、`JsonFormatter` 类、`DateTimeJsonFormat` 类以及 `JsonFormatterException` 异常。请改用 `IJsonCustomConverter` 进行自定义格式化。
+- 移除 `JsonSerializer` 中已废弃的构造函数和 `_formater` 字段。
+- 移除 `IJsonCustomConverter.cs` 中已注释的泛型接口代码。
+
+### 改进
+
+- **StringBuilder.Append(char) 优化**：将 `JsonArray` 和 `JsonContent` 中的 `Append("[")` 替换为 `Append('[')`，避免字符串分配开销。
+- **空数组缓存**：将 `JsonDeserialzerExpression` 中的 `new Type[0]` / `new Type[] { }` 替换为 `EmptyArray<Type>.Value`，消除重复的空数组分配。
+- **扩展 AggressiveInlining**：`StringView` 现为 `NETSTANDARD2_0_OR_GREATER` 和 `NETCOREAPP2_0_OR_GREATER` 也应用 `[MethodImpl(MethodImplOptions.AggressiveInlining)]`。
+- 简化 `SerializeDateTime`，统一使用标准 `yyyy-MM-dd HH:mm:ss` 格式。
+- 将 `JsonSerializer` 中的 `GetObjectType` 方法改为静态方法。
+- 移除 `JsonCustomConverter` 中不必要的字段初始化器（`_serializeValidate = false`）。
+- 为 `JsonDeserialzerExpression` 中的 `DateTime.Parse` 调用添加 `CultureInfo.CurrentCulture`。
+
+### 新增
+
+- 新增 `Utils/EmptyArray.cs` 工具类，提供缓存的空类型数组。
+
 ## 1.9.0 - 2026-07-11
 
 本版本引入双层 JsonClass 架构、零分配字符串解析以及全面的英文文档。
