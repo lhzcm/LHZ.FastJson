@@ -476,7 +476,6 @@ namespace LHZ.FastJson.UnitTest
         {
             var jsonStr = "{\"Id\":1, \"Name\":\"tom\"}";
             var obj = JsonConvert.Deserialize<TestObjClass>(jsonStr, new JsonCustomConvert<int>(n=> 2));
-           
             Assert.AreEqual(obj.Id, 2);
         }
 

@@ -21,31 +21,15 @@ namespace LHZ.FastJson.Json
     /// <typeparam name="T">The class to deserialize</typeparam>
     public class JsonDeserializer<T>
     {
-        private IJsonObject _obj;
-        /// <summary>
-        /// Initialize with a JSON object
-        /// </summary>
-        /// <param name="obj">Parsed JSON object</param>
-        public JsonDeserializer(IJsonObject obj)
-        {
-            this._obj = obj;
-        }
-        /// <summary>
-        /// Initialize with a JsonReader
-        /// </summary>
-        /// <param name="reader">JSON reader</param>
-        public JsonDeserializer(JsonReader reader)
-        {
-            this._obj = reader.JsonRead();
-        }
+        private readonly JsonDirectReader _obj;
         /// <summary>
         /// Initialize with a JSON string
         /// </summary>
         /// <param name="jsonString">JSON string</param>
         public JsonDeserializer(string jsonString)
         {
-            JsonReader reader = new JsonReader(jsonString);
-            this._obj = reader.JsonRead();
+            JsonDirectReader reader = new JsonDirectReader(jsonString);
+            this._obj = reader;
         }
 
         /// <summary>
@@ -74,7 +58,7 @@ namespace LHZ.FastJson.Json
                     }
                 }
             }
-            return JsonDeserialzerExpression<T>.Deserialzer(_obj, customConverters);
+            return JsonDirectDeserialzerExpression<T>.Deserialzer(_obj, customConverters);
         }
     }
 }

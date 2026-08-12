@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using System.Threading;
 using LHZ.FastJson.Enum;
@@ -44,7 +45,7 @@ namespace LHZ.FastJson.JsonClass
             {
                 if (item == '"' || item == '\\' || item < 0x20)
                 {
-                    stringBuilder.Append(CharParaphrase(item));
+                    stringBuilder.Append(JsonString.CharParaphrase(item));
                 }
                 else
                 {
@@ -59,7 +60,7 @@ namespace LHZ.FastJson.JsonClass
         /// </summary>
         /// <param name="paraphrase">Character to escape</param>
         /// <returns>Escaped string</returns>
-        private string CharParaphrase(char paraphrase)
+        private static string CharParaphrase(char paraphrase)
         {
             if (paraphrase == '"')
                 return "\\\"";
@@ -76,7 +77,7 @@ namespace LHZ.FastJson.JsonClass
             else if (paraphrase == '\r')
                 return "\\r";
             else if (paraphrase < 0x20)
-                return "\\u" + ((int)paraphrase).ToString("x4");
+                return "\\u" + ((int)paraphrase).ToString("x4", CultureInfo.CurrentCulture);
             return paraphrase.ToString();
         }
         /// <summary>
