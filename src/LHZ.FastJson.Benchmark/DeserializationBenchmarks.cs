@@ -22,15 +22,15 @@ namespace LHZ.FastJson.Benchmark
         [GlobalSetup]
         public void Setup()
         {
-            // 使用 LHZ.FastJson 生成 JSON 字符串作为反序列化输入
-            _smallModelJson = JsonConvert.Serialize(BenchmarkData.CreateSmallModel());
-            _mediumModelJson = JsonConvert.Serialize(BenchmarkData.CreateMediumModel());
-            _largeListJson = JsonConvert.Serialize(BenchmarkData.CreateLargeList());
-            _dictionaryJson = JsonConvert.Serialize(BenchmarkData.CreateDictionary());
-            _stringWithEscapesJson = JsonConvert.Serialize(BenchmarkData.CreateStringWithEscapes());
-            _nullableWithValuesJson = JsonConvert.Serialize(BenchmarkData.CreateNullableModel_WithValues());
-            _nullableWithNullsJson = JsonConvert.Serialize(BenchmarkData.CreateNullableModel_WithNulls());
-            _enumModelJson = JsonConvert.Serialize(BenchmarkData.CreateEnumModel());
+            // 使用 Newtonsoft.Json 生成 JSON（ISO 8601 DateTime 格式），确保三个库都能解析
+            _smallModelJson = Newtonsoft.Json.JsonConvert.SerializeObject(BenchmarkData.CreateSmallModel());
+            _mediumModelJson = Newtonsoft.Json.JsonConvert.SerializeObject(BenchmarkData.CreateMediumModel());
+            _largeListJson = Newtonsoft.Json.JsonConvert.SerializeObject(BenchmarkData.CreateLargeList());
+            _dictionaryJson = Newtonsoft.Json.JsonConvert.SerializeObject(BenchmarkData.CreateDictionary());
+            _stringWithEscapesJson = Newtonsoft.Json.JsonConvert.SerializeObject(BenchmarkData.CreateStringWithEscapes());
+            _nullableWithValuesJson = Newtonsoft.Json.JsonConvert.SerializeObject(BenchmarkData.CreateNullableModel_WithValues());
+            _nullableWithNullsJson = Newtonsoft.Json.JsonConvert.SerializeObject(BenchmarkData.CreateNullableModel_WithNulls());
+            _enumModelJson = Newtonsoft.Json.JsonConvert.SerializeObject(BenchmarkData.CreateEnumModel());
         }
 
         // ──────────────── LHZ.FastJson ────────────────
