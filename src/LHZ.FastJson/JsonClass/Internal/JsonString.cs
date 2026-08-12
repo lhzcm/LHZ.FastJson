@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 using LHZ.FastJson.Enum;
 using LHZ.FastJson.Exceptions;
@@ -63,11 +64,11 @@ namespace LHZ.FastJson.JsonClass.Internal
                                     for (int i = 0; i < 4; i++)
                                     {
                                         var uchar = _value.SourceString[valueIndex++];
-                                        if (!IsHexDigit(uchar))
+                                        if (!TryHexToInt(uchar, out int hexValue))
                                         {
                                             throw new JsonReadException((valueIndex - 1), "字符位置[" + (valueIndex - 1) + "]处，Json字符串解析错误，Unicode转义字符格式错误");
                                         }
-                                        value = (value << 4) + HexToInt(uchar);
+                                        value = (value << 4) + hexValue;
                                     }
                                     curChar = (char)value;
                                 }; break;
@@ -78,23 +79,34 @@ namespace LHZ.FastJson.JsonClass.Internal
                 return new String(chars);
             }
         }
-        private static bool IsHexDigit(char value)
-        {
-            return (value >= '0' && value <= '9') ||
-                   (value >= 'a' && value <= 'f') ||
-                   (value >= 'A' && value <= 'F');
-        }
-        private static int HexToInt(char value)
+        /// <summary>
+        /// Convert hexadecimal character to integer
+        /// </summary>
+        /// <param name="value">Hexadecimal character to convert</param>
+        /// <param name="result">Output integer value</param>
+        /// <returns>True if conversion is successful, false otherwise</returns>
+        #if NET45_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        #endif
+        public static bool TryHexToInt(char value, out int result)
         {
             if (value >= '0' && value <= '9')
             {
-                return value - '0';
+                result = value - '0';
+                return true;
             }
             if (value >= 'a' && value <= 'f')
             {
-                return value - 'a' + 10;
+                result = value - 'a' + 10;
+                return true;
             }
-            return value - 'A' + 10;
+            if (value >= 'A' && value <= 'F')
+            {
+                result = value - 'A' + 10;
+                return true;
+            }
+            result = 0;
+            return false;
         }
     }
 }

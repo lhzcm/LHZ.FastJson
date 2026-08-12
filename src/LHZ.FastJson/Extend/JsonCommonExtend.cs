@@ -13,16 +13,16 @@ namespace LHZ.FastJson
     public static class JsonCommonExtend
     {
 
-        /// <summary>
-        /// Convert a JSON object to the target object
-        /// </summary>
-        /// <typeparam name="T">The target object type to convert to</typeparam>
-        /// <returns>The target object</returns>
-        public static T ToObject<T>(this IJsonObject jsonObj)
-        {
-            JsonDeserializer<T> deserializer = new JsonDeserializer<T>(jsonObj);
-            return deserializer.Deserialize();
-        }
+        // /// <summary>
+        // /// Convert a JSON object to the target object
+        // /// </summary>
+        // /// <typeparam name="T">The target object type to convert to</typeparam>
+        // /// <returns>The target object</returns>
+        // public static T ToObject<T>(this IJsonObject jsonObj)
+        // {
+        //     JsonDeserializer<T> deserializer = new JsonDeserializer<T>(jsonObj);
+        //     return deserializer.Deserialize();
+        // }
 
         /// <summary>
         /// Deserialize a JSON string into a T object

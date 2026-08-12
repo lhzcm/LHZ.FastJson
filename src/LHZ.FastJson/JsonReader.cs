@@ -19,9 +19,12 @@ namespace LHZ.FastJson
         private char* _startPoint;
         private char* _curPoint;
         private char* _endPoint;
-
+        private int _startPosition;
         private JsonClass.JsonObject _jsonObject;
-
+        /// <summary>
+        /// end read position
+        /// </summary>
+        internal int EndPosition => _jsonObject == null ? -1 : (int)(_curPoint - _startPoint);
         /// <summary>
         /// Determine if it is a JSON string
         /// </summary>
@@ -73,6 +76,24 @@ namespace LHZ.FastJson
             _jsonString = jsonString;
         }
         /// <summary>
+        /// Initialize JsonReader
+        /// </summary>
+        /// <param name="jsonString">JSON string</param>
+        /// <param name="startPosition">start read position</param>
+        public JsonReader(string jsonString, int startPosition)
+        {
+            _jsonString = jsonString;
+            if(_jsonString.Length <= startPosition)
+            {
+                throw new ArgumentException("startPosition must be smaller than jsonstring length!");
+            }
+            else if(startPosition < 0)
+            {
+                throw new ArgumentException("startPosition must be >= 0");
+            }
+            _startPosition = startPosition;
+        }
+        /// <summary>
         /// Parse string
         /// </summary>
         /// <returns>JSON object</returns>
@@ -82,7 +103,6 @@ namespace LHZ.FastJson
             {
                 return _jsonObject;
             }
-
             if (string.IsNullOrEmpty(_jsonString))
             {
                 throw new ArgumentNullException("Json解析错误，字符串为空");
@@ -91,11 +111,11 @@ namespace LHZ.FastJson
             {
                 _startPoint = point;
                 _endPoint = point + _jsonString.Length;
-                _curPoint = point;
+                _curPoint = point + _startPosition;
 
                 var jsonObject = GetJsonObject();
                 SkipWhitespace();
-                if (_curPoint != _endPoint)
+                if (_curPoint != _endPoint && _startPosition ==0)
                 {
                     int index = (int)(_curPoint - _startPoint);
                     throw new JsonReadException(index, "字符位置[" + index + "]处，Json字符串已解析完成但仍存在多余字符");
@@ -282,17 +302,30 @@ namespace LHZ.FastJson
                 MoveNext(1);
             }
         }
-        private static bool IsDigit(char value)
+        /// <summary>
+        /// Check if it's a number
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        #if NET45_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        #endif
+        public static bool IsDigit(char value)
         {
             return value >= '0' && value <= '9';
         }
-
-        private static bool IsOneToNine(char value)
+        /// <summary>
+        /// Check if it's 1 to 9
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        #if NET45_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        #endif
+        public static bool IsOneToNine(char value)
         {
             return value >= '1' && value <= '9';
         }
-
-
         /// <summary>
         /// Parse JSON Number object
         /// </summary>

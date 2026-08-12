@@ -12,29 +12,29 @@ namespace LHZ.FastJson.Json
     /// </summary>
     internal static class JsonObjectType
     {
-        private static readonly Dictionary<Type, ObjectType> _objectTypes = new Dictionary<Type, ObjectType>(Byte.MaxValue);
+        public static readonly Dictionary<Type, ObjectType> ObjectTypes = new Dictionary<Type, ObjectType>(Byte.MaxValue);
         static JsonObjectType()
         {
-            _objectTypes.Add(typeof(Boolean), ObjectType.Boolean);
-            _objectTypes.Add(typeof(Byte), ObjectType.Byte);
-            _objectTypes.Add(typeof(Char), ObjectType.Char);
-            _objectTypes.Add(typeof(Int16), ObjectType.Int16);
-            _objectTypes.Add(typeof(UInt16), ObjectType.UInt16);
-            _objectTypes.Add(typeof(Int32), ObjectType.Int32);
-            _objectTypes.Add(typeof(UInt32), ObjectType.UInt32);
-            _objectTypes.Add(typeof(Int64), ObjectType.Int64);
-            _objectTypes.Add(typeof(UInt64), ObjectType.UInt64);
-            _objectTypes.Add(typeof(Single), ObjectType.Float);
-            _objectTypes.Add(typeof(Double), ObjectType.Double);
-            _objectTypes.Add(typeof(Decimal), ObjectType.Decimal);
-            _objectTypes.Add(typeof(DateTime), ObjectType.DateTime);
-            _objectTypes.Add(typeof(String), ObjectType.String);
-            _objectTypes.Add(typeof(System.Enum), ObjectType.Enum);
-            _objectTypes.Add(typeof(IDictionary), ObjectType.Dictionary);
-            _objectTypes.Add(typeof(IEnumerable), ObjectType.Enumerable);
-            _objectTypes.Add(typeof(Object), ObjectType.Object);
-            _objectTypes.Add(typeof(IList), ObjectType.List);
-            _objectTypes.Add(typeof(Array), ObjectType.Array);
+            ObjectTypes.Add(typeof(Boolean), ObjectType.Boolean);
+            ObjectTypes.Add(typeof(Byte), ObjectType.Byte);
+            ObjectTypes.Add(typeof(Char), ObjectType.Char);
+            ObjectTypes.Add(typeof(Int16), ObjectType.Int16);
+            ObjectTypes.Add(typeof(UInt16), ObjectType.UInt16);
+            ObjectTypes.Add(typeof(Int32), ObjectType.Int32);
+            ObjectTypes.Add(typeof(UInt32), ObjectType.UInt32);
+            ObjectTypes.Add(typeof(Int64), ObjectType.Int64);
+            ObjectTypes.Add(typeof(UInt64), ObjectType.UInt64);
+            ObjectTypes.Add(typeof(Single), ObjectType.Float);
+            ObjectTypes.Add(typeof(Double), ObjectType.Double);
+            ObjectTypes.Add(typeof(Decimal), ObjectType.Decimal);
+            ObjectTypes.Add(typeof(DateTime), ObjectType.DateTime);
+            ObjectTypes.Add(typeof(String), ObjectType.String);
+            ObjectTypes.Add(typeof(System.Enum), ObjectType.Enum);
+            ObjectTypes.Add(typeof(IDictionary), ObjectType.Dictionary);
+            ObjectTypes.Add(typeof(IEnumerable), ObjectType.Enumerable);
+            ObjectTypes.Add(typeof(Object), ObjectType.Object);
+            ObjectTypes.Add(typeof(IList), ObjectType.List);
+            ObjectTypes.Add(typeof(Array), ObjectType.Array);
         }
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace LHZ.FastJson.Json
         /// </summary>
         internal static Dictionary<Type, ObjectType> GetObjectTypes()
         {
-            return _objectTypes;
+            return ObjectTypes;
         }
     }
 }

@@ -164,15 +164,7 @@ namespace LHZ.FastJson.UnitTest
         {
             var list = new ArrayList();
             list.Add(list);
-            try
-            {
-                var ret = JsonConvert.Serialize(list);
-            }
-            catch(Exception)
-            {
-                Assert.Pass();
-            }
-            Assert.Fail();
+            Assert.Throws<InvalidOperationException>(()=>JsonConvert.Serialize(list));
         }
 
         /// <summary>
@@ -268,7 +260,7 @@ namespace LHZ.FastJson.UnitTest
         [Test]
         public void DeserializeTypeMismatchThrowsException()
         {
-            Assert.Throws<JsonDeserializationException>(() => JsonConvert.Deserialize<int>("\"not a number\""));
+            Assert.Throws<JsonDirectDeserializationException>(() => JsonConvert.Deserialize<int>("\"not a number\""));
         }
 
         /// <summary>

@@ -69,7 +69,7 @@ namespace LHZ.FastJson.UnitTest
             reader = new JsonReader(str);
             var result = reader.JsonRead();
             Assert.AreEqual(result.ToString(), str);
-            
+
         }
 
         /// <summary>
@@ -239,5 +239,20 @@ namespace LHZ.FastJson.UnitTest
             Assert.IsFalse(JsonReader.IsJsonString("   ", out exception));
             Assert.IsNotNull(exception);
             Assert.IsInstanceOf<LHZ.FastJson.Exceptions.JsonReadException>(exception);
-        }    }
+        }
+        /// <summary>
+        /// 验证读取部分json字符串
+        /// </summary>
+        [Test]
+        public void PartOfJsonRead()
+        {
+            var jsonStr = "{\"Name\":\"LHZ\",\"Age\":10,\"Tags\":[{},{},{}]}";
+            var jsonObj = (new JsonReader(jsonStr, 20)).JsonRead();
+            Assert.AreEqual(jsonObj.Type, JsonType.Number);
+            Assert.AreEqual(jsonObj.Value.ToString(), "10");
+            jsonObj = (new JsonReader(jsonStr, 30)).JsonRead();
+            Assert.AreEqual(jsonObj.Type, JsonType.Array);
+            Assert.AreEqual(((JsonArray)jsonObj).Length, 3);
+        }
+    }
 }
