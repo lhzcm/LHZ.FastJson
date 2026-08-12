@@ -16,7 +16,7 @@ namespace LHZ.FastJson
         /// Initializes a new instance of the StringReader class with the specified string.
         /// </summary>
         /// <param name="content">The string to read.</param>
-        public JsonDirectReader(string content)
+        internal JsonDirectReader(string content)
         {
             Content = content ?? throw new ArgumentNullException(nameof(content));
             Position = 0;
