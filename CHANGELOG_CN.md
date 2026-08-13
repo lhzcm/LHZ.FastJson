@@ -4,6 +4,26 @@
 
 本文档记录 LHZ.FastJson 的重要变更。
 
+## 2.0.0 - 2026-08-13
+
+本版本引入全新的直读流反序列化引擎，直接从 JSON 字符串读取，无需构建中间对象树，带来显著的性能提升并支持部分 JSON 输入。
+
+### 功能
+
+- 新增基于 `JsonDirectReader` 和 `JsonDirectDeserialzerExpression` 的直读反序列化，取代原先“先解析后转换”的两阶段流程。`JsonDeserializer<T>` 现在直接从原始 JSON 字符串反序列化。
+- 反序列化支持部分 JSON 输入。
+
+### 破坏性变更
+
+- 移除 `JsonDeserializer<T>` 的 `IJsonObject` 和 `JsonReader` 构造函数，仅保留 `string` 构造函数。
+- 移除 `JsonCommonExtend.ToObject<T>()` 扩展方法。
+- 新增 `JsonDirectDeserializationException`（继承自 `JsonReadException`），用于直读反序列化错误，暴露 `JsonType` 和 `TargetType`。
+
+### 改进
+
+- `JsonPropertyName` 的哈希码现在在构造函数中即时计算，消除字典查找时的延迟哈希计算。
+- 直读反序列化现在能正确处理哈希冲突。
+
 ## 1.9.1 - 2026-08-04
 
 本版本移除废弃的 JSON 格式化系统并进行多项性能优化。

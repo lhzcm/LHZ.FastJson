@@ -39,24 +39,24 @@ Intel Core i7-9700K CPU 3.60GHz (Coffee Lake), 1 CPU, 8 logical and 8 physical c
 |    LHZFastJson v1.5.2 | 85.18 ms | 0.301 ms | 0.282 ms |
 
 # 如何安装 
-### 下面展示不同的安装方法，以安装[LHZ.FastJson 1.9.1](https://www.nuget.org/packages/LHZ.FastJson/1.9.1)版本为例
+### 下面展示不同的安装方法，以安装[LHZ.FastJson 2.0.0](https://www.nuget.org/packages/LHZ.FastJson/2.0.0)版本为例
 ### Package Manager
 ``` bash
-Install-Package LHZ.FastJson -Version 1.9.1
+Install-Package LHZ.FastJson -Version 2.0.0
 ```
 ### .NET CLI
 ``` bash
-dotnet add package LHZ.FastJson --version 1.9.1
+dotnet add package LHZ.FastJson --version 2.0.0
 ```
 
 ### package-reference
 ``` xml
-<PackageReference Include="LHZ.FastJson" Version="1.9.1" />
+<PackageReference Include="LHZ.FastJson" Version="2.0.0" />
 ```
 
 ### Paket CLI
 ``` bash
-paket add LHZ.FastJson --version 1.9.1
+paket add LHZ.FastJson --version 2.0.0
 ```
 
 # 如何使用
@@ -115,7 +115,7 @@ jsonContent.AddJsonProperty("IsRelease", JsonBoolean.True);
 jsonContent.AddJsonProperty("Exat", JsonNull.Null);
 //Add Array
 var jsonVersionArray = new JsonArray();
-jsonVersionArray.AddJsonObject(new JsonString("1.9.1"));
+jsonVersionArray.AddJsonObject(new JsonString("2.0.0"));
 jsonVersionArray.AddJsonObject(new JsonString("1.8.5"));
 jsonVersionArray.AddJsonObject(new JsonString("1.8.4"));
 jsonVersionArray.AddJsonObject(new JsonString("1.8.3"));
@@ -125,7 +125,7 @@ var json = jsonContent.ToString();
 ```
 输出
 ``` powershell
-{"Name":"LHZ.FastJson","Size":1024,"IsRelease":true,"Exat":null,"Versions":["1.9.1","1.8.5","1.8.4","1.8.3"]}
+{"Name":"LHZ.FastJson","Size":1024,"IsRelease":true,"Exat":null,"Versions":["2.0.0","1.8.5","1.8.4","1.8.3"]}
 ```
 
 ## 使用 `JsonReader` 解析 JSON

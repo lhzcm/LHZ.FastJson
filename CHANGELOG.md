@@ -4,6 +4,26 @@
 
 This document records important changes to LHZ.FastJson.
 
+## 2.0.0 - 2026-08-13
+
+This release introduces a new direct-stream deserialization engine that reads JSON strings directly without building an intermediate object tree, delivering significant performance gains and partial JSON support.
+
+### Features
+
+- Added direct-stream deserialization via `JsonDirectReader` and `JsonDirectDeserialzerExpression`, replacing the previous two-phase (parse-then-convert) pipeline. `JsonDeserializer<T>` now deserializes straight from the raw JSON string.
+- Added support for partial JSON input during deserialization.
+
+### Breaking Changes
+
+- Removed the `IJsonObject` and `JsonReader` constructors from `JsonDeserializer<T>`; only the `string` constructor remains.
+- Removed the `JsonCommonExtend.ToObject<T>()` extension method.
+- Added `JsonDirectDeserializationException` (derived from `JsonReadException`) for direct deserialization errors, exposing `JsonType` and `TargetType`.
+
+### Improvements
+
+- `JsonPropertyName` hash codes are now computed eagerly in the constructor, eliminating lazy hash computation during dictionary lookups.
+- The direct deserializer now handles hash collisions correctly.
+
 ## 1.9.1 - 2026-08-04
 
 This release removes the deprecated JSON formatting system and applies multiple performance optimizations.
