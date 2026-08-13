@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using LHZ.FastJson;
 using LHZ.FastJson.Enum;
 using LHZ.FastJson.Exceptions;
@@ -718,53 +719,42 @@ namespace LHZ.FastJson.Json
                 Expression.Constant("Json对象不为Content类型不能解析成Object类型")))));
 
             //Get writable properties and create variables for each
-            var properties = curType.GetProperties().Where(n => n.CanWrite).ToList();
+            var groups = curType.GetProperties()
+            .Where(n => n.CanWrite)
+            //Ignore Attribute
+            .Where(n => !Attribute.GetCustomAttributes(n).Any(x => x is JsonIgnoredAttribute a && (a.JsonIgnoredMethod & JsonMethods.Deserialize) == JsonMethods.Deserialize))
+            .Select(n => new KeyValuePair<JsonPropertyName, PropertyInfo>(new JsonPropertyName(n.Name), n))
+            .GroupBy(n=>n.Key.HashCode);
             var propVarMap = new Dictionary<System.Reflection.PropertyInfo, ParameterExpression>();
             List<SwitchCase> switchCases = new List<SwitchCase>();
-            foreach (var item in properties)
+            foreach(var item in groups)
             {
-                //Check if deserialization should be ignored
-                var jsonIgnored = Attribute.GetCustomAttribute(item, typeof(JsonIgnoredAttribute)) as JsonIgnoredAttribute;
-                if (jsonIgnored != null && (jsonIgnored.JsonIgnoredMethod & JsonMethods.Deserialize) == JsonMethods.Deserialize)
+                
+                Expression ifExp = null;
+                foreach(var propertie in item)
                 {
-                    continue;
-                }
-
-                var propertyValue = Expression.Variable(item.PropertyType, item.Name + "propertyValue");
-                variables.Add(propertyValue);
-                propVarMap[item] = propertyValue;
-                bindings.Add(Expression.Bind(item, propertyValue));
-
-                #region Custom property name handling
-                JsonClass.Internal.StringView jsonPropertyNameStringView = new JsonClass.Internal.StringView(JsonUtility.GetPropertyName(item));
-                var jsonPropertyName = new JsonPropertyName(jsonPropertyNameStringView, jsonPropertyNameStringView.GetHashCode());
-                #endregion
-
-                
-
-                var opEquality = typeof(JsonPropertyName).GetMethod("op_Equality");
-                var deserializerMethod = typeof(JsonDirectDeserialzerExpression<>).MakeGenericType(item.PropertyType)
+                    var propertyValue = Expression.Variable(propertie.Value.PropertyType, propertie.Value.Name + "propertyValue");
+                    variables.Add(propertyValue);
+                    propVarMap[propertie.Value] = propertyValue;
+                    bindings.Add(Expression.Bind(propertie.Value, propertyValue));
+                    var deserializerMethod = typeof(JsonDirectDeserialzerExpression<>).MakeGenericType(propertie.Value.PropertyType)
                     .GetMethod("Deserialzer", new Type[] { typeof(JsonDirectReader), typeof(Dictionary<Type, IJsonCustomConverter>) });
-
-                switchCases.Add(Expression.SwitchCase(Expression.Assign(propertyValue, Expression.Call(deserializerMethod, Expression.Property(kvp, "Value"), jsonCustomConvertersParameter)),
-                Expression.Constant(jsonPropertyName.HashCode)));
-                
-                
-                // // if (kvp.Key == jsonPropertyName) propertyValue = Deserialzer(kvp.Value, customConverters)
-                // loopBody.Add(Expression.IfThen(
-                //     Expression.Call(opEquality, Expression.Property(kvp, "Key"), Expression.Constant(jsonPropertyName)),
-                //     Expression.Assign(propertyValue, Expression.Call(deserializerMethod, Expression.Property(kvp, "Value"), jsonCustomConvertersParameter))));
+                    if(ifExp == null)
+                    {
+                        ifExp = Expression.IfThenElse(Expression.Equal(Expression.Constant(propertie.Key), Expression.Property(kvp, "Key")),
+                            Expression.Assign(propertyValue, Expression.Call(deserializerMethod, Expression.Property(kvp, "Value"), jsonCustomConvertersParameter)),
+                            Expression.Call(jsonObjectParameter, "SkipCurrentObject", EmptyArray<Type>.Value));
+                    }
+                    else
+                    {
+                        ifExp = Expression.IfThenElse(Expression.Equal(Expression.Constant(propertie.Key), Expression.Property(kvp, "Key")),
+                            Expression.Assign(propertyValue, Expression.Call(deserializerMethod, Expression.Property(kvp, "Value"), jsonCustomConvertersParameter)),
+                            ifExp);
+                    }
+                }
+                switchCases.Add(Expression.SwitchCase(ifExp,Expression.Constant(item.Key)));
             }
-            try
-            {
-                //Expression.Switch(typeof(void), Expression.Constant("SwitchValue"), null, null, cases);
-                loopBody.Add(Expression.Switch(typeof(void), Expression.Call(Expression.Property(kvp, "Key"), "GetHashCode", EmptyArray<Type>.Value), Expression.Call(jsonObjectParameter, "SkipCurrentObject", EmptyArray<Type>.Value), null, switchCases.ToArray()));
-            }
-            catch (Exception ex)
-            {
-
-            }
-            // enumerator = reader.ReadContent().GetEnumerator()
+            loopBody.Add(Expression.Switch(typeof(void), Expression.Call(Expression.Property(kvp, "Key"), "GetHashCode", EmptyArray<Type>.Value), Expression.Call(jsonObjectParameter, "SkipCurrentObject", EmptyArray<Type>.Value), null, switchCases.ToArray()));
             expres.Add(Expression.Assign(enumerator,
                 Expression.Call(
                     Expression.Call(jsonObjectParameter, typeof(JsonDirectReader).GetMethod("ReadContent")),

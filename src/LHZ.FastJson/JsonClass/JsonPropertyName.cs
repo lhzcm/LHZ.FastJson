@@ -23,19 +23,18 @@ namespace LHZ.FastJson.JsonClass
         public JsonPropertyName(string name)
         {
             Name = new StringView(name);
-            HashCode = 0;
+            HashCode = Name.GetHashCode();
         }
         internal JsonPropertyName(StringView stringView)
         {
             Name = stringView;
-            HashCode = 0;
+            HashCode = Name.GetHashCode();
         }
         internal JsonPropertyName(StringView stringView, int hashCode)
         {
             Name = stringView;
             HashCode = hashCode;
         }
-
         /// <summary>
         /// Equality operator
         /// </summary>
@@ -62,10 +61,6 @@ namespace LHZ.FastJson.JsonClass
         /// </summary>
         public override int GetHashCode()
         {
-            if(HashCode == 0)
-            {
-                HashCode = Name.GetHashCode();
-            }
             return HashCode;
         }
         /// <summary>
