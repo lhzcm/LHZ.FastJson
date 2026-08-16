@@ -4,6 +4,18 @@
 
 This document records important changes to LHZ.FastJson.
 
+## 2.0.1-pre - 2026-08-16
+
+Preview release adding a global camelCase naming configuration.
+
+### Features
+
+- Added the `JsonConvertConfig` global configuration class.
+- Added `JsonConvertConfig.UseCamelCase`: when enabled, property names are converted to camelCase during serialization (e.g. `UserName` -> `userName`, `URLValue` -> `urlValue`) and camelCase names are matched automatically during deserialization.
+- Names configured via the `JsonProperty` attribute always take precedence over camelCase conversion.
+- Compiled serialization/deserialization expression caches are invalidated and recompiled automatically when the configuration changes.
+- Fixed the direct deserialization engine (`JsonDirectDeserialzerExpression`) ignoring the `JsonProperty` attribute; it now behaves consistently with serialization.
+
 ## 2.0.0 - 2026-08-13
 
 This release introduces a new direct-stream deserialization engine that reads JSON strings directly without building an intermediate object tree, delivering significant performance gains and partial JSON support.

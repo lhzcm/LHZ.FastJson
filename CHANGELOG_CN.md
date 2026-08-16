@@ -4,6 +4,18 @@
 
 本文档记录 LHZ.FastJson 的重要变更。
 
+## 2.0.1-pre - 2026-08-16
+
+预览版本，新增全局 Camel-Case 命名配置。
+
+### 功能
+
+- 新增 `JsonConvertConfig` 全局配置类。
+- 新增 `JsonConvertConfig.UseCamelCase` 开关：开启后序列化时属性名自动转换为 camelCase（如 `UserName` -> `userName`，`URLValue` -> `urlValue`），反序列化时自动匹配 camelCase 属性名。
+- `JsonProperty` 特性指定的名称始终优先于 Camel-Case 转换。
+- 修改配置后，已编译的序列化/反序列化表达式缓存自动失效并重新编译。
+- 修复直读反序列化引擎（`JsonDirectDeserialzerExpression`）忽略 `JsonProperty` 特性的缺陷，现在与序列化端行为一致。
+
 ## 2.0.0 - 2026-08-13
 
 本版本引入全新的直读流反序列化引擎，直接从 JSON 字符串读取，无需构建中间对象树，带来显著的性能提升并支持部分 JSON 输入。

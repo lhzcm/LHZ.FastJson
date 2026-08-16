@@ -3,13 +3,13 @@
     <TARGETFRAMEWORKS>NET40;NET45;NET46;NETSTANDARD2.0;NET5;NET6</TARGETFRAMEWORKS>
     <!--<TargetFramework>NETSTANDARD2.0</TargetFramework>-->
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>2.0.0</Version>
+    <Version>2.0.1-pre</Version>
     <Authors>LHZ</Authors>
     <Description>轻巧便利的Json序列化和反序列化工具Lightweight and convenient tool for JSON serialization and deserialization</Description>
     <PackageIcon>logo.png</PackageIcon>
     <RepositoryType>Git</RepositoryType>
     <RepositoryUrl>https://github.com/lhzcm/LHZ.FastJson</RepositoryUrl>
-    <PackageReleaseNotes>2.0.0：直读流反序列化引擎，显著性能提升与破坏性变更。</PackageReleaseNotes>
+    <PackageReleaseNotes>2.0.1-pre：新增 Camel-Case 命名配置（JsonConvertConfig.UseCamelCase）。</PackageReleaseNotes>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <PackageReadmeFile>README.md</PackageReadmeFile>
