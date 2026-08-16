@@ -26,7 +26,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'" />
   <ItemGroup>
     <None Include="..\..\README.md">
-      <Pack>True</Pack>
+      <Pack>True</Pack> 
       <PackagePath>\</PackagePath>
     </None>
     <None Include="..\..\README_CN.md">

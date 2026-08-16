@@ -4,41 +4,6 @@ A lightweight and high-performance JSON serialization and deserialization librar
 
 [中文](README_CN.md) | [Changelog](CHANGELOG.md)
 
-## Serialization Performance
-
-LHZ.FastJson has been re-architected with a highly optimized serialization engine. The table below compares serialization performance across LHZ.FastJson, Newtonsoft.Json, and System.Text.Json:
-
-``` ini
-BenchmarkDotNet=v0.13.1, OS=Windows 10.0.19044.1706 (21H2)
-Intel Core i7-9700K CPU 3.60GHz (Coffee Lake), 1 CPU, 8 logical and 8 physical cores
-.NET SDK=6.0.201
-  [Host]     : .NET 6.0.3 (6.0.322.12309), X64 RyuJIT
-  DefaultJob : .NET 6.0.3 (6.0.322.12309), X64 RyuJIT
-```
-
-|             Method  |      Mean |     Error |    StdDev |
-|-------------------- |----------:|----------:|----------:|
-|       LHZ.FastJson  |  7.014 μs | 0.0298 μs | 0.0279 μs |
-|       Newtonsoft.Json | 18.943 μs | 0.1786 μs | 0.1671 μs |
-|    System.Text.Json | 10.410 μs | 0.0499 μs | 0.0467 μs |
-
-## Deserialization Performance
-
-LHZ.FastJson has also been re-architected for deserialization, achieving nearly **2x** performance improvement over versions prior to 1.6.0:
-
-``` ini
-BenchmarkDotNet=v0.13.1, OS=Windows 10.0.19044.1889 (21H2)
-Intel Core i7-9700K CPU 3.60GHz (Coffee Lake), 1 CPU, 8 logical and 8 physical cores
-.NET SDK=6.0.302
-  [Host]     : .NET 6.0.7 (6.0.722.32202), X64 RyuJIT
-  DefaultJob : .NET 6.0.7 (6.0.722.32202), X64 RyuJIT
-```
-
-|              Method |     Mean |    Error |   StdDev |
-|-------------------- |---------:|---------:|---------:|
-| LHZFastJson v1.6.0  | 43.91 ms | 0.181 ms | 0.170 ms |
-| LHZFastJson v1.5.2  | 85.18 ms | 0.301 ms | 0.282 ms |
-
 ## Installation
 
 The following examples show different installation methods using [LHZ.FastJson 2.0.0](https://www.nuget.org/packages/LHZ.FastJson/2.0.0) as an example:
@@ -146,7 +111,7 @@ OutPut
 
 ### JSON Parsing with `JsonReader`
 
-`JsonReader` provides low-level, zero-allocation JSON parsing with `unsafe` pointer operations. It parses a JSON string into an `IJsonObject` tree that you can traverse dynamically.
+`JsonReader` parses a JSON string into an `IJsonObject` tree that you can traverse dynamically.
 
 #### Basic Parsing
 
@@ -197,3 +162,38 @@ if (!isJson)
 | `123` | `JsonNumber` | `IConvertible` (StringView) |
 | `true` / `false` | `JsonBoolean` | `bool` |
 | `null` | `JsonNull` | `null` |
+
+## Serialization Performance
+
+LHZ.FastJson has been re-architected with a highly optimized serialization engine. The table below compares serialization performance across LHZ.FastJson, Newtonsoft.Json, and System.Text.Json:
+
+``` ini
+BenchmarkDotNet=v0.13.1, OS=Windows 10.0.19044.1706 (21H2)
+Intel Core i7-9700K CPU 3.60GHz (Coffee Lake), 1 CPU, 8 logical and 8 physical cores
+.NET SDK=6.0.201
+  [Host]     : .NET 6.0.3 (6.0.322.12309), X64 RyuJIT
+  DefaultJob : .NET 6.0.3 (6.0.322.12309), X64 RyuJIT
+```
+
+|             Method  |      Mean |     Error |    StdDev |
+|-------------------- |----------:|----------:|----------:|
+|       LHZ.FastJson  |  7.014 μs | 0.0298 μs | 0.0279 μs |
+|       Newtonsoft.Json | 18.943 μs | 0.1786 μs | 0.1671 μs |
+|    System.Text.Json | 10.410 μs | 0.0499 μs | 0.0467 μs |
+
+## Deserialization Performance
+
+LHZ.FastJson has also been re-architected for deserialization, achieving nearly **2x** performance improvement over versions prior to 1.6.0:
+
+``` ini
+BenchmarkDotNet=v0.13.1, OS=Windows 10.0.19044.1889 (21H2)
+Intel Core i7-9700K CPU 3.60GHz (Coffee Lake), 1 CPU, 8 logical and 8 physical cores
+.NET SDK=6.0.302
+  [Host]     : .NET 6.0.7 (6.0.722.32202), X64 RyuJIT
+  DefaultJob : .NET 6.0.7 (6.0.722.32202), X64 RyuJIT
+```
+
+|              Method |     Mean |    Error |   StdDev |
+|-------------------- |---------:|---------:|---------:|
+| LHZFastJson v1.6.0  | 43.91 ms | 0.181 ms | 0.170 ms |
+| LHZFastJson v1.5.2  | 85.18 ms | 0.301 ms | 0.282 ms |

@@ -156,10 +156,52 @@ namespace LHZ.FastJson.UnitTest
         }
 
         /// <summary>
+        /// 已知缺陷回归测试（当前失败）：反序列化时跳过未知的数组属性会抛出异常。
+        /// 缺陷位置：JsonDirectReader.SkipCurrentObject 的 '[' 分支错误调用了 ReadContent()（对象解析器），
+        /// 遇到 '[' 时走到 ReadJsonPropertyName 并抛出 JsonReadException("解析属性名错误")。
+        /// 期望行为：与未知的对象属性一致，数组应被正常跳过、反序列化成功。
+        /// </summary>
+        [Test]
+        public void DeserializeSkipsUnknownArrayProperty()
+        {
+            var value = JsonConvert.Deserialize<SinglePropertyClass>("{\"A\":1,\"B\":[1,2,3]}");
+
+            Assert.AreEqual(1, value.A);
+        }
+
+        /// <summary>
+        /// 已知缺陷回归测试（当前失败）：反序列化时跳过未知的嵌套数组属性（数组套数组/对象）会抛出异常。
+        /// 缺陷位置：同 DeserializeSkipsUnknownArrayProperty，JsonDirectReader.SkipCurrentObject 的 '[' 分支。
+        /// </summary>
+        [Test]
+        public void DeserializeSkipsUnknownNestedArrayProperty()
+        {
+            var value = JsonConvert.Deserialize<SinglePropertyClass>("{\"A\":1,\"B\":[[1],[2,3],{\"x\":4}]}");
+
+            Assert.AreEqual(1, value.A);
+        }
+
+        /// <summary>
+        /// 已知缺陷回归测试（当前失败）：直接反序列化遇到截断/非法的输入时抛出裸 IndexOutOfRangeException，
+        /// 而不是与 JsonReader 一致的 JsonReadException。
+        /// 缺陷位置：JsonDirectReader 的 JsonType getter、ReadJsonPropertyName、ReadContent/ReadArray
+        /// 缺少边界检查（越界检查位于索引访问之后），未闭合的属性名/对象/数组以及空字符串均会越界。
+        /// 期望行为：抛出携带位置信息的 JsonReadException。
+        /// </summary>
+        [Test]
+        public void DeserializeTruncatedInputThrowsJsonReadException()
+        {
+            foreach (var json in new[] { "", "{\"abc", "{\"A\":1", "{\"A\":1,\"B\":" })
+            {
+                Assert.Throws<JsonReadException>(() => JsonConvert.Deserialize<SinglePropertyClass>(json), json);
+            }
+            Assert.Throws<JsonReadException>(() => JsonConvert.Deserialize<int[]>("[1,2"), "[1,2");
+        }
+
+        /// <summary>
         /// 验证根集合自引用应抛出异常而不是递归。
         /// </summary>
         [Test]
-        [Explicit("Enable after root collection circular reference detection is implemented; current behavior can terminate the test process with StackOverflowException.")]
         public void SerializeSelfReferencingRootCollectionThrowsInsteadOfRecursing()
         {
             var list = new ArrayList();
@@ -312,6 +354,14 @@ namespace LHZ.FastJson.UnitTest
         public class NullablePropertyClass
         {
             public int? Count { get; set; }
+        }
+
+        /// <summary>
+        /// 只声明了 A 属性的模型，用于验证反序列化时未知属性（如数组 B）的跳过行为。
+        /// </summary>
+        public class SinglePropertyClass
+        {
+            public int A { get; set; }
         }
 
         public class DuplicatePropertyNameClass

@@ -3,41 +3,6 @@
 
 [English](README.md) | [更新日志](CHANGELOG_CN.md)
 
-## 序列化性能
-LHZ.FastJson重构了序列化方法，拥有极高的序列化性能，下表为LHZ.FastJson、NewtonJson和System.Text.Json的序列化性能测试
-``` ini
-
-BenchmarkDotNet=v0.13.1, OS=Windows 10.0.19044.1706 (21H2)
-Intel Core i7-9700K CPU 3.60GHz (Coffee Lake), 1 CPU, 8 logical and 8 physical cores
-.NET SDK=6.0.201
-  [Host]     : .NET 6.0.3 (6.0.322.12309), X64 RyuJIT
-  DefaultJob : .NET 6.0.3 (6.0.322.12309), X64 RyuJIT
-
-
-```
-|             Method |      Mean |     Error |    StdDev |
-|------------------- |----------:|----------:|----------:|
-|    LHZ.FastJson |  7.014 μs | 0.0298 μs | 0.0279 μs |
-|     NewtonJson | 18.943 μs | 0.1786 μs | 0.1671 μs |
-| System.Text.Json | 10.410 μs | 0.0499 μs | 0.0467 μs |
-
-## 反序列化性能
-LHZ.FastJson重构了反序列化方法，相比1.6.0之前的版本有接近2倍的反序列化性能提升
-``` ini
-
-BenchmarkDotNet=v0.13.1, OS=Windows 10.0.19044.1889 (21H2)
-Intel Core i7-9700K CPU 3.60GHz (Coffee Lake), 1 CPU, 8 logical and 8 physical cores
-.NET SDK=6.0.302
-  [Host]     : .NET 6.0.7 (6.0.722.32202), X64 RyuJIT
-  DefaultJob : .NET 6.0.7 (6.0.722.32202), X64 RyuJIT
-
-
-```
-|             Method |     Mean |    Error |   StdDev |
-|------------------- |---------:|---------:|---------:|
-|    LHZFastJson v1.6.0 | 43.91 ms | 0.181 ms | 0.170 ms |
-|    LHZFastJson v1.5.2 | 85.18 ms | 0.301 ms | 0.282 ms |
-
 # 如何安装 
 ### 下面展示不同的安装方法，以安装[LHZ.FastJson 2.0.0](https://www.nuget.org/packages/LHZ.FastJson/2.0.0)版本为例
 ### Package Manager
@@ -60,9 +25,9 @@ paket add LHZ.FastJson --version 2.0.0
 ```
 
 # 如何使用
-## 使用LHZ.FastJson进行序列�?
-### 序列化代码示�?
-``` cshap
+## 使用LHZ.FastJson进行序列化
+### 序列化代码示例
+``` csharp
 Student student = new Student
 {
     NO = 1,
@@ -84,7 +49,7 @@ PS C:\Users\admin\source\repos\LHZ.FastJson\LHZ.FastJson.Test> dotnet run
 
 ## 使用LHZ.FastJson进行反序列化
 ### 反序列化代码示例
-``` cshap
+``` csharp
 string str = "{\"NO\":1,\"studentName\":\"lhz\",\"Age\":18,\"Brithday\":\"2000/1/1 0:00:00\"}";
 
 Student student = JsonConvert.Deserialize<Student>(str);
@@ -98,9 +63,9 @@ PS C:\Users\admin\source\repos\LHZ.FastJson\LHZ.FastJson.Test> dotnet run
 NO:1,Name:lhz,Age:18,Brithday:2000-1-1
 ```
 
-### 手动构建 JSON �?
+### 手动构建 JSON 树
 
-除了从字符串解析 JSON，还可以直接使用 `JsonContent`、`JsonArray`、`JsonString`、`JsonNumber`、`JsonBoolean` �?`JsonNull` 类手动构�?JSON 树：
+除了从字符串解析 JSON，还可以直接使用 `JsonContent`、`JsonArray`、`JsonString`、`JsonNumber`、`JsonBoolean` 和 `JsonNull` 类手动构建 JSON 树：
 
 ``` csharp
 //Object
@@ -130,7 +95,7 @@ var json = jsonContent.ToString();
 
 ## 使用 `JsonReader` 解析 JSON
 
-`JsonReader` 提供基于 `unsafe` 指针的零分配 JSON 解析。它�?JSON 字符串解析为 `IJsonObject` 树，支持动态遍历�?
+`JsonReader`它将 JSON 字符串解析为 `IJsonObject` 树，支持动态遍历。
 
 ### 基本解析
 
@@ -148,7 +113,7 @@ Console.WriteLine(obj["age"].Value);     // 25
 Console.WriteLine(obj["items"][0].Value); // 1
 ```
 
-### 验证 JSON 有效�?
+### 验证 JSON 有效性
 
 ``` csharp
 string json = @"{""key"":""value""}";
@@ -161,7 +126,7 @@ var reader2 = new JsonReader(invalidJson);
 bool isValid2 = reader2.IsValidJson; // false
 ```
 
-### 静态验�?
+### 静态验证
 
 ``` csharp
 bool isJson = JsonReader.IsJsonString(jsonString, out Exception exception);
@@ -173,7 +138,7 @@ if (!isJson)
 
 ### 解析结果类型映射
 
-| JSON �?| `IJsonObject` 类型 | `.Value` 类型 |
+| JSON 类型 | `IJsonObject` 类型 | `.Value` 类型 |
 |------------|--------------------|---------------|
 | `{"a":1}` | `JsonContent` | `Dictionary<JsonPropertyName, IJsonObject>` |
 | `[1,2]` | `JsonArray` | `List<IJsonObject>` |
@@ -181,3 +146,47 @@ if (!isJson)
 | `123` | `JsonNumber` | `IConvertible` (StringView) |
 | `true` / `false` | `JsonBoolean` | `bool` |
 | `null` | `JsonNull` | `null` |
+
+## 序列化性能
+
+LHZ.FastJson 重构了序列化方法，拥有极高的序列化性能。下表为 LHZ.FastJson、Newtonsoft.Json 和 System.Text.Json 的序列化性能测试（单位：ns，数值越低越好）：
+
+``` ini
+BenchmarkDotNet=v0.15.8, OS=Windows 10 (10.0.19045.6466/22H2/2022Update)
+Intel Core i7-9700K CPU 3.60GHz (Coffee Lake), 1 CPU, 8 logical and 8 physical cores
+  [Host]     : .NET Framework 4.8.1 (4.8.9310.0), X64 RyuJIT VectorSize=256
+  DefaultJob : .NET Framework 4.8.1 (4.8.9310.0), X64 RyuJIT VectorSize=256
+```
+
+|                 场景 | LHZ.FastJson | Newtonsoft.Json | System.Text.Json |
+|--------------------- |-------------:|----------------:|-----------------:|
+|              小对象   |     766.0 ns |        788.1 ns |        689.5 ns |
+|             中等对象  |   3,671.4 ns |      3,829.3 ns |      3,512.5 ns |
+|       大列表（100 项）|  69,502.8 ns |     57,050.7 ns |     56,036.1 ns |
+|        字典（10 项）  |   1,503.1 ns |      1,428.7 ns |      1,307.1 ns |
+|    可空类型（全 null）|     412.7 ns |        782.3 ns |        613.7 ns |
+|      可空类型（有值） |   1,490.4 ns |      1,425.9 ns |      1,227.5 ns |
+|              枚举     |     368.6 ns |        617.2 ns |        516.1 ns |
+|          转义字符串   |     457.9 ns |        901.5 ns |        839.4 ns |
+
+## 反序列化性能
+
+下表为 LHZ.FastJson、Newtonsoft.Json 和 System.Text.Json 的反序列化性能测试（单位：ns，数值越低越好）：
+
+``` ini
+BenchmarkDotNet=v0.15.8, OS=Windows 10 (10.0.19045.6466/22H2/2022Update)
+Intel Core i7-9700K CPU 3.60GHz (Coffee Lake), 1 CPU, 8 logical and 8 physical cores
+  [Host]     : .NET Framework 4.8.1 (4.8.9310.0), X64 RyuJIT VectorSize=256
+  DefaultJob : .NET Framework 4.8.1 (4.8.9310.0), X64 RyuJIT VectorSize=256
+```
+
+|                 场景 | LHZ.FastJson | Newtonsoft.Json | System.Text.Json |
+|--------------------- |-------------:|----------------:|-----------------:|
+|              小对象   |   1,086.4 ns |      1,296.7 ns |        982.2 ns |
+|             中等对象  |   4,359.8 ns |      5,502.5 ns |      4,945.0 ns |
+|       大列表（100 项）| 108,993.4 ns |     96,139.6 ns |     97,247.1 ns |
+|        字典（10 项）  |   1,976.6 ns |      2,680.6 ns |      3,206.0 ns |
+|    可空类型（全 null）|     469.3 ns |      1,272.3 ns |        990.5 ns |
+|      可空类型（有值） |   1,345.8 ns |      1,874.2 ns |      1,406.9 ns |
+|              枚举     |     539.6 ns |      1,215.9 ns |        712.4 ns |
+|          转义字符串   |     498.4 ns |      1,012.4 ns |        949.4 ns |

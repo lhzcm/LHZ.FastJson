@@ -18,9 +18,13 @@ namespace LHZ.FastJson
         /// <param name="content">The string to read.</param>
         internal JsonDirectReader(string content)
         {
-            Content = content ?? throw new ArgumentNullException(nameof(content));
-            Position = 0;
+            if(string.IsNullOrEmpty(content))
+            {
+                throw new JsonReadException(0, "json string must be not empty or null", new ArgumentNullException(nameof(content)));
+            }
+            Content =  content;
             Length = content.Length;
+            SkipWhitespace();
         }
         /// <summary>
         /// Gets the content of the string being read.
@@ -39,7 +43,10 @@ namespace LHZ.FastJson
         {
             get
             {
-                SkipWhitespace();
+                if(Position >= Length)
+                {
+                    throw new JsonReadException(Position - 1, "The JSON string didn’t close properly!");
+                }
                 var currentChar = Content[Position];
                 switch (currentChar)
                 {
@@ -66,18 +73,6 @@ namespace LHZ.FastJson
             }
         }
         /// <summary>
-        /// Reads the next character from the string and advances the position by one character.
-        /// </summary>
-        /// <returns>The next character in the string.</returns>
-        /// <exception cref="InvalidOperationException"></exception>
-#if NET45_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        #endif
-        public char Read()
-        {
-            return Content[Position++];
-        }
-        /// <summary>
         /// inscrease the specified number of characters in the string and advances the position accordingly.
         /// </summary>
         /// <param name="count">The number of characters to inscrease.</param>
@@ -89,14 +84,35 @@ namespace LHZ.FastJson
         {
             if (Position + count > Length)
             {
-                throw new InvalidOperationException("End of string reached.");
+                throw new JsonReadException(Position, "out of string length", new InvalidOperationException("End of string reached."));
             }
             Position += count;
         }
         /// <summary>
-        /// Gets the current character in the string without advancing the position.
+        /// inscrease the specified number of characters in the string and advances the position accordingly.
+        /// and
+        /// Skips whitespace characters in the string and advances the position accordingly.
         /// </summary>
-        public char CurrentChar => Content[Position]; 
+        /// <param name="count">The number of characters to inscrease.</param>
+        /// <exception cref="InvalidOperationException"></exception>
+        #if NET45_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        #endif
+        private void MoveNextAndSkipWhitespace(int count)
+        {
+            if (Position + count > Length)
+            {
+                throw new InvalidOperationException("End of string reached.");
+            }
+            Position += count;
+            if(Position >= Length)
+                return;
+            var curChar = Content[Position];
+            while ((curChar == ' ' || curChar == '\r' || curChar == '\n' || curChar == '\t') && Position < (Length - 1))
+            {
+                curChar = Content[++Position];
+            }
+        }
         /// <summary>
         /// Skips whitespace characters in the string and advances the position accordingly.
         /// </summary>
@@ -108,7 +124,7 @@ namespace LHZ.FastJson
             if(Position >= Length)
                 return;
             var curChar = Content[Position];
-            while (Position < (Length - 1) && (curChar == ' ' || curChar == '\r' || curChar == '\n' || curChar == '\t'))
+            while ((curChar == ' ' || curChar == '\r' || curChar == '\n' || curChar == '\t') && Position < (Length - 1))
             {
                 curChar = Content[++Position];
             }
@@ -123,7 +139,7 @@ namespace LHZ.FastJson
         #endif
         public JsonPropertyName ReadJsonPropertyName()
         {
-            if (CurrentChar != '"')
+            if (Content[Position] != '"')
             {
                 int index = Position;
                 throw new JsonReadException(index, "字符位置[" + index + "]处，Json字符串解析属性名错误");
@@ -131,13 +147,9 @@ namespace LHZ.FastJson
             Position++;
             int startPosition = Position;
             uint hash = 5381;
-            while (true)
+            while (Position < Length)
             {
                 var curChar = Content[Position];
-                if (Position >= Length)
-                {
-                    throw new JsonReadException(Position, "字符位置[" + Position + "]处，Json字符串解析错误，字符串未闭合");
-                }
                 if (curChar < 0x20)
                 {
                     int curIndex = Position;
@@ -150,18 +162,18 @@ namespace LHZ.FastJson
                     {
                         throw new JsonReadException(startPosition, "字符位置[" + startPosition + "]处，Json字符串解析错误，属性名不能为空");
                     }
-                    Position++;
-                    SkipWhitespace();
+                    MoveNextAndSkipWhitespace(1);
                     if(Content[Position] != ':')
                     {
                         throw new JsonReadException(Position, "字符位置[" + Position + "]处，期望出现':'但是出现了意外字符'"+Content[Position]+"'");
                     }
-                    MoveNext(1);
+                    MoveNextAndSkipWhitespace(1);
                     return new JsonPropertyName(new StringView(Content, startPosition, length), (int)hash);
                 }
                 hash = (hash << 5) + hash + curChar;
                 Position++;
             }
+            throw new JsonReadException(Position, "字符位置[" + Position + "]处，Json字符串解析错误，字符串未闭合");
         }
         #if NET45_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -170,16 +182,31 @@ namespace LHZ.FastJson
         {
             while(true)
             {
-                SkipWhitespace();
-                switch(Content[Position])
+                if (Position >= Length)
                 {
-                    case '{' : MoveNext(1); continue;
-                    case ',' : MoveNext(1); break;
-                    case '}' : MoveNext(1); SkipWhitespace(); yield break;
+                    throw new JsonReadException(Position, "字符位置[" + Position + "]处，Json字符串解析错误，字符串未闭合");
                 }
-                SkipWhitespace();
+                switch (Content[Position])
+                {
+                    case '{':
+                        {
+                            MoveNextAndSkipWhitespace(1);
+                            if (Position >= Length)
+                            {
+                                throw new JsonReadException(Position, "字符位置[" + Position + "]处，Json字符串解析错误，字符串未闭合");
+                            }
+                            if(Content[Position] == '}')
+                            {
+                                MoveNextAndSkipWhitespace(1);
+                                yield break;
+                            }
+                            break;
+                        }
+                    case ',' : MoveNextAndSkipWhitespace(1); break;
+                    case '}' : MoveNextAndSkipWhitespace(1);yield break;
+                    default: throw new JsonReadException(Position, "字符位置[" + Position + "]处，Json字符串解析错误，出现异常字符'" + Content[Position] + "'");
+                }
                 var propertyName = ReadJsonPropertyName();
-                SkipWhitespace();
                 yield return new KeyValuePair<JsonPropertyName, JsonDirectReader>(propertyName, this);
             }
         }
@@ -190,14 +217,30 @@ namespace LHZ.FastJson
         {
             while(true)
             {
-                SkipWhitespace();
+                if (Position >= Length)
+                {
+                    throw new JsonReadException(Position, "字符位置[" + Position + "]处，Json字符串解析错误，字符串未闭合");
+                }
                 switch(Content[Position])
                 {
-                    case '[' : MoveNext(1); continue;
-                    case ',' : MoveNext(1); break;
-                    case ']' : MoveNext(1); SkipWhitespace(); yield break;
+                    case '[' :  
+                    {
+                            MoveNextAndSkipWhitespace(1);
+                            if (Position >= Length)
+                            {
+                                throw new JsonReadException(Position, "字符位置[" + Position + "]处，Json字符串解析错误，字符串未闭合");
+                            }
+                            if(Content[Position] == ']')
+                            {
+                                MoveNextAndSkipWhitespace(1);
+                                yield break;
+                            }
+                            break;
+                        }
+                    case ',' : MoveNextAndSkipWhitespace(1); break;
+                    case ']' : MoveNextAndSkipWhitespace(1); yield break;
+                    default: throw new JsonReadException(Position, "字符位置[" + Position + "]处，Json字符串解析错误，出现异常字符'" + Content[Position] + "'");
                 }
-                SkipWhitespace();
                 yield return this;
             }
         }
@@ -211,20 +254,15 @@ namespace LHZ.FastJson
         #endif
         public string ReadString()
         {
-            if (CurrentChar != '"')
+            if (Content[Position] != '"')
             {
                 throw new JsonReadException(Position, "字符位置[" + Position + "]处，Json字符串解析string错误");
             }
             MoveNext(1);
             var startPosition = Position;
             StringBuilder stringBuilder = null;
-            while (true)
+            while (Position < Length)
             {
-                if (Position >= Length)
-                {
-                    int curIndex = Position;
-                    throw new JsonReadException(curIndex, "字符位置[" + curIndex + "]处，Json字符串解析错误，字符串未闭合");
-                }
                 char current = Content[Position];
                 if (current == '"')
                 {
@@ -286,8 +324,9 @@ namespace LHZ.FastJson
                     startPosition = Position;
                     continue;
                 }
-                MoveNext(1);
+                Position++;
             }
+            throw new JsonReadException(Position, "字符位置[" + Position + "]处，Json字符串解析错误，字符串未闭合");
         }
         /// <summary>
         /// Read JSON Number object
@@ -301,16 +340,14 @@ namespace LHZ.FastJson
             int startPosition = Position;
             if (Content[Position] == '-')
             {
-                MoveNext(1);
-                if (Position >= Length || !JsonReader.IsDigit(Content[Position]))
+                if (++Position >= Length || !JsonReader.IsDigit(Content[Position]))
                 {
                     throw new JsonReadException(Position, "字符位置[" + Position + "]处，Json字符串解析错误，负号后缺少数字，解析number出错");
                 }
             }
             if (Content[Position] == '0')
             {
-                MoveNext(1);
-                if (Position < Length && JsonReader.IsDigit(Content[Position]))
+                if (++Position < Length && JsonReader.IsDigit(Content[Position]))
                 {
                     throw new JsonReadException(Position, "字符位置[" + Position + "]处，Json字符串解析错误，number不能包含前导零");
                 }
@@ -319,7 +356,7 @@ namespace LHZ.FastJson
             {
                 while (Position < Length && JsonReader.IsDigit(Content[Position]))
                 {
-                    MoveNext(1);
+                    Position++;
                 }
             }
             else
@@ -328,21 +365,18 @@ namespace LHZ.FastJson
             }
             if (Position < Length && Content[Position] == '.')
             {
-                MoveNext(1);
-                if (Position >= Length || !JsonReader.IsDigit(Content[Position]))
+                if (++Position >= Length || !JsonReader.IsDigit(Content[Position]))
                 {
                     throw new JsonReadException(Position, "字符位置[" + Position + "]处，Json字符串解析错误，小数点后缺少数字，解析number出错");
                 }
                 while (Position < Length && JsonReader.IsDigit(Content[Position]))
                 {
-                    MoveNext(1);
+                    Position++;
                 }
             }
-
             if (Position < Length && (Content[Position] == 'e' || Content[Position] == 'E'))
             {
-                MoveNext(1);
-                if (Position < Length && (Content[Position] == '+' || Content[Position] == '-'))
+                if (++Position < Length && (Content[Position] == '+' || Content[Position] == '-'))
                 {
                     MoveNext(1);
                 }
@@ -352,7 +386,7 @@ namespace LHZ.FastJson
                 }
                 while (Position < Length && JsonReader.IsDigit(Content[Position]))
                 {
-                    MoveNext(1);
+                    Position++;
                 }
             }
             return new  JsonClass.Internal.StringView(Content, startPosition, (int)(Position - startPosition));
@@ -409,6 +443,10 @@ namespace LHZ.FastJson
         #endif
         internal void SkipCurrentObject()
         {
+            if (Position >= Length)
+            {
+                throw new JsonReadException(Position, "字符位置[" + Position + "]处，Json字符串解析错误，字符串未闭合");
+            }
             switch (Content[Position])
             {
                 case '{':
@@ -435,9 +473,9 @@ namespace LHZ.FastJson
                 case 'n': ReadNull<object>(); break;
                 case '[':
                     {
-                        foreach (var item in ReadContent())
+                        foreach (var item in ReadArray())
                         {
-                            item.Value.SkipCurrentObject();
+                            item.SkipCurrentObject();
                         }
                         break;
                     }
@@ -446,7 +484,7 @@ namespace LHZ.FastJson
                 default: throw new JsonReadException(Position, "字符位置[" + Position + "]处，解析错误，未知Json类型");
             }
         }
-#if NET45_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+        #if NET45_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         #endif
         public JsonObject ReadAsJsonObject()
@@ -454,7 +492,9 @@ namespace LHZ.FastJson
             var reader = new JsonReader(Content, Position);
             var obj = reader.JsonRead();
             Position = reader.EndPosition;
+            SkipWhitespace();
             return obj;
         }
+        public char CurrentChar => Content[Position];
     }
 }

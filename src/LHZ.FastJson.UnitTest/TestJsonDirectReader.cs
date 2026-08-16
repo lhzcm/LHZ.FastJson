@@ -90,30 +90,6 @@ public class TestJsonDirectReader
     {
         Assert.Throws<TargetInvocationException>(() => CtorWithString.Invoke(new object[] { null }));
     }
-
-    /// <summary>
-    /// Verify IsReadEnd returns true when Position reaches Length.
-    /// </summary>
-    [Test]
-    public void IsReadEnd_ReturnsTrue_WhenPositionReachesLength()
-    {
-        var reader = CreateReader("1");
-        Invoke<char>(reader, "Read"); // advance past '1'
-        Assert.IsTrue(GetProp<bool>(reader, "IsReadEnd"));
-    }
-
-    /// <summary>
-    /// Verify CurrentChar returns the character at the current Position.
-    /// </summary>
-    [Test]
-    public void CurrentChar_ReturnsCharAtPosition()
-    {
-        var reader = CreateReader("abc");
-        Assert.AreEqual('a', GetProp<char>(reader, "CurrentChar"));
-        Invoke<char>(reader, "Read");
-        Assert.AreEqual('b', GetProp<char>(reader, "CurrentChar"));
-    }
-
     #endregion
 
     #region JsonType Detection
@@ -143,23 +119,6 @@ public class TestJsonDirectReader
         Assert.AreEqual(JsonType.String, GetProp<JsonType>(CreateReader("  \t\r\n\"x\""), "JsonType"));
         Assert.AreEqual(JsonType.Number, GetProp<JsonType>(CreateReader("  123"), "JsonType"));
         Assert.AreEqual(JsonType.Content, GetProp<JsonType>(CreateReader("  {}"), "JsonType"));
-    }
-
-    #endregion
-
-    #region Read & MoveNext
-
-    /// <summary>
-    /// Verify Read() advances Position and returns the character.
-    /// </summary>
-    [Test]
-    public void Read_AdvancesPositionAndReturnsChar()
-    {
-        var reader = CreateReader("xyz");
-        Assert.AreEqual('x', Invoke<char>(reader, "Read"));
-        Assert.AreEqual(1, GetProp<int>(reader, "Position"));
-        Assert.AreEqual('y', Invoke<char>(reader, "Read"));
-        Assert.AreEqual(2, GetProp<int>(reader, "Position"));
     }
 
     #endregion

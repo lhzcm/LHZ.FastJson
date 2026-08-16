@@ -20,6 +20,16 @@ namespace LHZ.FastJson.Exceptions
             this._position = position;
         }
         /// <summary>
+        /// Initialize JSON read exception
+        /// </summary>
+        /// <param name="position">Exception position</param>
+        /// <param name="msg">Exception message</param>
+        /// <param name="innerExpcetion">Inner Exception</param>
+        public JsonReadException(int position, string msg, Exception innerExpcetion) : base(msg, innerExpcetion)
+        {
+            this._position = position;
+        }
+        /// <summary>
         /// Exception position
         /// </summary>
         public int Position { get { return _position; } }
