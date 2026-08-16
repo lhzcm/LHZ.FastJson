@@ -148,45 +148,36 @@ if (!isJson)
 | `null` | `JsonNull` | `null` |
 
 ## 序列化性能
-
-LHZ.FastJson 重构了序列化方法，拥有极高的序列化性能。下表为 LHZ.FastJson、Newtonsoft.Json 和 System.Text.Json 的序列化性能测试（单位：ns，数值越低越好）：
-
+LHZ.FastJson重构了序列化方法，拥有极高的序列化性能，下表为LHZ.FastJson、NewtonJson和System.Text.Json的序列化性能测试
 ``` ini
-BenchmarkDotNet=v0.15.8, OS=Windows 10 (10.0.19045.6466/22H2/2022Update)
-Intel Core i7-9700K CPU 3.60GHz (Coffee Lake), 1 CPU, 8 logical and 8 physical cores
-  [Host]     : .NET Framework 4.8.1 (4.8.9310.0), X64 RyuJIT VectorSize=256
-  DefaultJob : .NET Framework 4.8.1 (4.8.9310.0), X64 RyuJIT VectorSize=256
-```
 
-|                 场景 | LHZ.FastJson | Newtonsoft.Json | System.Text.Json |
-|--------------------- |-------------:|----------------:|-----------------:|
-|              小对象   |     766.0 ns |        788.1 ns |        689.5 ns |
-|             中等对象  |   3,671.4 ns |      3,829.3 ns |      3,512.5 ns |
-|       大列表（100 项）|  69,502.8 ns |     57,050.7 ns |     56,036.1 ns |
-|        字典（10 项）  |   1,503.1 ns |      1,428.7 ns |      1,307.1 ns |
-|    可空类型（全 null）|     412.7 ns |        782.3 ns |        613.7 ns |
-|      可空类型（有值） |   1,490.4 ns |      1,425.9 ns |      1,227.5 ns |
-|              枚举     |     368.6 ns |        617.2 ns |        516.1 ns |
-|          转义字符串   |     457.9 ns |        901.5 ns |        839.4 ns |
+BenchmarkDotNet=v0.13.1, OS=Windows 10.0.19044.1706 (21H2)
+Intel Core i7-9700K CPU 3.60GHz (Coffee Lake), 1 CPU, 8 logical and 8 physical cores
+.NET SDK=6.0.201
+  [Host]     : .NET 6.0.3 (6.0.322.12309), X64 RyuJIT
+  DefaultJob : .NET 6.0.3 (6.0.322.12309), X64 RyuJIT
+
+
+```
+|             Method |      Mean |     Error |    StdDev |
+|------------------- |----------:|----------:|----------:|
+|    LHZ.FastJson |  7.014 μs | 0.0298 μs | 0.0279 μs |
+|     NewtonJson | 18.943 μs | 0.1786 μs | 0.1671 μs |
+| System.Text.Json | 10.410 μs | 0.0499 μs | 0.0467 μs |
 
 ## 反序列化性能
-
-下表为 LHZ.FastJson、Newtonsoft.Json 和 System.Text.Json 的反序列化性能测试（单位：ns，数值越低越好）：
-
+LHZ.FastJson重构了反序列化方法，相比1.6.0之前的版本有接近2倍的反序列化性能提升
 ``` ini
-BenchmarkDotNet=v0.15.8, OS=Windows 10 (10.0.19045.6466/22H2/2022Update)
-Intel Core i7-9700K CPU 3.60GHz (Coffee Lake), 1 CPU, 8 logical and 8 physical cores
-  [Host]     : .NET Framework 4.8.1 (4.8.9310.0), X64 RyuJIT VectorSize=256
-  DefaultJob : .NET Framework 4.8.1 (4.8.9310.0), X64 RyuJIT VectorSize=256
-```
 
-|                 场景 | LHZ.FastJson | Newtonsoft.Json | System.Text.Json |
-|--------------------- |-------------:|----------------:|-----------------:|
-|              小对象   |   1,086.4 ns |      1,296.7 ns |        982.2 ns |
-|             中等对象  |   4,359.8 ns |      5,502.5 ns |      4,945.0 ns |
-|       大列表（100 项）| 108,993.4 ns |     96,139.6 ns |     97,247.1 ns |
-|        字典（10 项）  |   1,976.6 ns |      2,680.6 ns |      3,206.0 ns |
-|    可空类型（全 null）|     469.3 ns |      1,272.3 ns |        990.5 ns |
-|      可空类型（有值） |   1,345.8 ns |      1,874.2 ns |      1,406.9 ns |
-|              枚举     |     539.6 ns |      1,215.9 ns |        712.4 ns |
-|          转义字符串   |     498.4 ns |      1,012.4 ns |        949.4 ns |
+BenchmarkDotNet=v0.13.1, OS=Windows 10.0.19044.1889 (21H2)
+Intel Core i7-9700K CPU 3.60GHz (Coffee Lake), 1 CPU, 8 logical and 8 physical cores
+.NET SDK=6.0.302
+  [Host]     : .NET 6.0.7 (6.0.722.32202), X64 RyuJIT
+  DefaultJob : .NET 6.0.7 (6.0.722.32202), X64 RyuJIT
+
+
+```
+|             Method |     Mean |    Error |   StdDev |
+|------------------- |---------:|---------:|---------:|
+|    LHZFastJson v1.6.0 | 43.91 ms | 0.181 ms | 0.170 ms |
+|    LHZFastJson v1.5.2 | 85.18 ms | 0.301 ms | 0.282 ms |
