@@ -79,6 +79,36 @@ PS C:\Users\admin\source\repos\LHZ.FastJson\LHZ.FastJson.Test> dotnet run
 NO:1,Name:lhz,Age:18,Brithday:2000-1-1
 ```
 
+### Camel-Case Configuration
+
+By default, property names are serialized as-is (PascalCase). You can enable camelCase naming globally through `JsonConvertConfig.UseCamelCase`:
+
+- During serialization, property names are converted to camelCase (e.g. `UserName` -> `userName`);
+- During deserialization, camelCase property names are matched automatically;
+- Properties marked with the `[JsonProperty("xxx")]` attribute always keep the explicitly configured name;
+- When the configuration changes, the compiled serialization/deserialization expression caches are invalidated automatically and recompiled.
+
+#### Example
+
+``` csharp
+public class UserInfo
+{
+    public string UserName { get; set; }
+    public int UserAge { get; set; }
+}
+
+JsonConvertConfig.UseCamelCase = true;
+
+// Serialization: property names are converted to camelCase
+string jsonStr = JsonConvert.Serialize(new UserInfo { UserName = "lhz", UserAge = 18 });
+// Output: {"userName":"lhz","userAge":18}
+
+// Deserialization: camelCase property names are matched automatically
+UserInfo user = JsonConvert.Deserialize<UserInfo>("{\"userName\":\"lhz\",\"userAge\":18}");
+
+JsonConvertConfig.UseCamelCase = false; // Restore the default
+```
+
 ### Building JSON Trees Programmatically
 
 In addition to parsing JSON from strings, you can construct JSON trees directly using the `JsonContent`, `JsonArray`, `JsonString`, `JsonNumber`, `JsonBoolean`, and `JsonNull` classes:

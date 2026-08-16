@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -23,20 +23,40 @@ namespace LHZ.FastJson.Json
     {
         private static readonly Dictionary<Type, ObjectType> _objectTypes = JsonObjectType.GetObjectTypes();
 
-        private static readonly Func<IJsonObject, Dictionary<Type, IJsonCustomConverter>, T> _funcDeserialize = null;
+        private static Func<IJsonObject, Dictionary<Type, IJsonCustomConverter>, T> _funcDeserialize = null;
+        private static int _funcDeserializeConfigVersion = -1;
+        private static readonly object _funcDeserializeLock = new object();
         private static readonly Type _type = typeof(T);
 
-        static JsonDeserialzerExpression()
+        /// <summary>
+        /// Get the deserialization delegate for the current configuration version.
+        /// Property names are baked into the compiled expression,
+        /// so the delegate is recompiled when the configuration changes.
+        /// </summary>
+        private static Func<IJsonObject, Dictionary<Type, IJsonCustomConverter>, T> GetDeserializeFunc()
         {
-            var funcDeserializeExpression = CreateExpression();
-            _funcDeserialize = funcDeserializeExpression.Compile();
+            int configVersion = JsonConvertConfig.ConfigVersion;
+            var func = _funcDeserialize;
+            if (func != null && _funcDeserializeConfigVersion == configVersion)
+            {
+                return func;
+            }
+            lock (_funcDeserializeLock)
+            {
+                if (_funcDeserialize == null || _funcDeserializeConfigVersion != JsonConvertConfig.ConfigVersion)
+                {
+                    _funcDeserialize = CreateExpression().Compile();
+                    _funcDeserializeConfigVersion = JsonConvertConfig.ConfigVersion;
+                }
+                return _funcDeserialize;
+            }
         }
 
         public static T Deserialzer(IJsonObject jsonObject)
         {
             if(jsonObject == null)
                 return default(T);
-            return _funcDeserialize(jsonObject, null);
+            return GetDeserializeFunc()(jsonObject, null);
         }
         public static T Deserialzer(IJsonObject jsonObject, Dictionary<Type, IJsonCustomConverter> jsonCustomConverters)
         {
@@ -46,7 +66,7 @@ namespace LHZ.FastJson.Json
             {
                 return (T)customConverter.Deserialize(jsonObject);
             }
-            return _funcDeserialize(jsonObject, jsonCustomConverters);
+            return GetDeserializeFunc()(jsonObject, jsonCustomConverters);
         }
 
         /// <summary>

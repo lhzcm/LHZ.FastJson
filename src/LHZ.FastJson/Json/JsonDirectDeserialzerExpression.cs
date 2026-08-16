@@ -21,20 +21,40 @@ namespace LHZ.FastJson.Json
     {
         private static readonly Dictionary<Type, ObjectType> _objectTypes = JsonObjectType.GetObjectTypes();
 
-        private static readonly Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T> _funcDeserialize = null;
+        private static Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T> _funcDeserialize = null;
+        private static int _funcDeserializeConfigVersion = -1;
+        private static readonly object _funcDeserializeLock = new object();
         private static readonly Type _type = typeof(T);
 
-        static JsonDirectDeserialzerExpression()
+        /// <summary>
+        /// Get the deserialization delegate for the current configuration version.
+        /// Property names are baked into the compiled expression,
+        /// so the delegate is recompiled when the configuration changes.
+        /// </summary>
+        private static Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T> GetDeserializeFunc()
         {
-            var funcDeserializeExpression = CreateExpression();
-            _funcDeserialize = funcDeserializeExpression.Compile();
+            int configVersion = JsonConvertConfig.ConfigVersion;
+            var func = _funcDeserialize;
+            if (func != null && _funcDeserializeConfigVersion == configVersion)
+            {
+                return func;
+            }
+            lock (_funcDeserializeLock)
+            {
+                if (_funcDeserialize == null || _funcDeserializeConfigVersion != JsonConvertConfig.ConfigVersion)
+                {
+                    _funcDeserialize = CreateExpression().Compile();
+                    _funcDeserializeConfigVersion = JsonConvertConfig.ConfigVersion;
+                }
+                return _funcDeserialize;
+            }
         }
 
         public static T Deserialzer(JsonDirectReader jsonObject)
         {
             // if(jsonObject.IsReadEnd)
             //     return default(T);
-            return _funcDeserialize(jsonObject, null);
+            return GetDeserializeFunc()(jsonObject, null);
         }
         public static T Deserialzer(JsonDirectReader jsonObject, Dictionary<Type, IJsonCustomConverter> jsonCustomConverters)
         {
@@ -44,7 +64,7 @@ namespace LHZ.FastJson.Json
             {
                 return (T)customConverter.Deserialize(jsonObject.ReadAsJsonObject());
             }
-            return _funcDeserialize(jsonObject, jsonCustomConverters);
+            return GetDeserializeFunc()(jsonObject, jsonCustomConverters);
         }
 
         /// <summary>
@@ -723,7 +743,8 @@ namespace LHZ.FastJson.Json
             .Where(n => n.CanWrite)
             //Ignore Attribute
             .Where(n => !Attribute.GetCustomAttributes(n).Any(x => x is JsonIgnoredAttribute a && (a.JsonIgnoredMethod & JsonMethods.Deserialize) == JsonMethods.Deserialize))
-            .Select(n => new KeyValuePair<JsonPropertyName, PropertyInfo>(new JsonPropertyName(n.Name), n))
+            //The JSON name of the property (JsonProperty attribute wins; camelCase is applied when configured)
+            .Select(n => new KeyValuePair<JsonPropertyName, PropertyInfo>(new JsonPropertyName(JsonUtility.GetPropertyName(n)), n))
             .GroupBy(n=>n.Key.HashCode);
             var propVarMap = new Dictionary<System.Reflection.PropertyInfo, ParameterExpression>();
             List<SwitchCase> switchCases = new List<SwitchCase>();

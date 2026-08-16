@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -24,7 +24,7 @@ namespace LHZ.FastJson.Json
         private StringBuilder _jsonStrBuilder = new StringBuilder(128);
         private Stack<object> _objStack = new Stack<object>();
         private static readonly Dictionary<Type, ObjectType> _objectTypes = JsonObjectType.GetObjectTypes();
-        private static readonly ConcurrentDictionary<Type, Action<JsonSerializer, object>> _serializationActions = new ConcurrentDictionary<Type, Action<JsonSerializer, object>>();
+        private static readonly ConcurrentDictionary<Type, KeyValuePair<int, Action<JsonSerializer, object>>> _serializationActions = new ConcurrentDictionary<Type, KeyValuePair<int, Action<JsonSerializer, object>>>();
 
         private object _obj;
 
@@ -89,7 +89,17 @@ namespace LHZ.FastJson.Json
         /// <returns>Serialization delegate method</returns>
         private Action<JsonSerializer, object> GetSerializationAction(Type objType)
         {
-            return _serializationActions.GetOrAdd(objType, type => CreateSerializationExpression(type).Compile());
+            //Property names are baked into the compiled expression,
+            //so the cached delegate is only valid for the configuration version it was compiled with.
+            int configVersion = JsonConvertConfig.ConfigVersion;
+            KeyValuePair<int, Action<JsonSerializer, object>> cachedAction;
+            if (_serializationActions.TryGetValue(objType, out cachedAction) && cachedAction.Key == configVersion)
+            {
+                return cachedAction.Value;
+            }
+            var action = CreateSerializationExpression(objType).Compile();
+            _serializationActions[objType] = new KeyValuePair<int, Action<JsonSerializer, object>>(configVersion, action);
+            return action;
         }
 
         /// <summary>

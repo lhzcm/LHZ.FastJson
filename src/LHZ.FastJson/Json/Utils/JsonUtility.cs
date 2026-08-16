@@ -1,4 +1,4 @@
-﻿using LHZ.FastJson.Json.Attributes;
+using LHZ.FastJson.Json.Attributes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,12 +20,7 @@ namespace LHZ.FastJson.Json.Utils
             HashSet<string> names = new HashSet<string>();
             foreach (PropertyInfo property in properties)
             {
-                string propertyName = property.Name;
-                var jsonPropertyAttr = Attribute.GetCustomAttribute(property, typeof(JsonPropertyAttribute)) as JsonPropertyAttribute;
-                if (jsonPropertyAttr != null)
-                {
-                    propertyName = jsonPropertyAttr.PropertyName;
-                }
+                string propertyName = GetPropertyName(property);
                 if (names.Contains(propertyName))
                 {
                     SameName = propertyName;
@@ -47,7 +42,11 @@ namespace LHZ.FastJson.Json.Utils
             var jsonPropertyAttr = Attribute.GetCustomAttribute(propertyInfo, typeof(JsonPropertyAttribute)) as JsonPropertyAttribute;
             if (jsonPropertyAttr != null)
             {
-                propertyName = jsonPropertyAttr.PropertyName;
+                return jsonPropertyAttr.PropertyName;
+            }
+            if (JsonConvertConfig.UseCamelCase)
+            {
+                return JsonConvertConfig.ToCamelCase(propertyName);
             }
             return propertyName;
         }

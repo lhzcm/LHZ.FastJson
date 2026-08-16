@@ -63,6 +63,33 @@ PS C:\Users\admin\source\repos\LHZ.FastJson\LHZ.FastJson.Test> dotnet run
 NO:1,Name:lhz,Age:18,Brithday:2000-1-1
 ```
 
+## Camel-Case 配置
+默认情况下属性名保持原样（PascalCase）输出。可以通过全局配置 `JsonConvertConfig.UseCamelCase` 开启 Camel-Case 命名：
+- 序列化时属性名会转换为 camelCase（如 `UserName` -> `userName`）；
+- 反序列化时会匹配 camelCase 的属性名；
+- 带有 `[JsonProperty("xxx")]` 特性的属性始终优先使用特性指定的名称；
+- 修改配置后，已编译的序列化/反序列化表达式缓存会自动失效并重新编译。
+
+### Camel-Case 序列化示例
+``` csharp
+public class UserInfo
+{
+    public string UserName { get; set; }
+    public int UserAge { get; set; }
+}
+
+JsonConvertConfig.UseCamelCase = true;
+
+//序列化：属性名自动转换为 camelCase
+string jsonStr = JsonConvert.Serialize(new UserInfo { UserName = "lhz", UserAge = 18 });
+//输出：{"userName":"lhz","userAge":18}
+
+//反序列化：自动匹配 camelCase 属性名
+UserInfo user = JsonConvert.Deserialize<UserInfo>("{\"userName\":\"lhz\",\"userAge\":18}");
+
+JsonConvertConfig.UseCamelCase = false; //恢复默认
+```
+
 ### 手动构建 JSON 树
 
 除了从字符串解析 JSON，还可以直接使用 `JsonContent`、`JsonArray`、`JsonString`、`JsonNumber`、`JsonBoolean` 和 `JsonNull` 类手动构建 JSON 树：
