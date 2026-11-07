@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -722,8 +722,8 @@ namespace LHZ.FastJson.Json
                 expres.Add(Expression.Label(returnLabel, Expression.Default(curType)));
                 return Expression.Lambda<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Block(variables, expres), jsonObjectParameter, jsonCustomConvertersParameter);
             }
-            //Check if the type has a default constructor
-            if (curType.GetConstructor(EmptyArray<Type>.Value) == null)
+            //Check if the type has a default constructor (value types are always constructible)
+            if (!curType.IsValueType && curType.GetConstructor(EmptyArray<Type>.Value) == null)
             {
                 expres.Add(Expression.Throw(Expression.New(typeof(JsonDirectDeserializationException).GetConstructor(new Type[] { typeof(int), typeof(JsonType), typeof(Type), typeof(string) }),
                 Expression.Constant(0), Expression.Property(jsonObjectParameter, "JsonType"), Expression.Constant(curType), Expression.Constant("反序列化类型没有默认的构造函数，无法创建该类型对象"))));
@@ -738,9 +738,15 @@ namespace LHZ.FastJson.Json
                 Expression.Property(jsonObjectParameter, "Position"), Expression.Property(jsonObjectParameter, "JsonType"), Expression.Constant(curType),
                 Expression.Constant("Json对象不为Content类型不能解析成Object类型")))));
 
-            //Get writable properties and create variables for each
+            //Get writable instance properties and create variables for each.
+            //Static properties and indexers cannot be used with MemberInit.
             var groups = curType.GetProperties()
             .Where(n => n.CanWrite)
+            .Where(n => n.GetIndexParameters().Length == 0)
+            .Where(n => {
+                var setter = n.GetSetMethod(true);
+                return setter != null && !setter.IsStatic;
+            })
             //Ignore Attribute
             .Where(n => !Attribute.GetCustomAttributes(n).Any(x => x is JsonIgnoredAttribute a && (a.JsonIgnoredMethod & JsonMethods.Deserialize) == JsonMethods.Deserialize))
             //The JSON name of the property (JsonProperty attribute wins; camelCase is applied when configured)

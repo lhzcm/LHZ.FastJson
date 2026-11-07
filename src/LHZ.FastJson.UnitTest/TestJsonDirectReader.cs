@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
 using LHZ.FastJson.Enum;
@@ -76,10 +76,10 @@ public class TestJsonDirectReader
     {
         var reader = CreateReader("{\"a\":1}");
 
-        Assert.AreEqual("{\"a\":1}", GetProp<string>(reader, "Content"));
-        Assert.AreEqual(0, GetProp<int>(reader, "Position"));
-        Assert.AreEqual(7, GetProp<int>(reader, "Length"));
-        Assert.IsFalse(GetProp<bool>(reader, "IsReadEnd"));
+        ClassicAssert.AreEqual("{\"a\":1}", GetProp<string>(reader, "Content"));
+        ClassicAssert.AreEqual(0, GetProp<int>(reader, "Position"));
+        ClassicAssert.AreEqual(7, GetProp<int>(reader, "Length"));
+        ClassicAssert.IsFalse(GetProp<bool>(reader, "IsReadEnd"));
     }
 
     /// <summary>
@@ -100,14 +100,14 @@ public class TestJsonDirectReader
     [Test]
     public void JsonType_DetectsAllTypes()
     {
-        Assert.AreEqual(JsonType.Content, GetProp<JsonType>(CreateReader("{}"), "JsonType"));
-        Assert.AreEqual(JsonType.Array, GetProp<JsonType>(CreateReader("[]"), "JsonType"));
-        Assert.AreEqual(JsonType.String, GetProp<JsonType>(CreateReader("\"hello\""), "JsonType"));
-        Assert.AreEqual(JsonType.Number, GetProp<JsonType>(CreateReader("42"), "JsonType"));
-        Assert.AreEqual(JsonType.Number, GetProp<JsonType>(CreateReader("-7"), "JsonType"));
-        Assert.AreEqual(JsonType.Boolean, GetProp<JsonType>(CreateReader("true"), "JsonType"));
-        Assert.AreEqual(JsonType.Boolean, GetProp<JsonType>(CreateReader("false"), "JsonType"));
-        Assert.AreEqual(JsonType.Null, GetProp<JsonType>(CreateReader("null"), "JsonType"));
+        ClassicAssert.AreEqual(JsonType.Content, GetProp<JsonType>(CreateReader("{}"), "JsonType"));
+        ClassicAssert.AreEqual(JsonType.Array, GetProp<JsonType>(CreateReader("[]"), "JsonType"));
+        ClassicAssert.AreEqual(JsonType.String, GetProp<JsonType>(CreateReader("\"hello\""), "JsonType"));
+        ClassicAssert.AreEqual(JsonType.Number, GetProp<JsonType>(CreateReader("42"), "JsonType"));
+        ClassicAssert.AreEqual(JsonType.Number, GetProp<JsonType>(CreateReader("-7"), "JsonType"));
+        ClassicAssert.AreEqual(JsonType.Boolean, GetProp<JsonType>(CreateReader("true"), "JsonType"));
+        ClassicAssert.AreEqual(JsonType.Boolean, GetProp<JsonType>(CreateReader("false"), "JsonType"));
+        ClassicAssert.AreEqual(JsonType.Null, GetProp<JsonType>(CreateReader("null"), "JsonType"));
     }
 
     /// <summary>
@@ -116,9 +116,9 @@ public class TestJsonDirectReader
     [Test]
     public void JsonType_SkipsLeadingWhitespace()
     {
-        Assert.AreEqual(JsonType.String, GetProp<JsonType>(CreateReader("  \t\r\n\"x\""), "JsonType"));
-        Assert.AreEqual(JsonType.Number, GetProp<JsonType>(CreateReader("  123"), "JsonType"));
-        Assert.AreEqual(JsonType.Content, GetProp<JsonType>(CreateReader("  {}"), "JsonType"));
+        ClassicAssert.AreEqual(JsonType.String, GetProp<JsonType>(CreateReader("  \t\r\n\"x\""), "JsonType"));
+        ClassicAssert.AreEqual(JsonType.Number, GetProp<JsonType>(CreateReader("  123"), "JsonType"));
+        ClassicAssert.AreEqual(JsonType.Content, GetProp<JsonType>(CreateReader("  {}"), "JsonType"));
     }
 
     #endregion
@@ -133,9 +133,9 @@ public class TestJsonDirectReader
     {
         var reader = CreateReader(" \t\r\n  {\"a\":1}");
         InvokeVoid(reader, "SkipWhitespace");
-        Assert.AreEqual('{', GetProp<char>(reader, "CurrentChar"));
+        ClassicAssert.AreEqual('{', GetProp<char>(reader, "CurrentChar"));
         // " \t\r\n  " = 6 whitespace chars before '{'
-        Assert.AreEqual(6, GetProp<int>(reader, "Position"));
+        ClassicAssert.AreEqual(6, GetProp<int>(reader, "Position"));
     }
 
     /// <summary>
@@ -162,8 +162,8 @@ public class TestJsonDirectReader
     public void ReadString_ReturnsStringContent()
     {
         var reader = CreateReader("\"Hello World\"");
-        Assert.AreEqual("Hello World", Invoke<string>(reader, "ReadString"));
-        Assert.IsTrue(GetProp<bool>(reader, "IsReadEnd"));
+        ClassicAssert.AreEqual("Hello World", Invoke<string>(reader, "ReadString"));
+        ClassicAssert.IsTrue(GetProp<bool>(reader, "IsReadEnd"));
     }
 
     /// <summary>
@@ -173,7 +173,7 @@ public class TestJsonDirectReader
     public void ReadString_EmptyString()
     {
         var reader = CreateReader("\"\"");
-        Assert.AreEqual("", Invoke<string>(reader, "ReadString"));
+        ClassicAssert.AreEqual("", Invoke<string>(reader, "ReadString"));
     }
 
     /// <summary>
@@ -182,14 +182,14 @@ public class TestJsonDirectReader
     [Test]
     public void ReadString_EscapeSequences()
     {
-        Assert.AreEqual("quote\"here", Invoke<string>(CreateReader("\"quote\\\"here\""), "ReadString"));
-        Assert.AreEqual("back\\slash", Invoke<string>(CreateReader("\"back\\\\slash\""), "ReadString"));
-        Assert.AreEqual("line1\nline2", Invoke<string>(CreateReader("\"line1\\nline2\""), "ReadString"));
-        Assert.AreEqual("tab\there", Invoke<string>(CreateReader("\"tab\\there\""), "ReadString"));
-        Assert.AreEqual("carriage\rreturn", Invoke<string>(CreateReader("\"carriage\\rreturn\""), "ReadString"));
-        Assert.AreEqual("slash/path", Invoke<string>(CreateReader("\"slash\\/path\""), "ReadString"));
-        Assert.AreEqual("back\bspace", Invoke<string>(CreateReader("\"back\\bspace\""), "ReadString"));
-        Assert.AreEqual("form\ffeed", Invoke<string>(CreateReader("\"form\\ffeed\""), "ReadString"));
+        ClassicAssert.AreEqual("quote\"here", Invoke<string>(CreateReader("\"quote\\\"here\""), "ReadString"));
+        ClassicAssert.AreEqual("back\\slash", Invoke<string>(CreateReader("\"back\\\\slash\""), "ReadString"));
+        ClassicAssert.AreEqual("line1\nline2", Invoke<string>(CreateReader("\"line1\\nline2\""), "ReadString"));
+        ClassicAssert.AreEqual("tab\there", Invoke<string>(CreateReader("\"tab\\there\""), "ReadString"));
+        ClassicAssert.AreEqual("carriage\rreturn", Invoke<string>(CreateReader("\"carriage\\rreturn\""), "ReadString"));
+        ClassicAssert.AreEqual("slash/path", Invoke<string>(CreateReader("\"slash\\/path\""), "ReadString"));
+        ClassicAssert.AreEqual("back\bspace", Invoke<string>(CreateReader("\"back\\bspace\""), "ReadString"));
+        ClassicAssert.AreEqual("form\ffeed", Invoke<string>(CreateReader("\"form\\ffeed\""), "ReadString"));
     }
 
     /// <summary>
@@ -198,9 +198,9 @@ public class TestJsonDirectReader
     [Test]
     public void ReadString_UnicodeEscapes()
     {
-        Assert.AreEqual("ABC", Invoke<string>(CreateReader("\"\\u0041\\u0042\\u0043\""), "ReadString"));
-        Assert.AreEqual("中文", Invoke<string>(CreateReader("\"\\u4e2d\\u6587\""), "ReadString"));
-        Assert.AreEqual("\u00e9", Invoke<string>(CreateReader("\"\\u00e9\""), "ReadString"));
+        ClassicAssert.AreEqual("ABC", Invoke<string>(CreateReader("\"\\u0041\\u0042\\u0043\""), "ReadString"));
+        ClassicAssert.AreEqual("中文", Invoke<string>(CreateReader("\"\\u4e2d\\u6587\""), "ReadString"));
+        ClassicAssert.AreEqual("\u00e9", Invoke<string>(CreateReader("\"\\u00e9\""), "ReadString"));
     }
 
     /// <summary>
@@ -210,7 +210,7 @@ public class TestJsonDirectReader
     public void ReadString_MixedContentWithEscapes()
     {
         var reader = CreateReader("\"hello\\nworld\\t!\"");
-        Assert.AreEqual("hello\nworld\t!", Invoke<string>(reader, "ReadString"));
+        ClassicAssert.AreEqual("hello\nworld\t!", Invoke<string>(reader, "ReadString"));
     }
 
     /// <summary>
@@ -245,7 +245,7 @@ public class TestJsonDirectReader
     {
         var reader = CreateReader("12345");
         var sv = Invoke<object>(reader, "ReadNumber");
-        Assert.AreEqual("12345", sv.ToString());
+        ClassicAssert.AreEqual("12345", sv.ToString());
     }
 
     /// <summary>
@@ -256,7 +256,7 @@ public class TestJsonDirectReader
     {
         var reader = CreateReader("-42");
         var sv = Invoke<object>(reader, "ReadNumber");
-        Assert.AreEqual("-42", sv.ToString());
+        ClassicAssert.AreEqual("-42", sv.ToString());
     }
 
     /// <summary>
@@ -267,7 +267,7 @@ public class TestJsonDirectReader
     {
         var reader = CreateReader("3.14159");
         var sv = Invoke<object>(reader, "ReadNumber");
-        Assert.AreEqual("3.14159", sv.ToString());
+        ClassicAssert.AreEqual("3.14159", sv.ToString());
     }
 
     /// <summary>
@@ -276,10 +276,10 @@ public class TestJsonDirectReader
     [Test]
     public void ReadNumber_ScientificNotation()
     {
-        Assert.AreEqual("1e10", Invoke<object>(CreateReader("1e10"), "ReadNumber").ToString());
-        Assert.AreEqual("2.5E-3", Invoke<object>(CreateReader("2.5E-3"), "ReadNumber").ToString());
-        Assert.AreEqual("-1.5e+2", Invoke<object>(CreateReader("-1.5e+2"), "ReadNumber").ToString());
-        Assert.AreEqual("0.5e10", Invoke<object>(CreateReader("0.5e10"), "ReadNumber").ToString());
+        ClassicAssert.AreEqual("1e10", Invoke<object>(CreateReader("1e10"), "ReadNumber").ToString());
+        ClassicAssert.AreEqual("2.5E-3", Invoke<object>(CreateReader("2.5E-3"), "ReadNumber").ToString());
+        ClassicAssert.AreEqual("-1.5e+2", Invoke<object>(CreateReader("-1.5e+2"), "ReadNumber").ToString());
+        ClassicAssert.AreEqual("0.5e10", Invoke<object>(CreateReader("0.5e10"), "ReadNumber").ToString());
     }
 
     /// <summary>
@@ -290,7 +290,7 @@ public class TestJsonDirectReader
     {
         var reader = CreateReader("0");
         var sv = Invoke<object>(reader, "ReadNumber");
-        Assert.AreEqual("0", sv.ToString());
+        ClassicAssert.AreEqual("0", sv.ToString());
     }
 
     /// <summary>
@@ -334,7 +334,7 @@ public class TestJsonDirectReader
     public void ReadBoolean_True()
     {
         var reader = CreateReader("true");
-        Assert.IsTrue(Invoke<bool>(reader, "ReadBoolean"));
+        ClassicAssert.IsTrue(Invoke<bool>(reader, "ReadBoolean"));
     }
 
     /// <summary>
@@ -344,7 +344,7 @@ public class TestJsonDirectReader
     public void ReadBoolean_False()
     {
         var reader = CreateReader("false");
-        Assert.IsFalse(Invoke<bool>(reader, "ReadBoolean"));
+        ClassicAssert.IsFalse(Invoke<bool>(reader, "ReadBoolean"));
     }
 
     /// <summary>
@@ -369,7 +369,7 @@ public class TestJsonDirectReader
     {
         var reader = CreateReader("null");
         var result = InvokeGeneric<object>(reader, "ReadNull", new[] { typeof(object) });
-        Assert.IsNull(result);
+        ClassicAssert.IsNull(result);
     }
 
     /// <summary>
@@ -399,13 +399,13 @@ public class TestJsonDirectReader
         // Access internal Name property via reflection (NonPublic binding flags needed)
         var nameProp = prop.GetType().GetProperty("Name", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
         var nameValue = nameProp.GetValue(prop);
-        Assert.AreEqual("name", nameValue.ToString());
+        ClassicAssert.AreEqual("name", nameValue.ToString());
 
         // After reading property name, reader is positioned after ':'. 
         // Skip any whitespace before reading the value.
         InvokeVoid(reader, "SkipWhitespace");
         var numResult = Invoke<object>(reader, "ReadNumber");
-        Assert.AreEqual("42", numResult.ToString());
+        ClassicAssert.AreEqual("42", numResult.ToString());
     }
 
     /// <summary>
@@ -463,8 +463,8 @@ public class TestJsonDirectReader
             InvokeVoid(valReader, "SkipCurrentObject");
         }
 
-        Assert.AreEqual(new[] { "name", "age" }, keys.ToArray());
-        Assert.AreEqual(new[] { JsonType.String, JsonType.Number }, types.ToArray());
+        ClassicAssert.AreEqual(new[] { "name", "age" }, keys.ToArray());
+        ClassicAssert.AreEqual(new[] { JsonType.String, JsonType.Number }, types.ToArray());
     }
 
     /// <summary>
@@ -477,7 +477,7 @@ public class TestJsonDirectReader
         var enumerable = (System.Collections.IEnumerable)ReaderType.GetMethod("ReadContent", MethodFlags).Invoke(reader, null);
         int count = 0;
         foreach (var _ in enumerable) count++;
-        Assert.AreEqual(0, count);
+        ClassicAssert.AreEqual(0, count);
     }
 
     /// <summary>
@@ -500,14 +500,14 @@ public class TestJsonDirectReader
 
             // Access internal Name property
             var nameProp = keyObj.GetType().GetProperty("Name", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-            Assert.AreEqual("outer", nameProp.GetValue(keyObj).ToString());
+            ClassicAssert.AreEqual("outer", nameProp.GetValue(keyObj).ToString());
 
             // item.Value is positioned at '{'
-            Assert.AreEqual(JsonType.Content, GetProp<JsonType>(valReader, "JsonType"));
+            ClassicAssert.AreEqual(JsonType.Content, GetProp<JsonType>(valReader, "JsonType"));
             // Must consume the nested object so enumeration advances
             InvokeVoid(valReader, "SkipCurrentObject");
         }
-        Assert.AreEqual(1, count);
+        ClassicAssert.AreEqual(1, count);
     }
 
     #endregion
@@ -532,7 +532,7 @@ public class TestJsonDirectReader
             values.Add(result.ToString());
         }
 
-        Assert.AreEqual(new[] { "1", "2", "3" }, values.ToArray());
+        ClassicAssert.AreEqual(new[] { "1", "2", "3" }, values.ToArray());
     }
 
     /// <summary>
@@ -545,7 +545,7 @@ public class TestJsonDirectReader
         var enumerable = (System.Collections.IEnumerable)ReaderType.GetMethod("ReadArray", MethodFlags).Invoke(reader, null);
         int count = 0;
         foreach (var _ in enumerable) count++;
-        Assert.AreEqual(0, count);
+        ClassicAssert.AreEqual(0, count);
     }
 
     /// <summary>
@@ -565,7 +565,7 @@ public class TestJsonDirectReader
             InvokeVoid(item, "SkipCurrentObject");
         }
 
-        Assert.AreEqual(new[] { JsonType.String, JsonType.Number, JsonType.Boolean, JsonType.Null }, types.ToArray());
+        ClassicAssert.AreEqual(new[] { JsonType.String, JsonType.Number, JsonType.Boolean, JsonType.Null }, types.ToArray());
     }
 
     /// <summary>
@@ -583,11 +583,11 @@ public class TestJsonDirectReader
         foreach (var outerItem in outer)
         {
             outerCount++;
-            Assert.AreEqual(JsonType.Content, GetProp<JsonType>(outerItem, "JsonType"));
+            ClassicAssert.AreEqual(JsonType.Content, GetProp<JsonType>(outerItem, "JsonType"));
             // Must consume the content object so enumeration advances
             InvokeVoid(outerItem, "SkipCurrentObject");
         }
-        Assert.AreEqual(2, outerCount);
+        ClassicAssert.AreEqual(2, outerCount);
     }
 
     #endregion
@@ -602,7 +602,7 @@ public class TestJsonDirectReader
     {
         var reader = CreateReader("\"skip\"");
         InvokeVoid(reader, "SkipCurrentObject");
-        Assert.IsTrue(GetProp<bool>(reader, "IsReadEnd"));
+        ClassicAssert.IsTrue(GetProp<bool>(reader, "IsReadEnd"));
     }
 
     /// <summary>
@@ -613,7 +613,7 @@ public class TestJsonDirectReader
     {
         var reader = CreateReader("12345");
         InvokeVoid(reader, "SkipCurrentObject");
-        Assert.IsTrue(GetProp<bool>(reader, "IsReadEnd"));
+        ClassicAssert.IsTrue(GetProp<bool>(reader, "IsReadEnd"));
     }
 
     /// <summary>
@@ -625,7 +625,7 @@ public class TestJsonDirectReader
     {
         var reader = CreateReader("{\"a\":1,\"b\":\"x\"}");
         InvokeVoid(reader, "SkipCurrentObject");
-        Assert.IsTrue(GetProp<bool>(reader, "IsReadEnd"));
+        ClassicAssert.IsTrue(GetProp<bool>(reader, "IsReadEnd"));
     }
 
     /// <summary>
@@ -636,11 +636,11 @@ public class TestJsonDirectReader
     {
         var reader = CreateReader("true");
         InvokeVoid(reader, "SkipCurrentObject");
-        Assert.IsTrue(GetProp<bool>(reader, "IsReadEnd"));
+        ClassicAssert.IsTrue(GetProp<bool>(reader, "IsReadEnd"));
 
         reader = CreateReader("false");
         InvokeVoid(reader, "SkipCurrentObject");
-        Assert.IsTrue(GetProp<bool>(reader, "IsReadEnd"));
+        ClassicAssert.IsTrue(GetProp<bool>(reader, "IsReadEnd"));
     }
 
     /// <summary>
@@ -651,7 +651,7 @@ public class TestJsonDirectReader
     {
         var reader = CreateReader("null");
         InvokeVoid(reader, "SkipCurrentObject");
-        Assert.IsTrue(GetProp<bool>(reader, "IsReadEnd"));
+        ClassicAssert.IsTrue(GetProp<bool>(reader, "IsReadEnd"));
     }
 
     /// <summary>
@@ -662,7 +662,7 @@ public class TestJsonDirectReader
     {
         var reader = CreateReader("42");
         InvokeVoid(reader, "SkipCurrentObject");
-        Assert.IsTrue(GetProp<bool>(reader, "IsReadEnd"));
+        ClassicAssert.IsTrue(GetProp<bool>(reader, "IsReadEnd"));
     }
 
     #endregion
@@ -677,9 +677,9 @@ public class TestJsonDirectReader
     {
         var reader = CreateReader("{\"name\":\"LHZ\"}");
         var result = Invoke<JsonObject>(reader, "ReadAsJsonObject");
-        Assert.IsNotNull(result);
-        Assert.AreEqual(JsonType.Content, result.Type);
-        Assert.AreEqual("LHZ", result["name"].Value);
+        ClassicAssert.IsNotNull(result);
+        ClassicAssert.AreEqual(JsonType.Content, result.Type);
+        ClassicAssert.AreEqual("LHZ", result["name"].Value);
     }
 
     /// <summary>
@@ -690,8 +690,8 @@ public class TestJsonDirectReader
     {
         var reader = CreateReader("[1, 2, 3]");
         var result = Invoke<JsonObject>(reader, "ReadAsJsonObject");
-        Assert.IsNotNull(result);
-        Assert.AreEqual(JsonType.Array, result.Type);
+        ClassicAssert.IsNotNull(result);
+        ClassicAssert.AreEqual(JsonType.Array, result.Type);
     }
 
     /// <summary>
@@ -702,17 +702,17 @@ public class TestJsonDirectReader
     {
         var reader = CreateReader("\"hello\"");
         var result = Invoke<JsonObject>(reader, "ReadAsJsonObject");
-        Assert.AreEqual(JsonType.String, result.Type);
-        Assert.AreEqual("hello", result.Value);
+        ClassicAssert.AreEqual(JsonType.String, result.Type);
+        ClassicAssert.AreEqual("hello", result.Value);
 
         reader = CreateReader("true");
         result = Invoke<JsonObject>(reader, "ReadAsJsonObject");
-        Assert.AreEqual(JsonType.Boolean, result.Type);
-        Assert.AreEqual(true, result.Value);
+        ClassicAssert.AreEqual(JsonType.Boolean, result.Type);
+        ClassicAssert.AreEqual(true, result.Value);
 
         reader = CreateReader("null");
         result = Invoke<JsonObject>(reader, "ReadAsJsonObject");
-        Assert.AreEqual(JsonType.Null, result.Type);
+        ClassicAssert.AreEqual(JsonType.Null, result.Type);
     }
 
     #endregion
@@ -728,8 +728,8 @@ public class TestJsonDirectReader
     {
         var json = "{\"Id\":1,\"Name\":\"LHZ\"}";
         var obj = JsonConvert.Deserialize<TestObjClass>(json);
-        Assert.AreEqual(1, obj.Id);
-        Assert.AreEqual("LHZ", obj.Name);
+        ClassicAssert.AreEqual(1, obj.Id);
+        ClassicAssert.AreEqual("LHZ", obj.Name);
     }
 
     /// <summary>
@@ -740,10 +740,10 @@ public class TestJsonDirectReader
     {
         var json = "{\"Count\":null,\"ExpiryDate\":null,\"Rating\":null,\"Name\":null}";
         var obj = JsonConvert.Deserialize<NullableModel>(json);
-        Assert.IsNull(obj.Count);
-        Assert.IsNull(obj.ExpiryDate);
-        Assert.IsNull(obj.Rating);
-        Assert.IsNull(obj.Name);
+        ClassicAssert.IsNull(obj.Count);
+        ClassicAssert.IsNull(obj.ExpiryDate);
+        ClassicAssert.IsNull(obj.Rating);
+        ClassicAssert.IsNull(obj.Name);
     }
 
     /// <summary>
@@ -754,7 +754,7 @@ public class TestJsonDirectReader
     {
         var json = "[10, 20, 30]";
         var arr = JsonConvert.Deserialize<int[]>(json);
-        Assert.AreEqual(new[] { 10, 20, 30 }, arr);
+        ClassicAssert.AreEqual(new[] { 10, 20, 30 }, arr);
     }
 
     /// <summary>
@@ -765,11 +765,11 @@ public class TestJsonDirectReader
     {
         var json = "[{\"Name\":\"A\",\"Age\":1,\"Height\":1.5,\"Obj\":null},{\"Name\":\"B\",\"Age\":2,\"Height\":2.5,\"Obj\":null}]";
         var list = JsonConvert.Deserialize<List<TestMultiProtertyObj>>(json);
-        Assert.AreEqual(2, list.Count);
-        Assert.AreEqual("A", list[0].Name);
-        Assert.AreEqual(1, list[0].Age);
-        Assert.AreEqual("B", list[1].Name);
-        Assert.AreEqual(2, list[1].Age);
+        ClassicAssert.AreEqual(2, list.Count);
+        ClassicAssert.AreEqual("A", list[0].Name);
+        ClassicAssert.AreEqual(1, list[0].Age);
+        ClassicAssert.AreEqual("B", list[1].Name);
+        ClassicAssert.AreEqual(2, list[1].Age);
     }
 
     /// <summary>
@@ -780,8 +780,8 @@ public class TestJsonDirectReader
     {
         var json = "{\"key1\":100,\"key2\":200}";
         var dict = JsonConvert.Deserialize<Dictionary<string, int>>(json);
-        Assert.AreEqual(100, dict["key1"]);
-        Assert.AreEqual(200, dict["key2"]);
+        ClassicAssert.AreEqual(100, dict["key1"]);
+        ClassicAssert.AreEqual(200, dict["key2"]);
     }
 
     /// <summary>
@@ -792,10 +792,10 @@ public class TestJsonDirectReader
     {
         var json = "{\"Name\":\"Parent\",\"Child\":{\"Name\":\"Child\",\"Age\":10}}";
         var obj = JsonConvert.Deserialize<NestedTestObj>(json);
-        Assert.AreEqual("Parent", obj.Name);
-        Assert.IsNotNull(obj.Child);
-        Assert.AreEqual("Child", obj.Child.Name);
-        Assert.AreEqual(10, obj.Child.Age);
+        ClassicAssert.AreEqual("Parent", obj.Name);
+        ClassicAssert.IsNotNull(obj.Child);
+        ClassicAssert.AreEqual("Child", obj.Child.Name);
+        ClassicAssert.AreEqual(10, obj.Child.Age);
     }
 
     #endregion

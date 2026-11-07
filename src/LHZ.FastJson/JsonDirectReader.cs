@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Text;
@@ -39,6 +39,20 @@ namespace LHZ.FastJson
         /// </summary>
         public int Length { get; private set; }
         public bool IsReadEnd => Position >= Length;
+
+        private int _depth;
+
+        /// <summary>
+        /// Tracks the current object/array nesting depth and rejects input that exceeds the configured limit.
+        /// </summary>
+        private void EnterContainer()
+        {
+            if (_depth >= JsonConvertConfig.MaxDepth)
+            {
+                throw new JsonReadException(Position, "字符位置[" + Position + "]处，JSON嵌套深度超过最大限制" + JsonConvertConfig.MaxDepth);
+            }
+            _depth++;
+        }
         public JsonType JsonType
         {
             get
@@ -180,34 +194,42 @@ namespace LHZ.FastJson
         #endif
         public IEnumerable<KeyValuePair<JsonPropertyName, JsonDirectReader>> ReadContent()
         {
-            while(true)
+            EnterContainer();
+            try
             {
-                if (Position >= Length)
+                while(true)
                 {
-                    throw new JsonReadException(Position, "字符位置[" + Position + "]处，Json字符串解析错误，字符串未闭合");
-                }
-                switch (Content[Position])
-                {
-                    case '{':
-                        {
-                            MoveNextAndSkipWhitespace(1);
-                            if (Position >= Length)
-                            {
-                                throw new JsonReadException(Position, "字符位置[" + Position + "]处，Json字符串解析错误，字符串未闭合");
-                            }
-                            if(Content[Position] == '}')
+                    if (Position >= Length)
+                    {
+                        throw new JsonReadException(Position, "字符位置[" + Position + "]处，Json字符串解析错误，字符串未闭合");
+                    }
+                    switch (Content[Position])
+                    {
+                        case '{':
                             {
                                 MoveNextAndSkipWhitespace(1);
-                                yield break;
+                                if (Position >= Length)
+                                {
+                                    throw new JsonReadException(Position, "字符位置[" + Position + "]处，Json字符串解析错误，字符串未闭合");
+                                }
+                                if(Content[Position] == '}')
+                                {
+                                    MoveNextAndSkipWhitespace(1);
+                                    yield break;
+                                }
+                                break;
                             }
-                            break;
-                        }
-                    case ',' : MoveNextAndSkipWhitespace(1); break;
-                    case '}' : MoveNextAndSkipWhitespace(1);yield break;
-                    default: throw new JsonReadException(Position, "字符位置[" + Position + "]处，Json字符串解析错误，出现异常字符'" + Content[Position] + "'");
+                        case ',' : MoveNextAndSkipWhitespace(1); break;
+                        case '}' : MoveNextAndSkipWhitespace(1);yield break;
+                        default: throw new JsonReadException(Position, "字符位置[" + Position + "]处，Json字符串解析错误，出现异常字符'" + Content[Position] + "'");
+                    }
+                    var propertyName = ReadJsonPropertyName();
+                    yield return new KeyValuePair<JsonPropertyName, JsonDirectReader>(propertyName, this);
                 }
-                var propertyName = ReadJsonPropertyName();
-                yield return new KeyValuePair<JsonPropertyName, JsonDirectReader>(propertyName, this);
+            }
+            finally
+            {
+                _depth--;
             }
         }
         #if NET45_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
@@ -215,33 +237,41 @@ namespace LHZ.FastJson
         #endif
         public IEnumerable<JsonDirectReader> ReadArray()
         {
-            while(true)
+            EnterContainer();
+            try
             {
-                if (Position >= Length)
+                while(true)
                 {
-                    throw new JsonReadException(Position, "字符位置[" + Position + "]处，Json字符串解析错误，字符串未闭合");
-                }
-                switch(Content[Position])
-                {
-                    case '[' :  
+                    if (Position >= Length)
                     {
-                            MoveNextAndSkipWhitespace(1);
-                            if (Position >= Length)
-                            {
-                                throw new JsonReadException(Position, "字符位置[" + Position + "]处，Json字符串解析错误，字符串未闭合");
-                            }
-                            if(Content[Position] == ']')
-                            {
+                        throw new JsonReadException(Position, "字符位置[" + Position + "]处，Json字符串解析错误，字符串未闭合");
+                    }
+                    switch(Content[Position])
+                    {
+                        case '[' :
+                        {
                                 MoveNextAndSkipWhitespace(1);
-                                yield break;
+                                if (Position >= Length)
+                                {
+                                    throw new JsonReadException(Position, "字符位置[" + Position + "]处，Json字符串解析错误，字符串未闭合");
+                                }
+                                if(Content[Position] == ']')
+                                {
+                                    MoveNextAndSkipWhitespace(1);
+                                    yield break;
+                                }
+                                break;
                             }
-                            break;
-                        }
-                    case ',' : MoveNextAndSkipWhitespace(1); break;
-                    case ']' : MoveNextAndSkipWhitespace(1); yield break;
-                    default: throw new JsonReadException(Position, "字符位置[" + Position + "]处，Json字符串解析错误，出现异常字符'" + Content[Position] + "'");
+                        case ',' : MoveNextAndSkipWhitespace(1); break;
+                        case ']' : MoveNextAndSkipWhitespace(1); yield break;
+                        default: throw new JsonReadException(Position, "字符位置[" + Position + "]处，Json字符串解析错误，出现异常字符'" + Content[Position] + "'");
+                    }
+                    yield return this;
                 }
-                yield return this;
+            }
+            finally
+            {
+                _depth--;
             }
         }
         /// <summary>

@@ -113,7 +113,7 @@ namespace LHZ.FastJson
                 _endPoint = point + _jsonString.Length;
                 _curPoint = point + _startPosition;
 
-                var jsonObject = GetJsonObject();
+                var jsonObject = GetJsonObject(0);
                 SkipWhitespace();
                 if (_curPoint != _endPoint && _startPosition ==0)
                 {
@@ -128,12 +128,12 @@ namespace LHZ.FastJson
         /// Parse JSON object
         /// </summary>
         /// <returns>JSON object</returns>
-        private JsonClass.JsonObject GetJsonObject()
+        private JsonClass.JsonObject GetJsonObject(int depth)
         {
             SkipWhitespace();
             if (*_curPoint == '{')
             {
-                return GetJsonContent();
+                return GetJsonContent(depth + 1);
             }
             else if (*_curPoint == '"')
             {
@@ -149,7 +149,7 @@ namespace LHZ.FastJson
             }
             else if (*_curPoint == '[')
             {
-                return GetJsonArray();
+                return GetJsonArray(depth + 1);
             }
             else if (*_curPoint == 't' || *_curPoint == 'f')
             {
@@ -457,9 +457,13 @@ namespace LHZ.FastJson
         #if NET45_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         #endif
-        private JsonContent GetJsonContent()
+        private JsonContent GetJsonContent(int depth)
         {
             int index = (int)(_curPoint - _startPoint);
+            if (depth > JsonConvertConfig.MaxDepth)
+            {
+                throw new JsonReadException(index, "字符位置[" + index + "]处，JSON嵌套深度超过最大限制" + JsonConvertConfig.MaxDepth);
+            }
             JsonContent content = new JsonContent(index);
             MoveNext(1);
             SkipWhitespace();
@@ -480,7 +484,7 @@ namespace LHZ.FastJson
                 MoveNext(1);
                 SkipWhitespace();
 
-                JsonClass.JsonObject value = GetJsonObject();
+                JsonClass.JsonObject value = GetJsonObject(depth);
                 content.AddJsonProperty(propertyName, value);
 
                 SkipWhitespace();
@@ -510,9 +514,13 @@ namespace LHZ.FastJson
         #if NET45_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         #endif
-        private JsonArray GetJsonArray()
+        private JsonArray GetJsonArray(int depth)
         {
             int index = (int)(_curPoint - _startPoint);
+            if (depth > JsonConvertConfig.MaxDepth)
+            {
+                throw new JsonReadException(index, "字符位置[" + index + "]处，JSON嵌套深度超过最大限制" + JsonConvertConfig.MaxDepth);
+            }
             JsonArray jsonArray = new JsonArray(index);
 
             MoveNext(1);
@@ -520,7 +528,7 @@ namespace LHZ.FastJson
 
             while (*_curPoint != ']')
             {
-                jsonArray.AddJsonObject(GetJsonObject());
+                jsonArray.AddJsonObject(GetJsonObject(depth));
                 SkipWhitespace();
                 if (*_curPoint == ',')
                 {

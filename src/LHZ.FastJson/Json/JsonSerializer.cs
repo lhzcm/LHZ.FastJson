@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -127,6 +127,12 @@ namespace LHZ.FastJson.Json
             var properties = objType.GetProperties().Where(n => {
                 if (!n.CanRead)
                     return false;
+                //Static properties and indexers cannot be compiled as instance property accesses.
+                var getter = n.GetGetMethod(false);
+                if (getter == null || getter.IsStatic)
+                    return false;
+                if (n.GetIndexParameters().Length != 0)
+                    return false;
                 //Check if serialization should be ignored
                 if (Attribute.GetCustomAttribute(n, typeof(JsonIgnoredAttribute)) is JsonIgnoredAttribute jsonIgnored && (jsonIgnored.JsonIgnoredMethod & JsonMethods.Serialize) == JsonMethods.Serialize)
                 {
@@ -168,50 +174,56 @@ namespace LHZ.FastJson.Json
                 expList.Add(Expression.Call(thisObjParameter, ((Action<string>)SerializePropertyName).Method, Expression.Constant(jsonPropertyName)));
                 switch (objectType)
                 {
-                    case ObjectType.Boolean: exp = Expression.Call(thisObjParameter, ((Action<bool>)SerializeBoolean).Method, Expression.Property(obj, item.Name)); break;
-                    case ObjectType.Int32: exp = Expression.Call(thisObjParameter, ((Action<int>)SerializeInt32).Method, Expression.Property(obj, item.Name)); break;
-                    case ObjectType.Int64: exp = Expression.Call(thisObjParameter, ((Action<long>)SerializeInt64).Method, Expression.Property(obj, item.Name)); break;
-                    case ObjectType.UInt32: exp = Expression.Call(thisObjParameter, ((Action<uint>)SerializeUInt32).Method, Expression.Property(obj, item.Name)); break;
-                    case ObjectType.UInt64: exp = Expression.Call(thisObjParameter, ((Action<ulong>)SerializeUInt64).Method, Expression.Property(obj, item.Name)); break;
-                    case ObjectType.Int16: exp = Expression.Call(thisObjParameter, ((Action<short>)SerializeInt16).Method, Expression.Property(obj, item.Name)); break;
-                    case ObjectType.UInt16: exp = Expression.Call(thisObjParameter, ((Action<ushort>)SerializeUInt16).Method, Expression.Property(obj, item.Name)); break;
-                    case ObjectType.Byte: exp = Expression.Call(thisObjParameter, ((Action<byte>)SerializeByte).Method, Expression.Property(obj, item.Name)); break;
-                    case ObjectType.Char: exp = Expression.Call(thisObjParameter, ((Action<char>)SerializeChar).Method, Expression.Property(obj, item.Name)); break;
-                    case ObjectType.Float: exp = Expression.Call(thisObjParameter, ((Action<float>)SerializeFloat).Method, Expression.Property(obj, item.Name)); break;
-                    case ObjectType.Double: exp = Expression.Call(thisObjParameter, ((Action<double>)SerializeDouble).Method, Expression.Property(obj, item.Name)); break;
-                    case ObjectType.Decimal: exp = Expression.Call(thisObjParameter, ((Action<decimal>)SerializeDecimal).Method, Expression.Property(obj, item.Name)); break;
-                    case ObjectType.DateTime: exp = Expression.Call(thisObjParameter, ((Action<DateTime>)SerializeDateTime).Method, Expression.Property(obj, item.Name)); break;
-                    case ObjectType.Enum: exp = Expression.Call(thisObjParameter, ((Action<System.Enum>)SerializeEnum).Method, Expression.Convert(Expression.Property(obj, item.Name), typeof(System.Enum))); break;
-                    case ObjectType.Guid: exp = Expression.Call(thisObjParameter, ((Action<Guid>)SerializeGuid).Method, Expression.Property(obj, item.Name)); break;
-                    case ObjectType.String: exp = Expression.Call(thisObjParameter, ((Action<string>)SerializeString).Method, Expression.Property(obj, item.Name)); break;
-                    case ObjectType.Nullable: exp = Expression.Call(thisObjParameter, ((Action<object>)SerializeAny).Method, Expression.Convert(Expression.Property(obj, item.Name), typeof(object))); break;
+                    case ObjectType.Boolean: exp = Expression.Call(thisObjParameter, ((Action<bool>)SerializeBoolean).Method, Expression.Property(obj, item)); break;
+                    case ObjectType.Int32: exp = Expression.Call(thisObjParameter, ((Action<int>)SerializeInt32).Method, Expression.Property(obj, item)); break;
+                    case ObjectType.Int64: exp = Expression.Call(thisObjParameter, ((Action<long>)SerializeInt64).Method, Expression.Property(obj, item)); break;
+                    case ObjectType.UInt32: exp = Expression.Call(thisObjParameter, ((Action<uint>)SerializeUInt32).Method, Expression.Property(obj, item)); break;
+                    case ObjectType.UInt64: exp = Expression.Call(thisObjParameter, ((Action<ulong>)SerializeUInt64).Method, Expression.Property(obj, item)); break;
+                    case ObjectType.Int16: exp = Expression.Call(thisObjParameter, ((Action<short>)SerializeInt16).Method, Expression.Property(obj, item)); break;
+                    case ObjectType.UInt16: exp = Expression.Call(thisObjParameter, ((Action<ushort>)SerializeUInt16).Method, Expression.Property(obj, item)); break;
+                    case ObjectType.Byte: exp = Expression.Call(thisObjParameter, ((Action<byte>)SerializeByte).Method, Expression.Property(obj, item)); break;
+                    case ObjectType.Char: exp = Expression.Call(thisObjParameter, ((Action<char>)SerializeChar).Method, Expression.Property(obj, item)); break;
+                    case ObjectType.Float: exp = Expression.Call(thisObjParameter, ((Action<float>)SerializeFloat).Method, Expression.Property(obj, item)); break;
+                    case ObjectType.Double: exp = Expression.Call(thisObjParameter, ((Action<double>)SerializeDouble).Method, Expression.Property(obj, item)); break;
+                    case ObjectType.Decimal: exp = Expression.Call(thisObjParameter, ((Action<decimal>)SerializeDecimal).Method, Expression.Property(obj, item)); break;
+                    case ObjectType.DateTime: exp = Expression.Call(thisObjParameter, ((Action<DateTime>)SerializeDateTime).Method, Expression.Property(obj, item)); break;
+                    case ObjectType.Enum: exp = Expression.Call(thisObjParameter, ((Action<System.Enum>)SerializeEnum).Method, Expression.Convert(Expression.Property(obj, item), typeof(System.Enum))); break;
+                    case ObjectType.Guid: exp = Expression.Call(thisObjParameter, ((Action<Guid>)SerializeGuid).Method, Expression.Property(obj, item)); break;
+                    case ObjectType.String: exp = Expression.Call(thisObjParameter, ((Action<string>)SerializeString).Method, Expression.Property(obj, item)); break;
+                    case ObjectType.Nullable: exp = Expression.Call(thisObjParameter, ((Action<object>)SerializeAny).Method, Expression.Convert(Expression.Property(obj, item), typeof(object))); break;
                     case ObjectType.Dictionary:
                         {
-                            exp = Expression.Call(thisObjParameter, ((Action<IDictionary>)SerializeDictionary).Method, Expression.Property(obj, item.Name));
+                            exp = Expression.Call(thisObjParameter, ((Action<IDictionary>)SerializeDictionary).Method, Expression.Property(obj, item));
                             break;
                         }
                     case ObjectType.Enumerable:
                         {
-                            exp = Expression.Call(thisObjParameter, ((Action<IEnumerable>)SerializeEnumerable).Method, Expression.Property(obj, item.Name));
+                            exp = Expression.Call(thisObjParameter, ((Action<IEnumerable>)SerializeEnumerable).Method, Expression.Property(obj, item));
                             break;
                         }
                     default:
                         {
-                            exp = Expression.Invoke(Expression.Call(thisObjParameter, sact.Method, Expression.Call(Expression.Property(obj, item.Name), typeof(object).GetMethod("GetType"))), thisObjParameter, Expression.Property(obj, item.Name));
+                            //Box value types before passing them to the object-typed serializer delegate.
+                            var boxedProperty = Expression.Convert(Expression.Property(obj, item), typeof(object));
+                            exp = Expression.Invoke(
+                                Expression.Call(thisObjParameter, sact.Method, Expression.Call(boxedProperty, typeof(object).GetMethod("GetType"))),
+                                thisObjParameter,
+                                boxedProperty);
                             break;
                         }
                 }
                 ////Get property type serialization (this method does not determine the actual type of each object)
                 // var expressionMethods = this.GetType().GetMethods((BindingFlags) 0x7FFFFFFF).First(n => n.Name == "CreateSerializationExpression" && n.IsGenericMethod).MakeGenericMethod(item.PropertyType);
                 // var serializationExpression = expressionMethods.Invoke(this, null) as Expression;
-                // exp = Expression.Invoke(serializationExpression, new Expression[]{thisObjParameter, Expression.Property(obj, item.Name)});
+                // exp = Expression.Invoke(serializationExpression, new Expression[]{thisObjParameter, Expression.Property(obj, item)});
 
                 //Check if reference type is null
-                if (objectType == ObjectType.String || objectType == ObjectType.Dictionary || objectType == ObjectType.Enumerable || objectType == ObjectType.Object)
+                if (!propertyType.IsValueType && (objectType == ObjectType.String || objectType == ObjectType.Dictionary || objectType == ObjectType.Enumerable || objectType == ObjectType.Object))
                 {
                     //Perform null check
+                    var propertyValue = Expression.Property(obj, item);
                     var propertyNull = Expression.Call(jsonStrBuilder, typeof(StringBuilder).GetMethod("Append", new Type[] { typeof(string) }), Expression.Constant("null"));
-                    exp = Expression.IfThenElse(Expression.Equal(Expression.Property(obj, item.Name), Expression.Constant(null)), propertyNull, exp);
+                    exp = Expression.IfThenElse(Expression.Equal(propertyValue, Expression.Constant(null, propertyType)), propertyNull, exp);
                 }
                 expList.Add(exp);
                 //Check if it is the last field; if not, add ","

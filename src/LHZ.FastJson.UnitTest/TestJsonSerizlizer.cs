@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
@@ -23,10 +23,10 @@ namespace LHZ.FastJson.UnitTest
         {
             object testObj = null;
             string obj = (new JsonSerializer(testObj)).Serialize();
-            Assert.IsTrue(obj == "null");
+            ClassicAssert.IsTrue(obj == "null");
 
             var _nullableWithNullsJson = JsonConvert.Serialize(new NullableModel());
-            Assert.AreEqual("{\"Count\":null,\"ExpiryDate\":null,\"Rating\":null,\"Name\":null}", _nullableWithNullsJson);
+            ClassicAssert.AreEqual("{\"Count\":null,\"ExpiryDate\":null,\"Rating\":null,\"Name\":null}", _nullableWithNullsJson);
         }
 
         /// <summary>
@@ -47,7 +47,7 @@ namespace LHZ.FastJson.UnitTest
             string obj = null;
             for (int i = 0; i < 10000; i++)
                 obj = (new JsonSerializer(testObj)).Serialize();
-            Assert.IsTrue(obj != null);
+            ClassicAssert.IsTrue(obj != null);
         }
 
         /// <summary>
@@ -66,7 +66,7 @@ namespace LHZ.FastJson.UnitTest
             }
             catch (Exception ex)
             {
-                Assert.AreEqual(ex.Message, "循环引用");
+                ClassicAssert.AreEqual(ex.Message, "循环引用");
                 return;
             }
             throw new Exception("没有按照预期抛出 “循环引用” 异常");
@@ -83,7 +83,7 @@ namespace LHZ.FastJson.UnitTest
             testObj.Add("test1", new { Name = "test1", Age = 18 });
             testObj.Add("test2", new { Name = "test2", IsTeacher = true });
             string obj = (new JsonSerializer(testObj)).Serialize();
-            Assert.IsTrue(obj != null);
+            ClassicAssert.IsTrue(obj != null);
         }
         /// <summary>
         /// 验证字符串转义、空值和空串的序列化。
@@ -94,16 +94,16 @@ namespace LHZ.FastJson.UnitTest
             string testObj = "test\\\"\\\\tal";
 
             string obj = (new JsonSerializer(testObj)).Serialize();
-            Assert.IsTrue("\"test\\\\\\\"\\\\\\\\tal\"" == obj);
+            ClassicAssert.IsTrue("\"test\\\\\\\"\\\\\\\\tal\"" == obj);
 
             testObj = null;
             obj = (new JsonSerializer(testObj)).Serialize();
-            Assert.AreEqual(obj, "null");
+            ClassicAssert.AreEqual(obj, "null");
 
 
             testObj = "";
             obj = (new JsonSerializer(testObj)).Serialize();
-            Assert.AreEqual(obj, "\"\"");
+            ClassicAssert.AreEqual(obj, "\"\"");
 
         }
 
@@ -115,11 +115,11 @@ namespace LHZ.FastJson.UnitTest
         {
             int? testObj = null;
             string obj = (new JsonSerializer(testObj)).Serialize();
-            Assert.AreEqual(obj, "null");
+            ClassicAssert.AreEqual(obj, "null");
 
             testObj = 12;
             obj = (new JsonSerializer(testObj)).Serialize();
-            Assert.AreEqual(obj, "12");
+            ClassicAssert.AreEqual(obj, "12");
         }
 
         /// <summary>
@@ -130,7 +130,7 @@ namespace LHZ.FastJson.UnitTest
         {
             object obj = new object();
             string objson = (new JsonSerializer(obj)).Serialize();
-            Assert.AreEqual("{}", objson);
+            ClassicAssert.AreEqual("{}", objson);
         }
 
 
@@ -142,10 +142,10 @@ namespace LHZ.FastJson.UnitTest
         {
             List<object> list = new List<object>();
             string listjson = (new JsonSerializer(list)).Serialize();
-            Assert.AreEqual("[]", listjson);
+            ClassicAssert.AreEqual("[]", listjson);
 
             listjson = (new JsonSerializer(new int[0])).Serialize();
-            Assert.AreEqual("[]", listjson);
+            ClassicAssert.AreEqual("[]", listjson);
         }
 
         /// <summary>
@@ -155,7 +155,7 @@ namespace LHZ.FastJson.UnitTest
         public void TestCommonExtend()
         {
             var jsonStr = new { Name = "test", Age = 20 }.ToJson();
-            Assert.AreEqual(jsonStr, "{\"Name\":\"test\",\"Age\":20}");
+            ClassicAssert.AreEqual(jsonStr, "{\"Name\":\"test\",\"Age\":20}");
         }
 
         /// <summary>
@@ -166,7 +166,7 @@ namespace LHZ.FastJson.UnitTest
         {
             TestStructObj structObj = new TestStructObj() { Name = "test2", Age = 10, Height = 170, Obj = null };
             string structjson = (new JsonSerializer(structObj)).Serialize();
-            Assert.AreEqual(structjson, "{\"Name\":\"test2\",\"Age\":10,\"Height\":170,\"Obj\":null}");
+            ClassicAssert.AreEqual(structjson, "{\"Name\":\"test2\",\"Age\":10,\"Height\":170,\"Obj\":null}");
         }
         /// <summary>
         /// 验证Guid类型的序列化
@@ -177,7 +177,7 @@ namespace LHZ.FastJson.UnitTest
             var guid = Guid.NewGuid();
             var jsonStr = JsonConvert.Serialize(guid);
             var guid2 = JsonConvert.Deserialize<Guid>(jsonStr);
-            Assert.AreEqual(guid, guid2);
+            ClassicAssert.AreEqual(guid, guid2);
         }
 
         /// <summary>
@@ -186,8 +186,8 @@ namespace LHZ.FastJson.UnitTest
         [Test]
         public void TestBoolean()
         {
-            Assert.AreEqual("true", JsonConvert.Serialize(true));
-            Assert.AreEqual("false", JsonConvert.Serialize(false));
+            ClassicAssert.AreEqual("true", JsonConvert.Serialize(true));
+            ClassicAssert.AreEqual("false", JsonConvert.Serialize(false));
         }
 
         /// <summary>
@@ -196,8 +196,8 @@ namespace LHZ.FastJson.UnitTest
         [Test]
         public void TestByte()
         {
-            Assert.AreEqual("255", JsonConvert.Serialize((byte)255));
-            Assert.AreEqual("0", JsonConvert.Serialize((byte)0));
+            ClassicAssert.AreEqual("255", JsonConvert.Serialize((byte)255));
+            ClassicAssert.AreEqual("0", JsonConvert.Serialize((byte)0));
         }
 
         /// <summary>
@@ -206,8 +206,8 @@ namespace LHZ.FastJson.UnitTest
         [Test]
         public void TestInt16()
         {
-            Assert.AreEqual("-32768", JsonConvert.Serialize((short)(-32768)));
-            Assert.AreEqual("65535", JsonConvert.Serialize((ushort)65535));
+            ClassicAssert.AreEqual("-32768", JsonConvert.Serialize((short)(-32768)));
+            ClassicAssert.AreEqual("65535", JsonConvert.Serialize((ushort)65535));
         }
 
         /// <summary>
@@ -216,8 +216,8 @@ namespace LHZ.FastJson.UnitTest
         [Test]
         public void TestUInt()
         {
-            Assert.AreEqual("4294967295", JsonConvert.Serialize(4294967295u));
-            Assert.AreEqual("18446744073709551615", JsonConvert.Serialize(18446744073709551615ul));
+            ClassicAssert.AreEqual("4294967295", JsonConvert.Serialize(4294967295u));
+            ClassicAssert.AreEqual("18446744073709551615", JsonConvert.Serialize(18446744073709551615ul));
         }
 
         /// <summary>
@@ -226,7 +226,7 @@ namespace LHZ.FastJson.UnitTest
         [Test]
         public void TestChar()
         {
-            Assert.AreEqual("\"A\"", JsonConvert.Serialize('A'));
+            ClassicAssert.AreEqual("\"A\"", JsonConvert.Serialize('A'));
         }
 
         /// <summary>
@@ -235,9 +235,9 @@ namespace LHZ.FastJson.UnitTest
         [Test]
         public void TestNegativeNumbers()
         {
-            Assert.AreEqual("-42", JsonConvert.Serialize(-42));
-            Assert.AreEqual("-3.14", JsonConvert.Serialize(-3.14d));
-            Assert.AreEqual("-2.5", JsonConvert.Serialize(-2.5f));
+            ClassicAssert.AreEqual("-42", JsonConvert.Serialize(-42));
+            ClassicAssert.AreEqual("-3.14", JsonConvert.Serialize(-3.14d));
+            ClassicAssert.AreEqual("-2.5", JsonConvert.Serialize(-2.5f));
         }
 
         /// <summary>
@@ -252,7 +252,7 @@ namespace LHZ.FastJson.UnitTest
                 Child = new NestedSerializeChild { Name = "child", Age = 10 }
             };
             var json = JsonConvert.Serialize(obj);
-            Assert.AreEqual("{\"Name\":\"parent\",\"Child\":{\"Name\":\"child\",\"Age\":10}}", json);
+            ClassicAssert.AreEqual("{\"Name\":\"parent\",\"Child\":{\"Name\":\"child\",\"Age\":10}}", json);
         }
 
         /// <summary>
@@ -268,7 +268,7 @@ namespace LHZ.FastJson.UnitTest
                 Height = 170
             };
             var json = JsonConvert.Serialize(obj);
-            Assert.AreEqual("{\"Name\":\"test\",\"Age\":10}", json);
+            ClassicAssert.AreEqual("{\"Name\":\"test\",\"Age\":10}", json);
         }
 
         /// <summary>
@@ -282,10 +282,10 @@ namespace LHZ.FastJson.UnitTest
                 (IJsonObject json) => int.Parse(json.Value.ToString()) + 10
             );
             var json = new JsonSerializer(5, converter).Serialize();
-            Assert.AreEqual("10", json);
+            ClassicAssert.AreEqual("10", json);
 
             var obj = JsonConvert.Deserialize<int>("5", converter);
-            Assert.AreEqual(15, obj);
+            ClassicAssert.AreEqual(15, obj);
         }
 
         /// <summary>
@@ -301,7 +301,7 @@ namespace LHZ.FastJson.UnitTest
                 Height = 170
             };
             var testStr = LHZ.FastJson.JsonConvert.Serialize(testJsonTgnoredClass);
-            Assert.AreEqual(testStr, @"{""Name"":""test"",""Age"":10}");
+            ClassicAssert.AreEqual(testStr, @"{""Name"":""test"",""Age"":10}");
         }
 
         /// <summary>
@@ -312,13 +312,13 @@ namespace LHZ.FastJson.UnitTest
         {
             var str = (new JsonSerializer(1, new JsonCustomConvert<int>((int o) =>
             {
-                Assert.AreEqual(1, o);
+                ClassicAssert.AreEqual(1, o);
                 return "2";
             }))).Serialize();
-            Assert.AreEqual(str, "2");
+            ClassicAssert.AreEqual(str, "2");
 
             str = (new JsonSerializer(new TestObj(), new JsonCustomConvert<TestObj>((TestObj o) => "CustomConvert"))).Serialize();
-            Assert.AreEqual(str, "CustomConvert");
+            ClassicAssert.AreEqual(str, "CustomConvert");
         }
 
         /// <summary>
@@ -335,14 +335,14 @@ namespace LHZ.FastJson.UnitTest
             };
             var jsonStr = (new JsonSerializer(testObj)).Serialize();
             var jsonObj = (new JsonReader(jsonStr)).JsonRead();
-            Assert.AreEqual(jsonObj["studentName"].Value, name);
+            ClassicAssert.AreEqual(jsonObj["studentName"].Value, name);
         }
         [Test]
         public void TestEnumSerialize()
         {
             var obj = new TestEnumClass() { ObjectType = ObjectType.Enum, Name = "枚举类型" };
             var jsonStr = JsonConvert.Serialize(obj);
-            Assert.AreEqual(jsonStr, "{\"ObjectType\":"+ ((int)ObjectType.Enum).ToString() + ",\"Name\":\"枚举类型\"}");
+            ClassicAssert.AreEqual(jsonStr, "{\"ObjectType\":"+ ((int)ObjectType.Enum).ToString() + ",\"Name\":\"枚举类型\"}");
         }
         [Test]
         public void TestDitionarySerialize()
@@ -367,7 +367,7 @@ namespace LHZ.FastJson.UnitTest
                 Uid = Guid.Parse("0d6c8fd4-b18d-47d2-95c2-b07c9a5d8312")
             });
             var jsonStr = JsonConvert.Serialize(obj);
-            Assert.AreEqual(jsonStr, "{\"test1\":{\"Id\":1,\"Name\":\"test1\",\"Price\":10,\"IsActive\":true,\"CreateTime\":\"2026-06-24 23:32:03\",\"Uid\":\"5789473f-32c1-43f4-b723-834e05b07afd\"},\"test2\":{\"Id\":2,\"Name\":\"test2\",\"Price\":20,\"IsActive\":false,\"CreateTime\":\"2026-06-24 23:32:03\",\"Uid\":\"0d6c8fd4-b18d-47d2-95c2-b07c9a5d8312\"}}");
+            ClassicAssert.AreEqual(jsonStr, "{\"test1\":{\"Id\":1,\"Name\":\"test1\",\"Price\":10,\"IsActive\":true,\"CreateTime\":\"2026-06-24 23:32:03\",\"Uid\":\"5789473f-32c1-43f4-b723-834e05b07afd\"},\"test2\":{\"Id\":2,\"Name\":\"test2\",\"Price\":20,\"IsActive\":false,\"CreateTime\":\"2026-06-24 23:32:03\",\"Uid\":\"0d6c8fd4-b18d-47d2-95c2-b07c9a5d8312\"}}");
         }
         public class JsonProptryNameAttributeTest
         {

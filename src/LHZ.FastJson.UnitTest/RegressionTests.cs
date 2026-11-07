@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using LHZ.FastJson.Exceptions;
@@ -23,10 +23,10 @@ namespace LHZ.FastJson.UnitTest
         {
             Exception exception;
 
-            Assert.IsFalse(JsonReader.IsJsonString("{\"a\":1}xxx", out exception));
-            Assert.IsFalse(JsonReader.IsJsonString("01", out exception));
-            Assert.IsFalse(JsonReader.IsJsonString("1.", out exception));
-            Assert.IsFalse(JsonReader.IsJsonString("[1,]", out exception));
+            ClassicAssert.IsFalse(JsonReader.IsJsonString("{\"a\":1}xxx", out exception));
+            ClassicAssert.IsFalse(JsonReader.IsJsonString("01", out exception));
+            ClassicAssert.IsFalse(JsonReader.IsJsonString("1.", out exception));
+            ClassicAssert.IsFalse(JsonReader.IsJsonString("[1,]", out exception));
         }
 
         /// <summary>
@@ -37,14 +37,14 @@ namespace LHZ.FastJson.UnitTest
         {
             Exception exception;
 
-            Assert.IsTrue(JsonReader.IsJsonString("-1", out exception));
-            Assert.IsTrue(JsonReader.IsJsonString("1e2", out exception));
+            ClassicAssert.IsTrue(JsonReader.IsJsonString("-1", out exception));
+            ClassicAssert.IsTrue(JsonReader.IsJsonString("1e2", out exception));
 
             var unicodeString = new JsonReader("\"\\u0041\"").JsonRead();
-            Assert.AreEqual("A", unicodeString.Value);
+            ClassicAssert.AreEqual("A", unicodeString.Value);
 
             var slashString = new JsonReader("\"c:\\\\temp\"").JsonRead();
-            Assert.AreEqual("\"c:\\\\temp\"", slashString.ToString());
+            ClassicAssert.AreEqual("\"c:\\\\temp\"", slashString.ToString());
         }
 
         /// <summary>
@@ -57,7 +57,7 @@ namespace LHZ.FastJson.UnitTest
 
             var json = JsonConvert.Serialize(value);
 
-            Assert.AreEqual("\"2020-07-18 01:02:03\"", json);
+            ClassicAssert.AreEqual("\"2020-07-18 01:02:03\"", json);
         }
 
         /// <summary>
@@ -66,8 +66,8 @@ namespace LHZ.FastJson.UnitTest
         [Test]
         public void SerializeNullableProperties()
         {
-            Assert.AreEqual("{\"Count\":12}", JsonConvert.Serialize(new NullablePropertyClass { Count = 12 }));
-            Assert.AreEqual("{\"Count\":null}", JsonConvert.Serialize(new NullablePropertyClass { Count = null }));
+            ClassicAssert.AreEqual("{\"Count\":12}", JsonConvert.Serialize(new NullablePropertyClass { Count = 12 }));
+            ClassicAssert.AreEqual("{\"Count\":null}", JsonConvert.Serialize(new NullablePropertyClass { Count = null }));
         }
 
         /// <summary>
@@ -77,14 +77,14 @@ namespace LHZ.FastJson.UnitTest
         public void SerializeNullItemsInCollections()
         {
             var list = new List<object> { 1, null, "test" };
-            Assert.AreEqual("[1,null,\"test\"]", JsonConvert.Serialize(list));
+            ClassicAssert.AreEqual("[1,null,\"test\"]", JsonConvert.Serialize(list));
 
             var dictionary = new Dictionary<string, object>
             {
                 { "a", null },
                 { "b", 2 }
             };
-            Assert.AreEqual("{\"a\":null,\"b\":2}", JsonConvert.Serialize(dictionary));
+            ClassicAssert.AreEqual("{\"a\":null,\"b\":2}", JsonConvert.Serialize(dictionary));
         }
 
         /// <summary>
@@ -104,9 +104,9 @@ namespace LHZ.FastJson.UnitTest
         {
             var value = JsonConvert.Deserialize<IgnoredMiddlePropertyClass>("{\"A\":\"one\",\"Ignored\":99,\"B\":\"two\"}");
 
-            Assert.AreEqual("one", value.A);
-            Assert.AreEqual(0, value.Ignored);
-            Assert.AreEqual("two", value.B);
+            ClassicAssert.AreEqual("one", value.A);
+            ClassicAssert.AreEqual(0, value.Ignored);
+            ClassicAssert.AreEqual("two", value.B);
         }
 
         /// <summary>
@@ -118,13 +118,13 @@ namespace LHZ.FastJson.UnitTest
             var converter = new JsonCustomConvert<int>(jsonObject => 2);
 
             var list = JsonConvert.Deserialize<List<int>>("[1]", converter);
-            Assert.AreEqual(2, list[0]);
+            ClassicAssert.AreEqual(2, list[0]);
 
             var dictionary = JsonConvert.Deserialize<Dictionary<string, int>>("{\"a\":1}", converter);
-            Assert.AreEqual(2, dictionary["a"]);
+            ClassicAssert.AreEqual(2, dictionary["a"]);
 
             var nullable = JsonConvert.Deserialize<int?>("1", converter);
-            Assert.AreEqual(2, nullable.Value);
+            ClassicAssert.AreEqual(2, nullable.Value);
         }
         /// <summary>
         /// 验证 JsonObject 类型会保留读取后的节点结构。
@@ -133,11 +133,11 @@ namespace LHZ.FastJson.UnitTest
         public void DeserializeJsonObjectTypesPreservesParsedJson()
         {
             var content = JsonConvert.Deserialize<JsonContent>("{\"a\":1}");
-            Assert.AreEqual("1", content["a"].Value.ToString());
+            ClassicAssert.AreEqual("1", content["a"].Value.ToString());
 
             var jsonObject = JsonConvert.Deserialize<JsonObject>("{\"a\":1}");
-            Assert.IsInstanceOf<JsonContent>(jsonObject);
-            Assert.AreEqual("1", jsonObject["a"].Value.ToString());
+            ClassicAssert.IsInstanceOf<JsonContent>(jsonObject);
+            ClassicAssert.AreEqual("1", jsonObject["a"].Value.ToString());
         }
         /// <summary>
         /// 验证截断输入会返回 JSON 读取异常。
@@ -149,44 +149,36 @@ namespace LHZ.FastJson.UnitTest
             {
                 Exception exception;
 
-                Assert.IsFalse(JsonReader.IsJsonString(json, out exception), json);
-                Assert.IsNotNull(exception, json);
-                Assert.IsInstanceOf<JsonReadException>(exception, json);
+                ClassicAssert.IsFalse(JsonReader.IsJsonString(json, out exception), json);
+                ClassicAssert.IsNotNull(exception, json);
+                ClassicAssert.IsInstanceOf<JsonReadException>(exception, json);
             }
         }
 
         /// <summary>
-        /// 已知缺陷回归测试（当前失败）：反序列化时跳过未知的数组属性会抛出异常。
-        /// 缺陷位置：JsonDirectReader.SkipCurrentObject 的 '[' 分支错误调用了 ReadContent()（对象解析器），
-        /// 遇到 '[' 时走到 ReadJsonPropertyName 并抛出 JsonReadException("解析属性名错误")。
-        /// 期望行为：与未知的对象属性一致，数组应被正常跳过、反序列化成功。
+        /// 验证反序列化时可以正常跳过未知的数组属性。
         /// </summary>
         [Test]
         public void DeserializeSkipsUnknownArrayProperty()
         {
             var value = JsonConvert.Deserialize<SinglePropertyClass>("{\"A\":1,\"B\":[1,2,3]}");
 
-            Assert.AreEqual(1, value.A);
+            ClassicAssert.AreEqual(1, value.A);
         }
 
         /// <summary>
-        /// 已知缺陷回归测试（当前失败）：反序列化时跳过未知的嵌套数组属性（数组套数组/对象）会抛出异常。
-        /// 缺陷位置：同 DeserializeSkipsUnknownArrayProperty，JsonDirectReader.SkipCurrentObject 的 '[' 分支。
+        /// 验证反序列化时可以正常跳过未知的嵌套数组属性（数组套数组/对象）。
         /// </summary>
         [Test]
         public void DeserializeSkipsUnknownNestedArrayProperty()
         {
             var value = JsonConvert.Deserialize<SinglePropertyClass>("{\"A\":1,\"B\":[[1],[2,3],{\"x\":4}]}");
 
-            Assert.AreEqual(1, value.A);
+            ClassicAssert.AreEqual(1, value.A);
         }
 
         /// <summary>
-        /// 已知缺陷回归测试（当前失败）：直接反序列化遇到截断/非法的输入时抛出裸 IndexOutOfRangeException，
-        /// 而不是与 JsonReader 一致的 JsonReadException。
-        /// 缺陷位置：JsonDirectReader 的 JsonType getter、ReadJsonPropertyName、ReadContent/ReadArray
-        /// 缺少边界检查（越界检查位于索引访问之后），未闭合的属性名/对象/数组以及空字符串均会越界。
-        /// 期望行为：抛出携带位置信息的 JsonReadException。
+        /// 验证直接反序列化遇到截断/非法输入时抛出携带位置信息的 JsonReadException。
         /// </summary>
         [Test]
         public void DeserializeTruncatedInputThrowsJsonReadException()
@@ -216,9 +208,9 @@ namespace LHZ.FastJson.UnitTest
         public void TryDeserializeValidJsonReturnsTrue()
         {
             bool success = JsonConvert.TryDeserialize("{\"a\":1}", out IJsonObject result);
-            Assert.IsTrue(success);
-            Assert.IsNotNull(result);
-            Assert.AreEqual("1", result["a"].Value.ToString());
+            ClassicAssert.IsTrue(success);
+            ClassicAssert.IsNotNull(result);
+            ClassicAssert.AreEqual("1", result["a"].Value.ToString());
         }
 
         /// <summary>
@@ -228,8 +220,8 @@ namespace LHZ.FastJson.UnitTest
         public void TryDeserializeInvalidJsonReturnsFalse()
         {
             bool success = JsonConvert.TryDeserialize("{invalid json}", out IJsonObject result);
-            Assert.IsFalse(success);
-            Assert.IsNull(result);
+            ClassicAssert.IsFalse(success);
+            ClassicAssert.IsNull(result);
         }
 
         /// <summary>
@@ -239,10 +231,10 @@ namespace LHZ.FastJson.UnitTest
         public void TryDeserializeGenericValidJsonReturnsTrue()
         {
             bool success = JsonConvert.TryDeserialize("{\"Id\":42,\"Name\":\"test\"}", out SimpleObjectRootClass result);
-            Assert.IsTrue(success);
-            Assert.IsNotNull(result);
-            Assert.AreEqual(42, result.Id);
-            Assert.AreEqual("test", result.Name);
+            ClassicAssert.IsTrue(success);
+            ClassicAssert.IsNotNull(result);
+            ClassicAssert.AreEqual(42, result.Id);
+            ClassicAssert.AreEqual("test", result.Name);
         }
 
         /// <summary>
@@ -252,8 +244,8 @@ namespace LHZ.FastJson.UnitTest
         public void TryDeserializeGenericInvalidJsonReturnsFalse()
         {
             bool success = JsonConvert.TryDeserialize<SimpleObjectRootClass>("not json", out SimpleObjectRootClass result);
-            Assert.IsFalse(success);
-            Assert.AreEqual(default(SimpleObjectRootClass), result);
+            ClassicAssert.IsFalse(success);
+            ClassicAssert.AreEqual(default(SimpleObjectRootClass), result);
         }
 
         /// <summary>
@@ -263,9 +255,9 @@ namespace LHZ.FastJson.UnitTest
         public void DeserializeNonGenericReturnsJsonObject()
         {
             var result = JsonConvert.Deserialize("{\"a\":1,\"b\":\"test\"}");
-            Assert.IsNotNull(result);
-            Assert.AreEqual("1", result["a"].Value.ToString());
-            Assert.AreEqual("test", result["b"].Value.ToString());
+            ClassicAssert.IsNotNull(result);
+            ClassicAssert.AreEqual("1", result["a"].Value.ToString());
+            ClassicAssert.AreEqual("test", result["b"].Value.ToString());
         }
 
         /// <summary>
@@ -290,10 +282,10 @@ namespace LHZ.FastJson.UnitTest
             var json = JsonConvert.Serialize(obj);
             var restored = JsonConvert.Deserialize<DeepNestedClass>(json);
 
-            Assert.AreEqual(1, restored.Level);
-            Assert.AreEqual(2, restored.Child.Level);
-            Assert.AreEqual(3, restored.Child.Child.Level);
-            Assert.IsNull(restored.Child.Child.Child);
+            ClassicAssert.AreEqual(1, restored.Level);
+            ClassicAssert.AreEqual(2, restored.Child.Level);
+            ClassicAssert.AreEqual(3, restored.Child.Child.Level);
+            ClassicAssert.IsNull(restored.Child.Child.Child);
         }
 
         /// <summary>
@@ -315,8 +307,8 @@ namespace LHZ.FastJson.UnitTest
             var json = JsonConvert.Serialize(original);
             var restored = JsonConvert.Deserialize<SimpleObjectRootClass>(json);
 
-            Assert.AreEqual(original.Id, restored.Id);
-            Assert.AreEqual(original.Name, restored.Name);
+            ClassicAssert.AreEqual(original.Id, restored.Id);
+            ClassicAssert.AreEqual(original.Name, restored.Name);
         }
 
         /// <summary>
@@ -331,7 +323,7 @@ namespace LHZ.FastJson.UnitTest
             {
                 sum += int.Parse(item.Value.ToString());
             }
-            Assert.AreEqual(6, sum);
+            ClassicAssert.AreEqual(6, sum);
         }
 
         /// <summary>
@@ -345,10 +337,10 @@ namespace LHZ.FastJson.UnitTest
             foreach (var kvp in content)
             {
                 count++;
-                Assert.IsNotNull(kvp.Key);
-                Assert.IsNotNull(kvp.Value);
+                ClassicAssert.IsNotNull(kvp.Key);
+                ClassicAssert.IsNotNull(kvp.Value);
             }
-            Assert.AreEqual(2, count);
+            ClassicAssert.AreEqual(2, count);
         }
 
         public class NullablePropertyClass

@@ -1,16 +1,17 @@
-using System;
+﻿using System;
 
 namespace LHZ.FastJson
 {
     /// <summary>
     /// Global JSON serialization / deserialization configuration.
-    /// Changing a setting invalidates the compiled expression caches,
+    /// Changing a naming setting invalidates the compiled expression caches,
     /// so subsequent serialization / deserialization calls pick up the new value.
     /// </summary>
     public static class JsonConvertConfig
     {
         private static volatile bool _useCamelCase;
         private static volatile int _configVersion;
+        private static volatile int _maxDepth = 64;
 
         /// <summary>
         /// Whether property names should be converted to camelCase during serialization,
@@ -40,6 +41,24 @@ namespace LHZ.FastJson
         internal static int ConfigVersion
         {
             get { return _configVersion; }
+        }
+
+        /// <summary>
+        /// Maximum nesting depth of JSON objects and arrays accepted by the readers.
+        /// This limit prevents stack overflows caused by deeply nested input.
+        /// Default: 64 (the same default as System.Text.Json).
+        /// </summary>
+        public static int MaxDepth
+        {
+            get { return _maxDepth; }
+            set
+            {
+                if (value < 1)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), "MaxDepth must be greater than zero.");
+                }
+                _maxDepth = value;
+            }
         }
 
         /// <summary>

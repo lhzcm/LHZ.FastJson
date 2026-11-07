@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -25,12 +25,12 @@ namespace LHZ.FastJson.UnitTest
         {
             string testStr = "null";
             var obj = (new JsonDeserializer<object>(testStr)).Deserialize();
-            Assert.IsNull(obj);
+            ClassicAssert.IsNull(obj);
             testStr = "{\"Count\":1,\"ExpiryDate\":null,\"Rating\":null,\"Name\":null}";
             var nullableObj = (new JsonDeserializer<NullableModel>(testStr)).Deserialize();
-            Assert.AreEqual(1, nullableObj.Count);
-            Assert.AreEqual(null, nullableObj.ExpiryDate);
-            Assert.AreEqual(null, nullableObj.Name);
+            ClassicAssert.AreEqual(1, nullableObj.Count);
+            ClassicAssert.AreEqual(null, nullableObj.ExpiryDate);
+            ClassicAssert.AreEqual(null, nullableObj.Name);
         }
 
         /// <summary>
@@ -41,11 +41,11 @@ namespace LHZ.FastJson.UnitTest
         {
             string testStr = "true";
             bool obj = (new JsonDeserializer<bool>(testStr)).Deserialize();
-            Assert.IsTrue(obj);
+            ClassicAssert.IsTrue(obj);
 
             testStr = "false";
             obj = (new JsonDeserializer<bool>(testStr)).Deserialize();
-            Assert.IsFalse(obj);
+            ClassicAssert.IsFalse(obj);
         }
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace LHZ.FastJson.UnitTest
         {
             int intVal = (new JsonDeserializer<int>("255")).Deserialize();
             byte obj = (byte)intVal;
-            Assert.AreEqual((byte)255, obj);
+            ClassicAssert.AreEqual((byte)255, obj);
         }
 
         /// <summary>
@@ -66,10 +66,10 @@ namespace LHZ.FastJson.UnitTest
         public void TestInt16()
         {
             short obj = (new JsonDeserializer<short>("-32768")).Deserialize();
-            Assert.AreEqual((short)(-32768), obj);
+            ClassicAssert.AreEqual((short)(-32768), obj);
 
             ushort uObj = (new JsonDeserializer<ushort>("65535")).Deserialize();
-            Assert.AreEqual((ushort)65535, uObj);
+            ClassicAssert.AreEqual((ushort)65535, uObj);
         }
 
         /// <summary>
@@ -79,10 +79,10 @@ namespace LHZ.FastJson.UnitTest
         public void TestUInt()
         {
             uint obj = (new JsonDeserializer<uint>("4294967295")).Deserialize();
-            Assert.AreEqual(4294967295u, obj);
+            ClassicAssert.AreEqual(4294967295u, obj);
 
             ulong uObj = (new JsonDeserializer<ulong>("18446744073709551615")).Deserialize();
-            Assert.AreEqual(18446744073709551615ul, uObj);
+            ClassicAssert.AreEqual(18446744073709551615ul, uObj);
         }
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace LHZ.FastJson.UnitTest
         public void TestChar()
         {
             char obj = (new JsonDeserializer<char>("\"A\"")).Deserialize();
-            Assert.AreEqual('A', obj);
+            ClassicAssert.AreEqual('A', obj);
         }
 
         /// <summary>
@@ -102,13 +102,13 @@ namespace LHZ.FastJson.UnitTest
         public void TestNegativeNumbers()
         {
             int obj = (new JsonDeserializer<int>("-42")).Deserialize();
-            Assert.AreEqual(-42, obj);
+            ClassicAssert.AreEqual(-42, obj);
 
             double dObj = (new JsonDeserializer<double>("-3.14")).Deserialize();
-            Assert.AreEqual(-3.14, dObj);
+            ClassicAssert.AreEqual(-3.14, dObj);
 
             float fObj = (new JsonDeserializer<float>("-2.5")).Deserialize();
-            Assert.AreEqual(-2.5f, fObj);
+            ClassicAssert.AreEqual(-2.5f, fObj);
         }
 
         /// <summary>
@@ -118,10 +118,10 @@ namespace LHZ.FastJson.UnitTest
         public void TestScientificNotation()
         {
             double obj = (new JsonDeserializer<double>("1.5e3")).Deserialize();
-            Assert.AreEqual(1500.0, obj);
+            ClassicAssert.AreEqual(1500.0, obj);
 
             obj = (new JsonDeserializer<double>("2.5E-2")).Deserialize();
-            Assert.AreEqual(0.025, obj);
+            ClassicAssert.AreEqual(0.025, obj);
         }
 
         /// <summary>
@@ -132,10 +132,10 @@ namespace LHZ.FastJson.UnitTest
         {
             string testStr = "{\"Name\":\"parent\",\"Child\":{\"Name\":\"child\",\"Age\":10}}";
             var obj = (new JsonDeserializer<NestedTestObj>(testStr)).Deserialize();
-            Assert.AreEqual("parent", obj.Name);
-            Assert.IsNotNull(obj.Child);
-            Assert.AreEqual("child", obj.Child.Name);
-            Assert.AreEqual(10, obj.Child.Age);
+            ClassicAssert.AreEqual("parent", obj.Name);
+            ClassicAssert.IsNotNull(obj.Child);
+            ClassicAssert.AreEqual("child", obj.Child.Name);
+            ClassicAssert.AreEqual(10, obj.Child.Age);
         }
 
         /// <summary>
@@ -146,11 +146,11 @@ namespace LHZ.FastJson.UnitTest
         {
             string testStr = "[{\"Id\":1,\"Name\":\"A\"},{\"Id\":2,\"Name\":\"B\"}]";
             var obj = (new JsonDeserializer<TestObjClass[]>(testStr)).Deserialize();
-            Assert.AreEqual(2, obj.Length);
-            Assert.AreEqual(1, obj[0].Id);
-            Assert.AreEqual("A", obj[0].Name);
-            Assert.AreEqual(2, obj[1].Id);
-            Assert.AreEqual("B", obj[1].Name);
+            ClassicAssert.AreEqual(2, obj.Length);
+            ClassicAssert.AreEqual(1, obj[0].Id);
+            ClassicAssert.AreEqual("A", obj[0].Name);
+            ClassicAssert.AreEqual(2, obj[1].Id);
+            ClassicAssert.AreEqual("B", obj[1].Name);
         }
 
         /// <summary>
@@ -160,16 +160,16 @@ namespace LHZ.FastJson.UnitTest
         public void TestEmptyStructures()
         {
             var emptyArray = (new JsonDeserializer<int[]>("[]")).Deserialize();
-            Assert.IsNotNull(emptyArray);
-            Assert.AreEqual(0, emptyArray.Length);
+            ClassicAssert.IsNotNull(emptyArray);
+            ClassicAssert.AreEqual(0, emptyArray.Length);
 
             var emptyList = (new JsonDeserializer<List<string>>("[]")).Deserialize();
-            Assert.IsNotNull(emptyList);
-            Assert.AreEqual(0, emptyList.Count);
+            ClassicAssert.IsNotNull(emptyList);
+            ClassicAssert.AreEqual(0, emptyList.Count);
 
             var emptyDict = (new JsonDeserializer<Dictionary<string, int>>("{}")).Deserialize();
-            Assert.IsNotNull(emptyDict);
-            Assert.AreEqual(0, emptyDict.Count);
+            ClassicAssert.IsNotNull(emptyDict);
+            ClassicAssert.AreEqual(0, emptyDict.Count);
         }
 
         /// <summary>
@@ -180,8 +180,8 @@ namespace LHZ.FastJson.UnitTest
         {
             string testStr = "{\"outer\":{\"inner\":42}}";
             var obj = (new JsonDeserializer<Dictionary<string, Dictionary<string, int>>>(testStr)).Deserialize();
-            Assert.IsTrue(obj.ContainsKey("outer"));
-            Assert.AreEqual(42, obj["outer"]["inner"]);
+            ClassicAssert.IsTrue(obj.ContainsKey("outer"));
+            ClassicAssert.AreEqual(42, obj["outer"]["inner"]);
         }
 
         /// <summary>
@@ -192,9 +192,9 @@ namespace LHZ.FastJson.UnitTest
         {
             var testStr = "{\"Name\":\"test\",\"Age\":10,\"Height\":170}";
             var obj = (new JsonDeserializer<JsonIgnoredAllClass>(testStr)).Deserialize();
-            Assert.AreEqual("test", obj.Name);
-            Assert.AreEqual(10, obj.Age);
-            Assert.AreEqual(0, obj.Height); // ignored for deserialization
+            ClassicAssert.AreEqual("test", obj.Name);
+            ClassicAssert.AreEqual(10, obj.Age);
+            ClassicAssert.AreEqual(0, obj.Height); // ignored for deserialization
         }
 
         /// <summary>
@@ -205,9 +205,9 @@ namespace LHZ.FastJson.UnitTest
         {
             var testStr = "{\"Name\":\"test\",\"Age\":10,\"Height\":170}";
             var obj = (new JsonDeserializer<JsonIgnoredSerializeOnlyClass>(testStr)).Deserialize();
-            Assert.AreEqual("test", obj.Name);
-            Assert.AreEqual(10, obj.Age);
-            Assert.AreEqual(170, obj.Height); // only ignored for serialize, not deserialize
+            ClassicAssert.AreEqual("test", obj.Name);
+            ClassicAssert.AreEqual(10, obj.Age);
+            ClassicAssert.AreEqual(170, obj.Height); // only ignored for serialize, not deserialize
         }
 
         /// <summary>
@@ -218,7 +218,7 @@ namespace LHZ.FastJson.UnitTest
         {
             string testStr = "9284";
             int obj = (new JsonDeserializer<int>(testStr)).Deserialize();
-            Assert.IsTrue(obj == 9284);
+            ClassicAssert.IsTrue(obj == 9284);
         }
 
         /// <summary>
@@ -229,7 +229,7 @@ namespace LHZ.FastJson.UnitTest
         {
             string testStr = "9284523245244254";
             long obj = (new JsonDeserializer<long>(testStr)).Deserialize();
-            Assert.IsTrue(obj == 9284523245244254);
+            ClassicAssert.IsTrue(obj == 9284523245244254);
         }
 
         /// <summary>
@@ -240,7 +240,7 @@ namespace LHZ.FastJson.UnitTest
         {
             string testStr = "1.2";
             float obj = (new JsonDeserializer<float>(testStr)).Deserialize();
-            Assert.IsTrue(obj == 1.2f);
+            ClassicAssert.IsTrue(obj == 1.2f);
         }
 
         /// <summary>
@@ -251,7 +251,7 @@ namespace LHZ.FastJson.UnitTest
         {
             string testStr = "1024.248";
             double obj = (new JsonDeserializer<double>(testStr)).Deserialize();
-            Assert.IsTrue(obj == 1024.248);
+            ClassicAssert.IsTrue(obj == 1024.248);
         }
 
         /// <summary>
@@ -262,7 +262,7 @@ namespace LHZ.FastJson.UnitTest
         {
             string testStr = "1020990934.24823423423432";
             decimal obj = (new JsonDeserializer<decimal>(testStr)).Deserialize();
-            Assert.IsTrue(obj == 1020990934.24823423423432m);
+            ClassicAssert.IsTrue(obj == 1020990934.24823423423432m);
         }
 
         /// <summary>
@@ -273,11 +273,11 @@ namespace LHZ.FastJson.UnitTest
         {
             string testStr = "\"Test1\"";
             TestEnum obj = (new JsonDeserializer<TestEnum>(testStr)).Deserialize();
-            Assert.IsTrue(obj == TestEnum.Test1);
+            ClassicAssert.IsTrue(obj == TestEnum.Test1);
 
             testStr = "1";
             obj = (new JsonDeserializer<TestEnum>(testStr)).Deserialize();
-            Assert.IsTrue(obj == TestEnum.Test2);
+            ClassicAssert.IsTrue(obj == TestEnum.Test2);
 
         }
 
@@ -289,7 +289,7 @@ namespace LHZ.FastJson.UnitTest
         {
             string testStr = "\"2020-07-09 12:00:00\"";
             DateTime obj = (new JsonDeserializer<DateTime>(testStr)).Deserialize();
-            Assert.IsTrue(obj == new DateTime(2020, 07, 09, 12, 0, 0));
+            ClassicAssert.IsTrue(obj == new DateTime(2020, 07, 09, 12, 0, 0));
         }
 
 
@@ -302,10 +302,10 @@ namespace LHZ.FastJson.UnitTest
             string testStr = "[1,2,3,4,5,6,7,8,9,10]";
             int[] array = (new JsonDeserializer<int[]>(testStr)).Deserialize();
 
-            Assert.AreEqual(array, new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
+            ClassicAssert.AreEqual(array, new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
 
             array = (new JsonDeserializer<int[]>("null")).Deserialize();
-            Assert.AreEqual(array, null);
+            ClassicAssert.AreEqual(array, null);
 
 
             testStr = "[1,2,3,4,null,6,7,8,9,10]";
@@ -313,9 +313,9 @@ namespace LHZ.FastJson.UnitTest
             for (int i = 0; i < obj.Length; i++)
             {
                 if (i == 4)
-                    Assert.IsNull(obj[i]);
+                    ClassicAssert.IsNull(obj[i]);
                 else
-                    Assert.IsTrue(i + 1 == obj[i]);
+                    ClassicAssert.IsTrue(i + 1 == obj[i]);
             }
         }
 
@@ -329,11 +329,11 @@ namespace LHZ.FastJson.UnitTest
             List<int> obj = (new JsonDeserializer<List<int>>(testStr)).Deserialize();
             for (int i = 0; i < obj.Count; i++)
             {
-                Assert.IsTrue(i + 1 == obj[i]);
+                ClassicAssert.IsTrue(i + 1 == obj[i]);
             }
 
             obj = (new JsonDeserializer<List<int>>("null")).Deserialize();
-            Assert.IsNull(obj);
+            ClassicAssert.IsNull(obj);
         }
         /// <summary>
         /// 验证字典及可空值字典反序列化。
@@ -346,14 +346,14 @@ namespace LHZ.FastJson.UnitTest
 
             string resut1;
             obj.TryGetValue("three", out resut1);
-            Assert.IsTrue(resut1 == "3");
+            ClassicAssert.IsTrue(resut1 == "3");
 
             string testStr2 = "{\"one\":null,\"two\":2,\"three\":3}";
             Dictionary<string, int?> obj2 = (new JsonDeserializer<Dictionary<string, int?>>(testStr2)).Deserialize();
 
             int? result2;
             obj2.TryGetValue("three", out result2);
-            Assert.IsTrue(result2 == 3);
+            ClassicAssert.IsTrue(result2 == 3);
         }
 
         /// <summary>
@@ -364,11 +364,11 @@ namespace LHZ.FastJson.UnitTest
         {
             string testStr = "{}";
             object obj = (new JsonDeserializer<object>(testStr)).Deserialize();
-            Assert.IsNotNull(obj);
+            ClassicAssert.IsNotNull(obj);
 
             testStr = "{\"Id\":100, \"Name\":\"Test\"}";
             obj = (new JsonDeserializer<TestObjClass>(testStr)).Deserialize();
-            Assert.IsNotNull(obj);
+            ClassicAssert.IsNotNull(obj);
         }
 
         /// <summary>
@@ -379,11 +379,11 @@ namespace LHZ.FastJson.UnitTest
         {
             string testStr = "null";
             int? obj = (new JsonDeserializer<int?>(testStr)).Deserialize();
-            Assert.IsNull(obj);
+            ClassicAssert.IsNull(obj);
 
             testStr = "12";
             obj = (new JsonDeserializer<int?>(testStr)).Deserialize();
-            Assert.AreEqual(obj.Value, 12);
+            ClassicAssert.AreEqual(obj.Value, 12);
         }
         enum TestEnum
         {
@@ -402,7 +402,7 @@ namespace LHZ.FastJson.UnitTest
             string testStr = "1234";
 
             testint32 = (new JsonDeserializer<Int32>(testStr)).Deserialize();
-            Assert.AreEqual(testint32, 1234);
+            ClassicAssert.AreEqual(testint32, 1234);
         }
         /// <summary>
         /// 验证 GUID 类型反序列化
@@ -413,7 +413,7 @@ namespace LHZ.FastJson.UnitTest
             var guid = new Guid("d3f5f5e0-8c3b-4d2a-9f1e-2c3b5e6f7a8b");
             var guidStr = guid.ToString();
             var deserializedGuid = (new JsonDeserializer<Guid>($"\"{guidStr}\"")).Deserialize();
-            Assert.AreEqual(guid, deserializedGuid);
+            ClassicAssert.AreEqual(guid, deserializedGuid);
         }
 
         /// <summary>
@@ -424,7 +424,7 @@ namespace LHZ.FastJson.UnitTest
         {
             string testStr = "\"c:\\\\ds\\\\dfe\\\\test.test\"";
             var testDistStr = (new JsonDeserializer<string>(testStr)).Deserialize();
-            Assert.AreEqual("c:\\ds\\dfe\\test.test", testDistStr);
+            ClassicAssert.AreEqual("c:\\ds\\dfe\\test.test", testDistStr);
         }
 
         /// <summary>
@@ -434,7 +434,7 @@ namespace LHZ.FastJson.UnitTest
         public void TestCommonExtend()
         {
             var strObj = "\"test\"".FromJson<string>();
-            Assert.AreEqual(strObj, "test");
+            ClassicAssert.AreEqual(strObj, "test");
         }
 
         /// <summary>
@@ -465,7 +465,7 @@ namespace LHZ.FastJson.UnitTest
         {
             var testStr = @"{""Name"":""test"",""Age"":10,""Height"":170}";
             var testObj = LHZ.FastJson.JsonConvert.Deserialize<TestJsonTgnoredClass>(testStr);
-            Assert.AreEqual(testObj.Height, 0);
+            ClassicAssert.AreEqual(testObj.Height, 0);
         }
 
         /// <summary>
@@ -476,7 +476,7 @@ namespace LHZ.FastJson.UnitTest
         {
             var jsonStr = "{\"Id\":1, \"Name\":\"tom\"}";
             var obj = JsonConvert.Deserialize<TestObjClass>(jsonStr, new JsonCustomConvert<int>(n=> 2));
-            Assert.AreEqual(obj.Id, 2);
+            ClassicAssert.AreEqual(obj.Id, 2);
         }
 
         /// <summary>
@@ -494,8 +494,8 @@ namespace LHZ.FastJson.UnitTest
             var jsonStr = (new JsonSerializer(testObj)).Serialize();
             var convertObj = new JsonDeserializer<JsonProptryNameAttributeTest>(jsonStr).Deserialize();
 
-            Assert.AreEqual(testObj.Age, testObj.Age);
-            Assert.AreEqual(testObj.Name, testObj.Name);
+            ClassicAssert.AreEqual(testObj.Age, testObj.Age);
+            ClassicAssert.AreEqual(testObj.Name, testObj.Name);
         }
 
 

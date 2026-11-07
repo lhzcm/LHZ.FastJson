@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using LHZ.FastJson.Json.Attributes;
 using NUnit.Framework;
 
@@ -15,12 +15,12 @@ namespace LHZ.FastJson.UnitTest
         [Test]
         public void TestToCamelCase()
         {
-            Assert.AreEqual("userName", JsonConvertConfig.ToCamelCase("UserName"));
-            Assert.AreEqual("userName", JsonConvertConfig.ToCamelCase("userName"));
-            Assert.AreEqual("name", JsonConvertConfig.ToCamelCase("Name"));
-            Assert.AreEqual("", JsonConvertConfig.ToCamelCase(""));
-            Assert.AreEqual(null, JsonConvertConfig.ToCamelCase(null));
-            Assert.AreEqual("urlValue", JsonConvertConfig.ToCamelCase("URLValue"));
+            ClassicAssert.AreEqual("userName", JsonConvertConfig.ToCamelCase("UserName"));
+            ClassicAssert.AreEqual("userName", JsonConvertConfig.ToCamelCase("userName"));
+            ClassicAssert.AreEqual("name", JsonConvertConfig.ToCamelCase("Name"));
+            ClassicAssert.AreEqual("", JsonConvertConfig.ToCamelCase(""));
+            ClassicAssert.AreEqual(null, JsonConvertConfig.ToCamelCase(null));
+            ClassicAssert.AreEqual("urlValue", JsonConvertConfig.ToCamelCase("URLValue"));
         }
 
         /// <summary>
@@ -39,7 +39,7 @@ namespace LHZ.FastJson.UnitTest
                     Child = new CamelCaseChild { FirstName = "c" }
                 };
                 var json = JsonConvert.Serialize(obj);
-                Assert.AreEqual("{\"userName\":\"test\",\"userAge\":10,\"child\":{\"firstName\":\"c\"}}", json);
+                ClassicAssert.AreEqual("{\"userName\":\"test\",\"userAge\":10,\"child\":{\"firstName\":\"c\"}}", json);
             }
             finally
             {
@@ -57,10 +57,10 @@ namespace LHZ.FastJson.UnitTest
             try
             {
                 var obj = JsonConvert.Deserialize<CamelCaseTestModel>("{\"userName\":\"test\",\"userAge\":10,\"child\":{\"firstName\":\"c\"}}");
-                Assert.AreEqual("test", obj.UserName);
-                Assert.AreEqual(10, obj.UserAge);
-                Assert.IsNotNull(obj.Child);
-                Assert.AreEqual("c", obj.Child.FirstName);
+                ClassicAssert.AreEqual("test", obj.UserName);
+                ClassicAssert.AreEqual(10, obj.UserAge);
+                ClassicAssert.IsNotNull(obj.Child);
+                ClassicAssert.AreEqual("c", obj.Child.FirstName);
             }
             finally
             {
@@ -85,9 +85,9 @@ namespace LHZ.FastJson.UnitTest
                 };
                 var json = JsonConvert.Serialize(obj);
                 var back = JsonConvert.Deserialize<CamelCaseTestModel>(json);
-                Assert.AreEqual("round", back.UserName);
-                Assert.AreEqual(42, back.UserAge);
-                Assert.AreEqual("trip", back.Child.FirstName);
+                ClassicAssert.AreEqual("round", back.UserName);
+                ClassicAssert.AreEqual(42, back.UserAge);
+                ClassicAssert.AreEqual("trip", back.Child.FirstName);
             }
             finally
             {
@@ -107,11 +107,11 @@ namespace LHZ.FastJson.UnitTest
                 var obj = new CamelCaseAttributeModel { Name = "test", Age = 10 };
 
                 var json = JsonConvert.Serialize(obj);
-                Assert.AreEqual("{\"studentName\":\"test\",\"age\":10}", json);
+                ClassicAssert.AreEqual("{\"studentName\":\"test\",\"age\":10}", json);
 
                 var back = JsonConvert.Deserialize<CamelCaseAttributeModel>("{\"studentName\":\"t2\",\"age\":20}");
-                Assert.AreEqual("t2", back.Name);
-                Assert.AreEqual(20, back.Age);
+                ClassicAssert.AreEqual("t2", back.Name);
+                ClassicAssert.AreEqual(20, back.Age);
             }
             finally
             {
@@ -128,11 +128,11 @@ namespace LHZ.FastJson.UnitTest
             JsonConvertConfig.UseCamelCase = false;
             var obj = new CamelCaseTestModel { UserName = "test", UserAge = 10, Child = null };
             var json = JsonConvert.Serialize(obj);
-            Assert.AreEqual("{\"UserName\":\"test\",\"UserAge\":10,\"Child\":null}", json);
+            ClassicAssert.AreEqual("{\"UserName\":\"test\",\"UserAge\":10,\"Child\":null}", json);
 
             var back = JsonConvert.Deserialize<CamelCaseTestModel>("{\"UserName\":\"t2\",\"UserAge\":20,\"Child\":null}");
-            Assert.AreEqual("t2", back.UserName);
-            Assert.AreEqual(20, back.UserAge);
+            ClassicAssert.AreEqual("t2", back.UserName);
+            ClassicAssert.AreEqual(20, back.UserAge);
         }
 
         /// <summary>
@@ -143,19 +143,19 @@ namespace LHZ.FastJson.UnitTest
         {
             //先用默认配置编译一次缓存
             var pascal = JsonConvert.Serialize(new CamelCaseTestModel { UserName = "a", UserAge = 1, Child = null });
-            Assert.AreEqual("{\"UserName\":\"a\",\"UserAge\":1,\"Child\":null}", pascal);
+            ClassicAssert.AreEqual("{\"UserName\":\"a\",\"UserAge\":1,\"Child\":null}", pascal);
 
             //切换为 Camel-Case，缓存应失效并输出 camelCase
             JsonConvertConfig.UseCamelCase = true;
             try
             {
                 var camel = JsonConvert.Serialize(new CamelCaseTestModel { UserName = "b", UserAge = 2, Child = null });
-                Assert.AreEqual("{\"userName\":\"b\",\"userAge\":2,\"child\":null}", camel);
+                ClassicAssert.AreEqual("{\"userName\":\"b\",\"userAge\":2,\"child\":null}", camel);
 
                 //反序列化缓存同样失效
                 var back = JsonConvert.Deserialize<CamelCaseTestModel>("{\"userName\":\"c\",\"userAge\":3,\"child\":null}");
-                Assert.AreEqual("c", back.UserName);
-                Assert.AreEqual(3, back.UserAge);
+                ClassicAssert.AreEqual("c", back.UserName);
+                ClassicAssert.AreEqual(3, back.UserAge);
             }
             finally
             {
@@ -164,7 +164,7 @@ namespace LHZ.FastJson.UnitTest
 
             //关闭后恢复 PascalCase
             var pascalAgain = JsonConvert.Serialize(new CamelCaseTestModel { UserName = "d", UserAge = 4, Child = null });
-            Assert.AreEqual("{\"UserName\":\"d\",\"UserAge\":4,\"Child\":null}", pascalAgain);
+            ClassicAssert.AreEqual("{\"UserName\":\"d\",\"UserAge\":4,\"Child\":null}", pascalAgain);
         }
 
         public class CamelCaseTestModel

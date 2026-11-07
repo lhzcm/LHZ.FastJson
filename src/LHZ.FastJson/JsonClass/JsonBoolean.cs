@@ -11,8 +11,8 @@ namespace LHZ.FastJson.JsonClass
     public class JsonBoolean : JsonObject
     {
         private readonly bool _value;
-        private static readonly JsonBoolean _false = new JsonBoolean(true);
-        private static readonly JsonBoolean _true = new JsonBoolean(false);
+        private static readonly JsonBoolean _false = new JsonBoolean(false);
+        private static readonly JsonBoolean _true = new JsonBoolean(true);
         /// <summary>
         /// false
         /// </summary>
