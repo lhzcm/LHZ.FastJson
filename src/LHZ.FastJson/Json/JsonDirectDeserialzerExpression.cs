@@ -21,32 +21,31 @@ namespace LHZ.FastJson.Json
     {
         private static readonly Dictionary<Type, ObjectType> _objectTypes = JsonObjectType.GetObjectTypes();
 
-        private static Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T> _funcDeserialize = null;
-        private static int _funcDeserializeConfigVersion = -1;
+        //Property names are baked into the compiled expression,
+        //so the delegate is cached per naming policy: indexed by (int)CaseStyle.
+        private static readonly Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>[] _funcDeserialize =
+            new Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>[JsonConvertOptions.CaseStyleCount];
         private static readonly object _funcDeserializeLock = new object();
         private static readonly Type _type = typeof(T);
 
         /// <summary>
-        /// Get the deserialization delegate for the current configuration version.
-        /// Property names are baked into the compiled expression,
-        /// so the delegate is recompiled when the configuration changes.
+        /// Get the deserialization delegate for the given naming policy.
         /// </summary>
-        private static Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T> GetDeserializeFunc()
+        private static Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T> GetDeserializeFunc(CaseStyle caseStyle)
         {
-            int configVersion = JsonConvertConfig.ConfigVersion;
-            var func = _funcDeserialize;
-            if (func != null && _funcDeserializeConfigVersion == configVersion)
+            int slot = (int)caseStyle;
+            var func = _funcDeserialize[slot];
+            if (func != null)
             {
                 return func;
             }
             lock (_funcDeserializeLock)
             {
-                if (_funcDeserialize == null || _funcDeserializeConfigVersion != JsonConvertConfig.ConfigVersion)
+                if (_funcDeserialize[slot] == null)
                 {
-                    _funcDeserialize = CreateExpression().Compile();
-                    _funcDeserializeConfigVersion = JsonConvertConfig.ConfigVersion;
+                    _funcDeserialize[slot] = CreateExpression(caseStyle).Compile();
                 }
-                return _funcDeserialize;
+                return _funcDeserialize[slot];
             }
         }
 
@@ -54,7 +53,7 @@ namespace LHZ.FastJson.Json
         {
             // if(jsonObject.IsReadEnd)
             //     return default(T);
-            return GetDeserializeFunc()(jsonObject, null);
+            return GetDeserializeFunc(jsonObject.Options.CaseStyle)(jsonObject, null);
         }
         public static T Deserialzer(JsonDirectReader jsonObject, Dictionary<Type, IJsonCustomConverter> jsonCustomConverters)
         {
@@ -64,14 +63,15 @@ namespace LHZ.FastJson.Json
             {
                 return (T)customConverter.Deserialize(jsonObject.ReadAsJsonObject());
             }
-            return GetDeserializeFunc()(jsonObject, jsonCustomConverters);
+            return GetDeserializeFunc(jsonObject.Options.CaseStyle)(jsonObject, jsonCustomConverters);
         }
 
         /// <summary>
         /// Get deserialization expression tree
         /// </summary>
+        /// <param name="caseStyle">The naming style used to match property names</param>
         /// <returns></returns>
-        private static Expression<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>> CreateExpression()
+        private static Expression<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>> CreateExpression(CaseStyle caseStyle)
         {
             ParameterExpression jsonObjectParameter = Expression.Parameter(typeof(JsonDirectReader), "jsonDirectReader");
             ParameterExpression jsonCustomConvertersParameter = Expression.Parameter(typeof(Dictionary<Type, IJsonCustomConverter>), "jsonCustomConverters");
@@ -131,7 +131,7 @@ namespace LHZ.FastJson.Json
                 case ObjectType.List: return ConvertToList();
                 //case ObjectType.Enumerable:  
                 default:
-                    return ConvertToObject();
+                    return ConvertToObject(caseStyle);
             }
         }
         /// <summary>
@@ -606,7 +606,7 @@ namespace LHZ.FastJson.Json
         /// Parse to object
         /// </summary>
         /// <returns>Object</returns>
-        private static Expression<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>> ConvertToObject()
+        private static Expression<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>> ConvertToObject(CaseStyle caseStyle)
         {
             ParameterExpression jsonObjectParameter = Expression.Parameter(typeof(JsonDirectReader), "jsonDirectReader");
             ParameterExpression jsonCustomConvertersParameter = Expression.Parameter(typeof(Dictionary<Type, IJsonCustomConverter>), "jsonCustomConverters");
@@ -750,7 +750,7 @@ namespace LHZ.FastJson.Json
             //Ignore Attribute
             .Where(n => !Attribute.GetCustomAttributes(n).Any(x => x is JsonIgnoredAttribute a && (a.JsonIgnoredMethod & JsonMethods.Deserialize) == JsonMethods.Deserialize))
             //The JSON name of the property (JsonProperty attribute wins; camelCase is applied when configured)
-            .Select(n => new KeyValuePair<JsonPropertyName, PropertyInfo>(new JsonPropertyName(JsonUtility.GetPropertyName(n)), n))
+            .Select(n => new KeyValuePair<JsonPropertyName, PropertyInfo>(new JsonPropertyName(JsonUtility.GetPropertyName(n, caseStyle)), n))
             .GroupBy(n=>n.Key.HashCode);
             var propVarMap = new Dictionary<System.Reflection.PropertyInfo, ParameterExpression>();
             List<SwitchCase> switchCases = new List<SwitchCase>();

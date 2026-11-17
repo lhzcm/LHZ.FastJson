@@ -63,14 +63,23 @@ PS C:\Users\admin\source\repos\LHZ.FastJson\LHZ.FastJson.Test> dotnet run
 NO:1,Name:lhz,Age:18,Brithday:2000-1-1
 ```
 
-## Camel-Case 配置
-默认情况下属性名保持原样（PascalCase）输出。可以通过全局配置 `JsonConvertConfig.UseCamelCase` 开启 Camel-Case 命名：
-- 序列化时属性名会转换为 camelCase（如 `UserName` -> `userName`）；
-- 反序列化时会匹配 camelCase 的属性名；
-- 带有 `[JsonProperty("xxx")]` 特性的属性始终优先使用特性指定的名称；
-- 修改配置后，已编译的序列化/反序列化表达式缓存会自动失效并重新编译。
+## 命名风格（`CaseStyle`）
+默认情况下属性名按声明名原样输出（`CaseStyle.PascalCase`）。可以在每次调用时通过 `JsonConvertOptions.CaseStyle` 选择命名风格：
 
-### Camel-Case 序列化示例
+| `CaseStyle` | `UserName` | `URLValue` |
+|-------------|------------|------------|
+| `PascalCase`（默认，保持声明名） | `UserName` | `URLValue` |
+| `CamelCase` | `userName` | `urlValue` |
+| `SnakeCase` | `user_name` | `url_value` |
+| `KebabCase` | `user-name` | `url-value` |
+
+- 序列化时属性名会转换为所选风格，反序列化时自动匹配该风格的属性名；
+- 带有 `[JsonProperty("xxx")]` 特性的属性始终优先使用特性指定的名称；
+- 只转换对象的属性名，字典的 key 不受影响；
+- 选项只对传入它的那次调用生效，不存在全局状态，不同调用方可以同时使用不同的命名风格；
+- `JsonConvertOptions.MaxDepth`（默认 64）用于限制读取器接受的最大嵌套深度。
+
+### 命名风格示例
 ``` csharp
 public class UserInfo
 {
@@ -78,16 +87,14 @@ public class UserInfo
     public int UserAge { get; set; }
 }
 
-JsonConvertConfig.UseCamelCase = true;
+var options = new JsonConvertOptions { CaseStyle = CaseStyle.SnakeCase };
 
-//序列化：属性名自动转换为 camelCase
-string jsonStr = JsonConvert.Serialize(new UserInfo { UserName = "lhz", UserAge = 18 });
-//输出：{"userName":"lhz","userAge":18}
+//序列化：属性名自动转换为 snake_case
+string jsonStr = JsonConvert.Serialize(new UserInfo { UserName = "lhz", UserAge = 18 }, options);
+//输出：{"user_name":"lhz","user_age":18}
 
-//反序列化：自动匹配 camelCase 属性名
-UserInfo user = JsonConvert.Deserialize<UserInfo>("{\"userName\":\"lhz\",\"userAge\":18}");
-
-JsonConvertConfig.UseCamelCase = false; //恢复默认
+//反序列化：自动匹配 snake_case 属性名
+UserInfo user = JsonConvert.Deserialize<UserInfo>("{\"user_name\":\"lhz\",\"user_age\":18}", options);
 ```
 
 ### 手动构建 JSON 树

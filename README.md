@@ -79,14 +79,22 @@ PS C:\Users\admin\source\repos\LHZ.FastJson\LHZ.FastJson.Test> dotnet run
 NO:1,Name:lhz,Age:18,Brithday:2000-1-1
 ```
 
-### Camel-Case Configuration
+### Naming Style (`CaseStyle`)
 
-By default, property names are serialized as-is (PascalCase). You can enable camelCase naming globally through `JsonConvertConfig.UseCamelCase`:
+By default, property names are serialized exactly as declared (`CaseStyle.PascalCase`). You can choose a naming style per call through `JsonConvertOptions.CaseStyle`:
 
-- During serialization, property names are converted to camelCase (e.g. `UserName` -> `userName`);
-- During deserialization, camelCase property names are matched automatically;
+| `CaseStyle` | `UserName` | `URLValue` |
+|-------------|------------|------------|
+| `PascalCase` (default, names as declared) | `UserName` | `URLValue` |
+| `CamelCase` | `userName` | `urlValue` |
+| `SnakeCase` | `user_name` | `url_value` |
+| `KebabCase` | `user-name` | `url-value` |
+
+- During serialization, property names are converted to the selected style; during deserialization, names in that style are matched automatically;
 - Properties marked with the `[JsonProperty("xxx")]` attribute always keep the explicitly configured name;
-- When the configuration changes, the compiled serialization/deserialization expression caches are invalidated automatically and recompiled.
+- Only object property names are converted; dictionary keys are left untouched;
+- The options only affect the call they are passed to; there is no global state, so different callers can use different naming styles at the same time;
+- `JsonConvertOptions.MaxDepth` (default 64) limits the nesting depth accepted by the readers.
 
 #### Example
 
@@ -97,16 +105,14 @@ public class UserInfo
     public int UserAge { get; set; }
 }
 
-JsonConvertConfig.UseCamelCase = true;
+var options = new JsonConvertOptions { CaseStyle = CaseStyle.SnakeCase };
 
-// Serialization: property names are converted to camelCase
-string jsonStr = JsonConvert.Serialize(new UserInfo { UserName = "lhz", UserAge = 18 });
-// Output: {"userName":"lhz","userAge":18}
+// Serialization: property names are converted to snake_case
+string jsonStr = JsonConvert.Serialize(new UserInfo { UserName = "lhz", UserAge = 18 }, options);
+// Output: {"user_name":"lhz","user_age":18}
 
-// Deserialization: camelCase property names are matched automatically
-UserInfo user = JsonConvert.Deserialize<UserInfo>("{\"userName\":\"lhz\",\"userAge\":18}");
-
-JsonConvertConfig.UseCamelCase = false; // Restore the default
+// Deserialization: snake_case property names are matched automatically
+UserInfo user = JsonConvert.Deserialize<UserInfo>("{\"user_name\":\"lhz\",\"user_age\":18}", options);
 ```
 
 ### Building JSON Trees Programmatically

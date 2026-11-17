@@ -21,21 +21,44 @@ namespace LHZ.FastJson
         /// <returns>JsonObject type object</returns>
         public static IJsonObject Deserialize(string jsonString)
         {
-            JsonReader reader = new JsonReader(jsonString);
+            return Deserialize(jsonString, (JsonConvertOptions)null);
+        }
+
+        /// <summary>
+        /// Deserialize JSON string to JsonObject type
+        /// </summary>
+        /// <param name="jsonString">JSON string</param>
+        /// <param name="options">Options (null uses the defaults)</param>
+        /// <returns>JsonObject type object</returns>
+        public static IJsonObject Deserialize(string jsonString, JsonConvertOptions options)
+        {
+            JsonReader reader = new JsonReader(jsonString, options);
             return reader.JsonRead();
         }
 
         /// <summary>
-        /// Try to deserialize JSON string to T type
+        /// Try to deserialize JSON string to JsonObject type
         /// </summary>
         /// <param name="jsonString">JSON string</param>
         /// <param name="dist">Deserialized target object</param>
         /// <returns>Whether deserialization was successful</returns>
         public static bool TryDeserialize(string jsonString, out IJsonObject dist)
         {
+            return TryDeserialize(jsonString, null, out dist);
+        }
+
+        /// <summary>
+        /// Try to deserialize JSON string to JsonObject type
+        /// </summary>
+        /// <param name="jsonString">JSON string</param>
+        /// <param name="options">Options (null uses the defaults)</param>
+        /// <param name="dist">Deserialized target object</param>
+        /// <returns>Whether deserialization was successful</returns>
+        public static bool TryDeserialize(string jsonString, JsonConvertOptions options, out IJsonObject dist)
+        {
             try
             {
-                JsonReader reader = new JsonReader(jsonString);
+                JsonReader reader = new JsonReader(jsonString, options);
                 dist = reader.JsonRead();
             }
             catch
@@ -54,9 +77,22 @@ namespace LHZ.FastJson
         /// <returns>Deserialized target object</returns>
         public static T Deserialize<T>(string jsonString)
         {
-            JsonDeserializer<T> deserializer = new JsonDeserializer<T>(jsonString);
+            return Deserialize<T>(jsonString, (JsonConvertOptions)null);
+        }
+
+        /// <summary>
+        /// Deserialize JSON string to T type
+        /// </summary>
+        /// <typeparam name="T">Deserialization target type</typeparam>
+        /// <param name="jsonString">JSON string</param>
+        /// <param name="options">Options (null uses the defaults)</param>
+        /// <returns>Deserialized target object</returns>
+        public static T Deserialize<T>(string jsonString, JsonConvertOptions options)
+        {
+            JsonDeserializer<T> deserializer = new JsonDeserializer<T>(jsonString, options);
             return deserializer.Deserialize();
         }
+
         /// <summary>
         /// Deserialize JSON string to T type
         /// </summary>
@@ -66,7 +102,20 @@ namespace LHZ.FastJson
         /// <returns>Deserialized target object</returns>
         public static T Deserialize<T>(string jsonString, params IJsonCustomConverter[] jsonCustomConverters)
         {
-            JsonDeserializer<T> deserializer = new JsonDeserializer<T>(jsonString);
+            return Deserialize<T>(jsonString, (JsonConvertOptions)null, jsonCustomConverters);
+        }
+
+        /// <summary>
+        /// Deserialize JSON string to T type
+        /// </summary>
+        /// <typeparam name="T">Deserialization target type</typeparam>
+        /// <param name="jsonString">JSON string</param>
+        /// <param name="options">Options (null uses the defaults)</param>
+        /// <param name="jsonCustomConverters">Custom JSON converters</param>
+        /// <returns>Deserialized target object</returns>
+        public static T Deserialize<T>(string jsonString, JsonConvertOptions options, params IJsonCustomConverter[] jsonCustomConverters)
+        {
+            JsonDeserializer<T> deserializer = new JsonDeserializer<T>(jsonString, options);
             return deserializer.Deserialize(jsonCustomConverters);
         }
 
@@ -79,12 +128,25 @@ namespace LHZ.FastJson
         /// <returns>Whether deserialization was successful</returns>
         public static bool TryDeserialize<T>(string jsonString, out T dist)
         {
+            return TryDeserialize<T>(jsonString, null, out dist);
+        }
+
+        /// <summary>
+        /// Try to deserialize JSON string to T type
+        /// </summary>
+        /// <typeparam name="T">Deserialization target type</typeparam>
+        /// <param name="jsonString">JSON string</param>
+        /// <param name="options">Options (null uses the defaults)</param>
+        /// <param name="dist">Deserialized target object</param>
+        /// <returns>Whether deserialization was successful</returns>
+        public static bool TryDeserialize<T>(string jsonString, JsonConvertOptions options, out T dist)
+        {
             try
             {
-                JsonDeserializer<T> deserializer = new JsonDeserializer<T>(jsonString);
+                JsonDeserializer<T> deserializer = new JsonDeserializer<T>(jsonString, options);
                 dist = deserializer.Deserialize();
             }
-            catch 
+            catch
             {
                 dist = default(T);
                 return false;
@@ -99,7 +161,18 @@ namespace LHZ.FastJson
         /// <returns>JSON string</returns>
         public static string Serialize(object obj)
         {
-            JsonSerializer serializer = new JsonSerializer(obj);
+            return Serialize(obj, (JsonConvertOptions)null);
+        }
+
+        /// <summary>
+        /// Serialize an object to a JSON string
+        /// </summary>
+        /// <param name="obj">The object to serialize</param>
+        /// <param name="options">Options (null uses the defaults)</param>
+        /// <returns>JSON string</returns>
+        public static string Serialize(object obj, JsonConvertOptions options)
+        {
+            JsonSerializer serializer = new JsonSerializer(obj, options);
             return serializer.Serialize();
         }
     }

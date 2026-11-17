@@ -6,14 +6,17 @@
 
 ## 2.0.1-pre - 2026-08-16
 
-预览版本，新增全局 Camel-Case 命名配置。
+预览版本，新增按调用传入的命名风格（camelCase / snake_case / kebab-case）与嵌套深度选项。
 
 ### 功能
 
-- 新增 `JsonConvertConfig` 全局配置类。
-- 新增 `JsonConvertConfig.UseCamelCase` 开关：开启后序列化时属性名自动转换为 camelCase（如 `UserName` -> `userName`，`URLValue` -> `urlValue`），反序列化时自动匹配 camelCase 属性名。
-- `JsonProperty` 特性指定的名称始终优先于 Camel-Case 转换。
-- 修改配置后，已编译的序列化/反序列化表达式缓存自动失效并重新编译。
+- 新增 `JsonConvertOptions` 选项类，可按调用传入 `JsonConvert.Serialize` / `Deserialize` / `TryDeserialize`（以及 `JsonSerializer`、`JsonDeserializer<T>`、`JsonReader`），不再有全局可变配置。
+- 新增 `CaseStyle` 枚举（`PascalCase`、`CamelCase`、`SnakeCase`、`KebabCase`）与 `JsonConvertOptions.CaseStyle`：序列化时属性名自动转换为所选风格（如 `UserName` -> `userName` / `user_name` / `user-name`，`URLValue` -> `urlValue` / `url_value` / `url-value`），反序列化时自动匹配该风格的属性名。默认的 `PascalCase` 保持声明名不变；字典的 key 不做转换。
+- 新增 `JsonConvertOptions.ConvertName(name, style)`，可将名称转换为指定风格。
+- `JsonProperty` 特性指定的名称始终优先于命名风格转换。
+- 已编译的序列化/反序列化表达式按命名策略分别缓存，不同选项可并发使用且无需重新编译。
+- 新增 `JsonConvertOptions.MaxDepth`（默认 64），限制 `JsonReader` 与直读反序列化器接受的最大嵌套深度。
+- 已知限制：默认的 `JsonCustomConvert<T>` 转换器（未提供自定义委托）使用默认选项，不继承外层调用传入的选项。
 - 修复直读反序列化引擎（`JsonDirectDeserialzerExpression`）忽略 `JsonProperty` 特性的缺陷，现在与序列化端行为一致。
 
 ## 2.0.0 - 2026-08-13

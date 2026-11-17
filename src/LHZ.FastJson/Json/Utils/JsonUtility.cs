@@ -15,12 +15,12 @@ namespace LHZ.FastJson.Json.Utils
         /// <param name="properties"></param>
         /// <param name="SameName">The duplicate name</param>
         /// <returns></returns>
-        public static bool HasSameNameProperty(IEnumerable<PropertyInfo> properties, out string SameName)
+        public static bool HasSameNameProperty(IEnumerable<PropertyInfo> properties, CaseStyle caseStyle, out string SameName)
         {
             HashSet<string> names = new HashSet<string>();
             foreach (PropertyInfo property in properties)
             {
-                string propertyName = GetPropertyName(property);
+                string propertyName = GetPropertyName(property, caseStyle);
                 if (names.Contains(propertyName))
                 {
                     SameName = propertyName;
@@ -35,8 +35,9 @@ namespace LHZ.FastJson.Json.Utils
         /// Get the JSON property name corresponding to the type property
         /// </summary>
         /// <param name="propertyInfo">The property</param>
+        /// <param name="caseStyle">The naming style (ignored when JsonProperty is set)</param>
         /// <returns>JSON property name</returns>
-        public static string GetPropertyName(PropertyInfo propertyInfo)
+        public static string GetPropertyName(PropertyInfo propertyInfo, CaseStyle caseStyle)
         {
             string propertyName = propertyInfo.Name;
             var jsonPropertyAttr = Attribute.GetCustomAttribute(propertyInfo, typeof(JsonPropertyAttribute)) as JsonPropertyAttribute;
@@ -44,11 +45,7 @@ namespace LHZ.FastJson.Json.Utils
             {
                 return jsonPropertyAttr.PropertyName;
             }
-            if (JsonConvertConfig.UseCamelCase)
-            {
-                return JsonConvertConfig.ToCamelCase(propertyName);
-            }
-            return propertyName;
+            return JsonConvertOptions.ConvertName(propertyName, caseStyle);
         }
     }
 }

@@ -24,29 +24,26 @@ namespace LHZ.FastJson.Json
         private static readonly Dictionary<Type, ObjectType> _objectTypes = JsonObjectType.GetObjectTypes();
 
         private static Func<IJsonObject, Dictionary<Type, IJsonCustomConverter>, T> _funcDeserialize = null;
-        private static int _funcDeserializeConfigVersion = -1;
         private static readonly object _funcDeserializeLock = new object();
         private static readonly Type _type = typeof(T);
 
         /// <summary>
-        /// Get the deserialization delegate for the current configuration version.
-        /// Property names are baked into the compiled expression,
-        /// so the delegate is recompiled when the configuration changes.
+        /// Get the deserialization delegate.
+        /// This engine works on an already parsed IJsonObject tree and has no source of per-call options,
+        /// so property names always follow the default (as-is) naming policy.
         /// </summary>
         private static Func<IJsonObject, Dictionary<Type, IJsonCustomConverter>, T> GetDeserializeFunc()
         {
-            int configVersion = JsonConvertConfig.ConfigVersion;
             var func = _funcDeserialize;
-            if (func != null && _funcDeserializeConfigVersion == configVersion)
+            if (func != null)
             {
                 return func;
             }
             lock (_funcDeserializeLock)
             {
-                if (_funcDeserialize == null || _funcDeserializeConfigVersion != JsonConvertConfig.ConfigVersion)
+                if (_funcDeserialize == null)
                 {
                     _funcDeserialize = CreateExpression().Compile();
-                    _funcDeserializeConfigVersion = JsonConvertConfig.ConfigVersion;
                 }
                 return _funcDeserialize;
             }
@@ -747,7 +744,7 @@ namespace LHZ.FastJson.Json
                     continue;
                 }
                 #region Custom property name handling
-                JsonClass.Internal.StringView jsonPropertyNameStringView = new JsonClass.Internal.StringView(JsonUtility.GetPropertyName(item));
+                JsonClass.Internal.StringView jsonPropertyNameStringView = new JsonClass.Internal.StringView(JsonUtility.GetPropertyName(item, CaseStyle.PascalCase));
                 var jsonPropertyName = new JsonPropertyName(jsonPropertyNameStringView, jsonPropertyNameStringView.GetHashCode());
                 #endregion
                 

@@ -104,24 +104,30 @@ namespace LHZ.FastJson.UnitTest
         [Test]
         public void MaxDepthCanBeConfigured()
         {
-            var previous = JsonConvertConfig.MaxDepth;
-            try
-            {
-                JsonConvertConfig.MaxDepth = 4;
+            var options = new JsonConvertOptions { MaxDepth = 4 };
 
-                Assert.DoesNotThrow(() => new JsonReader("[[[[]]]]").JsonRead());
-                Assert.Throws<JsonReadException>(() => new JsonReader("[[[[[]]]]]").JsonRead());
-            }
-            finally
-            {
-                JsonConvertConfig.MaxDepth = previous;
-            }
+            Assert.DoesNotThrow(() => new JsonReader("[[[[]]]]", options).JsonRead());
+            Assert.Throws<JsonReadException>(() => new JsonReader("[[[[[]]]]]", options).JsonRead());
+            Assert.Throws<JsonReadException>(() => JsonConvert.Deserialize("[[[[[]]]]]", options));
+
+            //The default options are not affected
+            Assert.DoesNotThrow(() => new JsonReader("[[[[[]]]]]").JsonRead());
+        }
+
+        [Test]
+        public void MaxDepthAppliesToDirectDeserializer()
+        {
+            var options = new JsonConvertOptions { MaxDepth = 4 };
+            var json = "{\"A\":1,\"Unknown\":[[[[[]]]]]}";
+
+            Assert.Throws<JsonReadException>(() => JsonConvert.Deserialize<OnlyA>(json, options));
+            Assert.DoesNotThrow(() => JsonConvert.Deserialize<OnlyA>(json));
         }
 
         [Test]
         public void MaxDepthMustBePositive()
         {
-            Assert.Throws<ArgumentOutOfRangeException>(() => JsonConvertConfig.MaxDepth = 0);
+            Assert.Throws<ArgumentOutOfRangeException>(() => new JsonConvertOptions().MaxDepth = 0);
         }
 
         public struct Point

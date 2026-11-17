@@ -17,7 +17,17 @@ namespace LHZ.FastJson
         /// </summary>
         /// <param name="content">The string to read.</param>
         internal JsonDirectReader(string content)
+            : this(content, null)
         {
+        }
+        /// <summary>
+        /// Initializes a new instance of the JsonDirectReader class with the specified string and options.
+        /// </summary>
+        /// <param name="content">The string to read.</param>
+        /// <param name="options">The options (null uses the defaults).</param>
+        internal JsonDirectReader(string content, JsonConvertOptions options)
+        {
+            Options = JsonConvertOptions.Resolve(options);
             if(string.IsNullOrEmpty(content))
             {
                 throw new JsonReadException(0, "json string must be not empty or null", new ArgumentNullException(nameof(content)));
@@ -30,6 +40,10 @@ namespace LHZ.FastJson
         /// Gets the content of the string being read.
         /// </summary>
         public string Content { get; private set; }
+        /// <summary>
+        /// Gets the options used while reading and deserializing.
+        /// </summary>
+        internal JsonConvertOptions Options { get; private set; }
         /// <summary>
         /// Gets the current position in the string being read.
         /// </summary>
@@ -47,9 +61,9 @@ namespace LHZ.FastJson
         /// </summary>
         private void EnterContainer()
         {
-            if (_depth >= JsonConvertConfig.MaxDepth)
+            if (_depth >= Options.MaxDepth)
             {
-                throw new JsonReadException(Position, "字符位置[" + Position + "]处，JSON嵌套深度超过最大限制" + JsonConvertConfig.MaxDepth);
+                throw new JsonReadException(Position, "字符位置[" + Position + "]处，JSON嵌套深度超过最大限制" + Options.MaxDepth);
             }
             _depth++;
         }

@@ -24,9 +24,23 @@ namespace LHZ.FastJson.Json
         private StringBuilder _jsonStrBuilder = new StringBuilder(128);
         private Stack<object> _objStack = new Stack<object>();
         private static readonly Dictionary<Type, ObjectType> _objectTypes = JsonObjectType.GetObjectTypes();
-        private static readonly ConcurrentDictionary<Type, KeyValuePair<int, Action<JsonSerializer, object>>> _serializationActions = new ConcurrentDictionary<Type, KeyValuePair<int, Action<JsonSerializer, object>>>();
+        //Property names are baked into the compiled expressions,
+        //so the delegates are cached per naming policy: indexed by (int)CaseStyle.
+        private static readonly ConcurrentDictionary<Type, Action<JsonSerializer, object>>[] _serializationActions = CreateSerializationActionCaches();
+
+        private static ConcurrentDictionary<Type, Action<JsonSerializer, object>>[] CreateSerializationActionCaches()
+        {
+            var caches = new ConcurrentDictionary<Type, Action<JsonSerializer, object>>[JsonConvertOptions.CaseStyleCount];
+            for (int i = 0; i < caches.Length; i++)
+            {
+                caches[i] = new ConcurrentDictionary<Type, Action<JsonSerializer, object>>();
+            }
+            return caches;
+        }
 
         private object _obj;
+
+        private readonly JsonConvertOptions _options;
 
         private Dictionary<Type, IJsonCustomConverter> _customConverters;
 
@@ -35,8 +49,8 @@ namespace LHZ.FastJson.Json
         /// </summary>
         /// <param name="obj">Object to serialize</param>
         public JsonSerializer(object obj)
+            : this(obj, (JsonConvertOptions)null, null)
         {
-            this._obj = obj;
         }
         /// <summary>
         /// Initialize with custom converters
@@ -44,8 +58,19 @@ namespace LHZ.FastJson.Json
         /// <param name="obj">Object to serialize</param>
         /// <param name="jsonCustomConverters">Custom converters</param>
         public JsonSerializer(object obj, params IJsonCustomConverter[] jsonCustomConverters)
+            : this(obj, (JsonConvertOptions)null, jsonCustomConverters)
+        {
+        }
+        /// <summary>
+        /// Initialize with options and custom converters
+        /// </summary>
+        /// <param name="obj">Object to serialize</param>
+        /// <param name="options">Serialization options (null uses the defaults)</param>
+        /// <param name="jsonCustomConverters">Custom converters</param>
+        public JsonSerializer(object obj, JsonConvertOptions options, params IJsonCustomConverter[] jsonCustomConverters)
         {
             this._obj = obj;
+            this._options = JsonConvertOptions.Resolve(options);
             if(jsonCustomConverters != null && jsonCustomConverters.Length > 0)
             {
                 _customConverters = new Dictionary<Type, IJsonCustomConverter>(jsonCustomConverters.Length + 4);
@@ -89,16 +114,14 @@ namespace LHZ.FastJson.Json
         /// <returns>Serialization delegate method</returns>
         private Action<JsonSerializer, object> GetSerializationAction(Type objType)
         {
-            //Property names are baked into the compiled expression,
-            //so the cached delegate is only valid for the configuration version it was compiled with.
-            int configVersion = JsonConvertConfig.ConfigVersion;
-            KeyValuePair<int, Action<JsonSerializer, object>> cachedAction;
-            if (_serializationActions.TryGetValue(objType, out cachedAction) && cachedAction.Key == configVersion)
+            var cache = _serializationActions[(int)_options.CaseStyle];
+            Action<JsonSerializer, object> action;
+            if (cache.TryGetValue(objType, out action))
             {
-                return cachedAction.Value;
+                return action;
             }
-            var action = CreateSerializationExpression(objType).Compile();
-            _serializationActions[objType] = new KeyValuePair<int, Action<JsonSerializer, object>>(configVersion, action);
+            action = CreateSerializationExpression(objType).Compile();
+            cache[objType] = action;
             return action;
         }
 
@@ -153,7 +176,7 @@ namespace LHZ.FastJson.Json
             //expList.Add(Expression.IfThen(Expression.NotEqual(customConvertersFieldExp, Expression.Constant(null)), Expression.Block(customConvertersBody)));
 
             //Check for duplicate property names
-            if (JsonUtility.HasSameNameProperty(properties, out string samePropertyName))
+            if (JsonUtility.HasSameNameProperty(properties, _options.CaseStyle, out string samePropertyName))
             {
                 throw new Exception($"序列化失败，类型{objType.FullName}不同的属性存在相同的属性名\"{samePropertyName}\"");
             }
@@ -169,7 +192,7 @@ namespace LHZ.FastJson.Json
                 Func<Type, Action<JsonSerializer, object>> sact = GetSerializationAction;
 
                 #region Custom property name handling
-                string jsonPropertyName = JsonUtility.GetPropertyName(item);
+                string jsonPropertyName = JsonUtility.GetPropertyName(item, _options.CaseStyle);
                 #endregion
                 expList.Add(Expression.Call(thisObjParameter, ((Action<string>)SerializePropertyName).Method, Expression.Constant(jsonPropertyName)));
                 switch (objectType)

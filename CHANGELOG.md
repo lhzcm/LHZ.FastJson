@@ -6,14 +6,17 @@ This document records important changes to LHZ.FastJson.
 
 ## 2.0.1-pre - 2026-08-16
 
-Preview release adding a global camelCase naming configuration.
+Preview release adding per-call naming style (camelCase / snake_case / kebab-case) and nesting-depth options.
 
 ### Features
 
-- Added the `JsonConvertConfig` global configuration class.
-- Added `JsonConvertConfig.UseCamelCase`: when enabled, property names are converted to camelCase during serialization (e.g. `UserName` -> `userName`, `URLValue` -> `urlValue`) and camelCase names are matched automatically during deserialization.
-- Names configured via the `JsonProperty` attribute always take precedence over camelCase conversion.
-- Compiled serialization/deserialization expression caches are invalidated and recompiled automatically when the configuration changes.
+- Added the `JsonConvertOptions` class, passed per call to `JsonConvert.Serialize` / `Deserialize` / `TryDeserialize` (and to `JsonSerializer`, `JsonDeserializer<T>`, `JsonReader`). There is no global mutable configuration.
+- Added the `CaseStyle` enum (`PascalCase`, `CamelCase`, `SnakeCase`, `KebabCase`) and `JsonConvertOptions.CaseStyle`: property names are converted to the selected style during serialization (e.g. `UserName` -> `userName` / `user_name` / `user-name`, `URLValue` -> `urlValue` / `url_value` / `url-value`) and names in that style are matched automatically during deserialization. The default `PascalCase` keeps declared names unchanged. Dictionary keys are not converted.
+- Added `JsonConvertOptions.ConvertName(name, style)` to convert a name to a given style.
+- Names configured via the `JsonProperty` attribute always take precedence over naming style conversion.
+- Compiled serialization/deserialization expressions are cached per naming policy, so different options can be used concurrently without recompilation.
+- Added `JsonConvertOptions.MaxDepth` (default 64) to limit the nesting depth accepted by `JsonReader` and the direct deserializer.
+- Known limitation: the default `JsonCustomConvert<T>` converter (no custom delegates) serializes/deserializes with default options and does not inherit the options of the enclosing call.
 - Fixed the direct deserialization engine (`JsonDirectDeserialzerExpression`) ignoring the `JsonProperty` attribute; it now behaves consistently with serialization.
 
 ## 2.0.0 - 2026-08-13

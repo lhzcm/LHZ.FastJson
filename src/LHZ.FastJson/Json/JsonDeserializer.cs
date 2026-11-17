@@ -27,8 +27,18 @@ namespace LHZ.FastJson.Json
         /// </summary>
         /// <param name="jsonString">JSON string</param>
         public JsonDeserializer(string jsonString)
+            : this(jsonString, null)
         {
-            JsonDirectReader reader = new JsonDirectReader(jsonString);
+        }
+
+        /// <summary>
+        /// Initialize with a JSON string and options
+        /// </summary>
+        /// <param name="jsonString">JSON string</param>
+        /// <param name="options">Deserialization options (null uses the defaults)</param>
+        public JsonDeserializer(string jsonString, JsonConvertOptions options)
+        {
+            JsonDirectReader reader = new JsonDirectReader(jsonString, options);
             this._obj = reader;
         }
 

@@ -16,6 +16,7 @@ namespace LHZ.FastJson
     public class JsonReader : IJsonReader
     {
         private readonly string _jsonString;
+        private readonly JsonConvertOptions _options;
         private char* _startPoint;
         private char* _curPoint;
         private char* _endPoint;
@@ -33,7 +34,19 @@ namespace LHZ.FastJson
         /// <returns></returns>
         public static bool IsJsonString(string jsonString, out Exception exception)
         {
-            var jsonReader = new JsonReader(jsonString);
+            return IsJsonString(jsonString, null, out exception);
+        }
+
+        /// <summary>
+        /// Determine if it is a JSON string
+        /// </summary>
+        /// <param name="jsonString">JSON string</param>
+        /// <param name="options">Options (null uses the defaults)</param>
+        /// <param name="exception">Exception information</param>
+        /// <returns></returns>
+        public static bool IsJsonString(string jsonString, JsonConvertOptions options, out Exception exception)
+        {
+            var jsonReader = new JsonReader(jsonString, options);
             try
             {
                 jsonReader.JsonRead();
@@ -72,8 +85,18 @@ namespace LHZ.FastJson
         /// </summary>
         /// <param name="jsonString">JSON string</param>
         public JsonReader(string jsonString)
+            : this(jsonString, (JsonConvertOptions)null)
+        {
+        }
+        /// <summary>
+        /// Initialize JsonReader with options
+        /// </summary>
+        /// <param name="jsonString">JSON string</param>
+        /// <param name="options">Options (null uses the defaults)</param>
+        public JsonReader(string jsonString, JsonConvertOptions options)
         {
             _jsonString = jsonString;
+            _options = JsonConvertOptions.Resolve(options);
         }
         /// <summary>
         /// Initialize JsonReader
@@ -81,8 +104,19 @@ namespace LHZ.FastJson
         /// <param name="jsonString">JSON string</param>
         /// <param name="startPosition">start read position</param>
         public JsonReader(string jsonString, int startPosition)
+            : this(jsonString, startPosition, null)
+        {
+        }
+        /// <summary>
+        /// Initialize JsonReader with options
+        /// </summary>
+        /// <param name="jsonString">JSON string</param>
+        /// <param name="startPosition">start read position</param>
+        /// <param name="options">Options (null uses the defaults)</param>
+        public JsonReader(string jsonString, int startPosition, JsonConvertOptions options)
         {
             _jsonString = jsonString;
+            _options = JsonConvertOptions.Resolve(options);
             if(_jsonString.Length <= startPosition)
             {
                 throw new ArgumentException("startPosition must be smaller than jsonstring length!");
@@ -460,9 +494,9 @@ namespace LHZ.FastJson
         private JsonContent GetJsonContent(int depth)
         {
             int index = (int)(_curPoint - _startPoint);
-            if (depth > JsonConvertConfig.MaxDepth)
+            if (depth > _options.MaxDepth)
             {
-                throw new JsonReadException(index, "字符位置[" + index + "]处，JSON嵌套深度超过最大限制" + JsonConvertConfig.MaxDepth);
+                throw new JsonReadException(index, "字符位置[" + index + "]处，JSON嵌套深度超过最大限制" + _options.MaxDepth);
             }
             JsonContent content = new JsonContent(index);
             MoveNext(1);
@@ -517,9 +551,9 @@ namespace LHZ.FastJson
         private JsonArray GetJsonArray(int depth)
         {
             int index = (int)(_curPoint - _startPoint);
-            if (depth > JsonConvertConfig.MaxDepth)
+            if (depth > _options.MaxDepth)
             {
-                throw new JsonReadException(index, "字符位置[" + index + "]处，JSON嵌套深度超过最大限制" + JsonConvertConfig.MaxDepth);
+                throw new JsonReadException(index, "字符位置[" + index + "]处，JSON嵌套深度超过最大限制" + _options.MaxDepth);
             }
             JsonArray jsonArray = new JsonArray(index);
 
