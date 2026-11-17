@@ -683,7 +683,7 @@ var obj = deserializer.Deserialize(converters);
 
 ## 扩展方法 | Extension Methods
 
-LHZ.FastJson 提供了三个便捷扩展方法：
+LHZ.FastJson 提供了两个便捷扩展方法：
 
 ```csharp
 using LHZ.FastJson.Extend;  // ⚠️ 需要手动 using
@@ -694,9 +694,6 @@ string json = myObject.ToJson();
 // JSON 字符串 → 类型对象
 Student student = jsonString.FromJson<Student>();
 
-// IJsonObject → 类型对象
-IJsonObject jsonObj = JsonConvert.Deserialize(jsonString);
-Student student = jsonObj.ToObject<Student>();
 ```
 
 ---
@@ -807,7 +804,8 @@ if (!JsonConvert.TryDeserialize(jsonString, out IJsonObject obj))
               ▼                        │                        ▼
  ┌──────────────────────┐              │          ┌──────────────────────────┐
  │    JsonSerializer     │              │          │  JsonDeserializer<T>      │
- │  (Expression Tree     │              │          │  → JsonDeserialzerExpression<T>
+ │  (Expression Tree     │              │          │  → JsonDirectReader +
+ │    JsonDirectDeserialzerExpression<T>
  │   动态编译序列化)       │              │          │  (Expression Tree 动态反序列化) │
  └──────────────────────┘              │          └──────────────────────────┘
                                        │

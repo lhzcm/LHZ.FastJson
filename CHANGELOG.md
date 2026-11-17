@@ -16,6 +16,7 @@ Preview release adding per-call naming style (camelCase / snake_case / kebab-cas
 - Names configured via the `JsonProperty` attribute always take precedence over naming style conversion.
 - Compiled serialization/deserialization expressions are cached per naming policy, so different options can be used concurrently without recompilation.
 - Added `JsonConvertOptions.MaxDepth` (default 64) to limit the nesting depth accepted by `JsonReader` and the direct deserializer.
+- Removed the legacy `IJsonObject`-based deserialization engine (`JsonDeserialzerExpression`). The default `JsonCustomConvert<T>` deserialization now goes through the direct engine.
 - Known limitation: the default `JsonCustomConvert<T>` converter (no custom delegates) serializes/deserializes with default options and does not inherit the options of the enclosing call.
 - Fixed the direct deserialization engine (`JsonDirectDeserialzerExpression`) ignoring the `JsonProperty` attribute; it now behaves consistently with serialization.
 

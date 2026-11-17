@@ -375,6 +375,20 @@ namespace LHZ.FastJson.UnitTest
             public string B { get; set; }
         }
 
+        [Test]
+        public void DefaultCustomConverterDeserializesObjectTree()
+        {
+            var converter = new JsonCustomConvert<SimpleObjectRootClass>();
+            var tree = JsonConvert.Deserialize("{\"Id\":7,\"Name\":\"a\\\"b\"}");
+
+            var result = converter.Deserialize(tree);
+
+            Assert.That(result.Id, Is.EqualTo(7));
+            Assert.That(result.Name, Is.EqualTo("a\"b"));
+            Assert.That(new JsonCustomConvert<string>().Deserialize(JsonConvert.Deserialize("\"text\"")), Is.EqualTo("text"));
+            Assert.That(converter.Deserialize(null), Is.Null);
+        }
+
         public class SimpleObjectRootClass
         {
             public int Id { get; set; }

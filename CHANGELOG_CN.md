@@ -16,6 +16,7 @@
 - `JsonProperty` 特性指定的名称始终优先于命名风格转换。
 - 已编译的序列化/反序列化表达式按命名策略分别缓存，不同选项可并发使用且无需重新编译。
 - 新增 `JsonConvertOptions.MaxDepth`（默认 64），限制 `JsonReader` 与直读反序列化器接受的最大嵌套深度。
+- 移除旧的基于 `IJsonObject` 的反序列化引擎（`JsonDeserialzerExpression`），默认的 `JsonCustomConvert<T>` 反序列化改为走直读引擎。
 - 已知限制：默认的 `JsonCustomConvert<T>` 转换器（未提供自定义委托）使用默认选项，不继承外层调用传入的选项。
 - 修复直读反序列化引擎（`JsonDirectDeserialzerExpression`）忽略 `JsonProperty` 特性的缺陷，现在与序列化端行为一致。
 

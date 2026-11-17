@@ -16,10 +16,22 @@ namespace LHZ.FastJson.Json.CustomConverter
     public sealed class JsonCustomConvert<T> : IJsonCustomConverter
     {
         private Func<T, string> _serializeFunc = (T dist) => (new JsonSerializer(dist)).Serialize();
-        private Func<IJsonObject, T> _deserializeFunc = (IJsonObject jsonObject) => JsonDeserialzerExpression<T>.Deserialzer(jsonObject);
+        private Func<IJsonObject, T> _deserializeFunc = DefaultDeserialize;
         private readonly Type _type = typeof(T);
         private readonly JsonCustomConvertItem _item = JsonCustomConvertItem.None;
         private readonly bool _serializeValidate;
+        /// <summary>
+        /// Built-in deserialization: re-reads the JSON text of the object tree with the direct deserializer.
+        /// </summary>
+        private static T DefaultDeserialize(IJsonObject jsonObject)
+        {
+            if (jsonObject == null)
+            {
+                return default(T);
+            }
+            return new JsonDeserializer<T>(jsonObject.ToStringBuilder().ToString()).Deserialize();
+        }
+
         /// <summary>
         /// Default constructor, using built-in serialization/deserialization
         /// </summary>
