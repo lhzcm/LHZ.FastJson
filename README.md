@@ -6,30 +6,30 @@ A lightweight and high-performance JSON serialization and deserialization librar
 
 ## Installation
 
-The following examples show different installation methods using [LHZ.FastJson 2.0.0](https://www.nuget.org/packages/LHZ.FastJson/2.0.0) as an example:
+The following examples show different installation methods using [LHZ.FastJson 2.0.1](https://www.nuget.org/packages/LHZ.FastJson/2.0.1) as an example:
 
 ### Package Manager
 
 ``` bash
-Install-Package LHZ.FastJson -Version 2.0.0
+Install-Package LHZ.FastJson -Version 2.0.1
 ```
 
 ### .NET CLI
 
 ``` bash
-dotnet add package LHZ.FastJson --version 2.0.0
+dotnet add package LHZ.FastJson --version 2.0.1
 ```
 
 ### Package Reference
 
 ``` xml
-<PackageReference Include="LHZ.FastJson" Version="2.0.0" />
+<PackageReference Include="LHZ.FastJson" Version="2.0.1" />
 ```
 
 ### Paket CLI
 
 ``` bash
-paket add LHZ.FastJson --version 2.0.0
+paket add LHZ.FastJson --version 2.0.1
 ```
 
 ## Usage

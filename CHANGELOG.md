@@ -4,9 +4,9 @@
 
 This document records important changes to LHZ.FastJson.
 
-## 2.0.1-pre - 2026-08-16
+## 2.0.1 - 2026-11-17
 
-Preview release adding per-call naming style (camelCase / snake_case / kebab-case) and nesting-depth options.
+This release adds per-call naming style (camelCase / snake_case / kebab-case) and nesting-depth options, and removes the legacy deserialization engine.
 
 ### Features
 

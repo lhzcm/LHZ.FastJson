@@ -4,9 +4,9 @@
 
 本文档记录 LHZ.FastJson 的重要变更。
 
-## 2.0.1-pre - 2026-08-16
+## 2.0.1 - 2026-11-17
 
-预览版本，新增按调用传入的命名风格（camelCase / snake_case / kebab-case）与嵌套深度选项。
+本版本新增按调用传入的命名风格（camelCase / snake_case / kebab-case）与嵌套深度选项，并移除旧的反序列化引擎。
 
 ### 功能
 
