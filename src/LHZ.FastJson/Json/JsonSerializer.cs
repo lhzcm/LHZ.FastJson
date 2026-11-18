@@ -43,6 +43,7 @@ namespace LHZ.FastJson.Json
         private readonly JsonConvertOptions _options;
 
         private Dictionary<Type, IJsonCustomConverter> _customConverters;
+        private static readonly FieldInfo _customConvertersField = typeof(JsonSerializer).GetField(nameof(_customConverters), BindingFlags.NonPublic | BindingFlags.Instance);
 
         /// <summary>
         /// Initialize the serializer with an object
@@ -88,6 +89,11 @@ namespace LHZ.FastJson.Json
                     {
                         _customConverters.Add(item.ConvertType, item);
                     }
+                }
+                //Keep the fast built-in path when no converter applies to serialization
+                if (_customConverters.Count == 0)
+                {
+                    _customConverters = null;
                 }
             }
         }
@@ -189,6 +195,8 @@ namespace LHZ.FastJson.Json
                 var propertyType = item.PropertyType;
                 ObjectType objectType = GetObjectType(propertyType);
                 Expression exp = null;
+                //Whether the property is serialized by a built-in method directly (such calls skip custom converters)
+                bool builtInCall = true;
                 Func<Type, Action<JsonSerializer, object>> sact = GetSerializationAction;
 
                 #region Custom property name handling
@@ -213,7 +221,7 @@ namespace LHZ.FastJson.Json
                     case ObjectType.Enum: exp = Expression.Call(thisObjParameter, ((Action<System.Enum>)SerializeEnum).Method, Expression.Convert(Expression.Property(obj, item), typeof(System.Enum))); break;
                     case ObjectType.Guid: exp = Expression.Call(thisObjParameter, ((Action<Guid>)SerializeGuid).Method, Expression.Property(obj, item)); break;
                     case ObjectType.String: exp = Expression.Call(thisObjParameter, ((Action<string>)SerializeString).Method, Expression.Property(obj, item)); break;
-                    case ObjectType.Nullable: exp = Expression.Call(thisObjParameter, ((Action<object>)SerializeAny).Method, Expression.Convert(Expression.Property(obj, item), typeof(object))); break;
+                    case ObjectType.Nullable: builtInCall = false; exp = Expression.Call(thisObjParameter, ((Action<object>)SerializeAny).Method, Expression.Convert(Expression.Property(obj, item), typeof(object))); break;
                     case ObjectType.Dictionary:
                         {
                             exp = Expression.Call(thisObjParameter, ((Action<IDictionary>)SerializeDictionary).Method, Expression.Property(obj, item));
@@ -226,6 +234,7 @@ namespace LHZ.FastJson.Json
                         }
                     default:
                         {
+                            builtInCall = false;
                             //Box value types before passing them to the object-typed serializer delegate.
                             var boxedProperty = Expression.Convert(Expression.Property(obj, item), typeof(object));
                             exp = Expression.Invoke(
@@ -234,6 +243,16 @@ namespace LHZ.FastJson.Json
                                 boxedProperty);
                             break;
                         }
+                }
+                //Built-in calls skip custom converters, so when custom converters are supplied
+                //(checked at run time: the compiled delegate is shared by all serializer instances)
+                //route the value through SerializeAny, which looks the converter up by type.
+                if (builtInCall)
+                {
+                    exp = Expression.IfThenElse(
+                        Expression.Equal(Expression.Field(thisObjParameter, _customConvertersField), Expression.Constant(null, typeof(Dictionary<Type, IJsonCustomConverter>))),
+                        exp,
+                        Expression.Call(thisObjParameter, ((Action<object>)SerializeAny).Method, Expression.Convert(Expression.Property(obj, item), typeof(object))));
                 }
                 ////Get property type serialization (this method does not determine the actual type of each object)
                 // var expressionMethods = this.GetType().GetMethods((BindingFlags) 0x7FFFFFFF).First(n => n.Name == "CreateSerializationExpression" && n.IsGenericMethod).MakeGenericMethod(item.PropertyType);
@@ -305,7 +324,7 @@ namespace LHZ.FastJson.Json
                 case ObjectType.Double: exp = Expression.Call(thisObjParameter, ((Action<double>)SerializeDouble).Method, obj); break;
                 case ObjectType.Decimal: exp = Expression.Call(thisObjParameter, ((Action<decimal>)SerializeDecimal).Method, obj); break;
                 case ObjectType.DateTime: exp = Expression.Call(thisObjParameter, ((Action<DateTime>)SerializeDateTime).Method, obj); break;
-                case ObjectType.Enum: exp = Expression.Call(thisObjParameter, ((Action<System.Enum>)SerializeEnum).Method, obj); break;
+                case ObjectType.Enum: exp = Expression.Call(thisObjParameter, ((Action<System.Enum>)SerializeEnum).Method, Expression.Convert(obj, typeof(System.Enum))); break;
                 case ObjectType.Guid: exp = Expression.Call(thisObjParameter, ((Action<Guid>)SerializeGuid).Method, obj); break;
                 case ObjectType.String: exp = Expression.Call(thisObjParameter, ((Action<string>)SerializeString).Method, obj); break;
                 case ObjectType.Nullable: exp = Expression.Call(thisObjParameter, ((Action<object>)SerializeAny).Method, objParameter); break;
