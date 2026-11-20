@@ -4,7 +4,9 @@
 
 This document records important changes to LHZ.FastJson.
 
-## Unreleased
+## 2.1.0 - 2026-11-20
+
+This release switches `DateTime` to the ISO 8601 round-trip format with a faster reader and writer, and applies custom serialize converters to primitive-typed properties.
 
 ### Breaking changes
 
@@ -18,6 +20,8 @@ This document records important changes to LHZ.FastJson.
 
 - `DateTime` deserialization no longer depends on the current culture. ISO 8601 (`T` or space separator, optional fraction, `Z` or `±hh:mm` offset) and the legacy `yyyy-MM-dd HH:mm:ss` form are handled by a dedicated parser; other strings fall back to an invariant-culture parse. `Z` gives `Utc`, an offset gives a `Local` time, no offset gives `Unspecified`.
 - Invalid date strings now throw `JsonDirectDeserializationException` with the position and the offending text.
+- Custom serialize converters now apply to object properties of built-in types (numbers, `bool`, `char`, `string`, `DateTime`, `Guid`, enums, dictionaries, collections); previously these properties ignored converters. Converters that do not customize serialization keep the fast built-in path.
+- Fixed enum serialization throwing `ArgumentException` when an enum was a root value, collection element, dictionary value or `object`-typed property.
 
 ### Performance
 

@@ -4,7 +4,9 @@
 
 本文档记录 LHZ.FastJson 的重要变更。
 
-## 未发布
+## 2.1.0 - 2026-11-20
+
+本版本将 `DateTime` 改为 ISO 8601 往返格式并提升读写性能，同时让自定义序列化转换器作用于基础类型属性。
 
 ### 不兼容变更
 
@@ -18,6 +20,8 @@
 
 - `DateTime` 反序列化不再依赖当前区域设置。ISO 8601（`T` 或空格分隔、可选小数秒、`Z` 或 `±hh:mm` 偏移）及旧的 `yyyy-MM-dd HH:mm:ss` 由专用解析器处理，其他字符串回退到 InvariantCulture 解析。`Z` 解析为 `Utc`，带偏移解析为 `Local` 时间，无偏移为 `Unspecified`。
 - 非法日期字符串现在抛出带位置和原始文本的 `JsonDirectDeserializationException`。
+- 自定义序列化转换器现在会作用于基础类型的对象属性（数字、`bool`、`char`、`string`、`DateTime`、`Guid`、枚举、字典、集合），此前这些属性会忽略转换器。不定制序列化的转换器仍走内置快速路径。
+- 修复枚举作为根值、集合元素、字典值或 `object` 类型属性时，序列化抛出 `ArgumentException` 的问题。
 
 ### 性能
 
