@@ -78,6 +78,7 @@ NO:1,Name:lhz,Age:18,Brithday:2000-1-1
 - 只转换对象的属性名，字典的 key 不受影响；
 - 选项只对传入它的那次调用生效，不存在全局状态，不同调用方可以同时使用不同的命名风格；
 - `JsonConvertOptions.MaxDepth`（默认 64）用于限制读取器接受的最大嵌套深度。
+- `JsonConvertOptions.DateTimeFormat`（默认 `null`）用于自定义 `DateTime` 格式。默认按 ISO 8601 往返格式输出（`"2024-01-02T03:04:05.678Z"`）；读取时始终兼容 ISO 8601 与 `yyyy-MM-dd HH:mm:ss`。
 
 ### 命名风格示例
 ``` csharp

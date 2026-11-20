@@ -367,7 +367,7 @@ namespace LHZ.FastJson.UnitTest
                 Uid = Guid.Parse("0d6c8fd4-b18d-47d2-95c2-b07c9a5d8312")
             });
             var jsonStr = JsonConvert.Serialize(obj);
-            ClassicAssert.AreEqual(jsonStr, "{\"test1\":{\"Id\":1,\"Name\":\"test1\",\"Price\":10,\"IsActive\":true,\"CreateTime\":\"2026-06-24 23:32:03\",\"Uid\":\"5789473f-32c1-43f4-b723-834e05b07afd\"},\"test2\":{\"Id\":2,\"Name\":\"test2\",\"Price\":20,\"IsActive\":false,\"CreateTime\":\"2026-06-24 23:32:03\",\"Uid\":\"0d6c8fd4-b18d-47d2-95c2-b07c9a5d8312\"}}");
+            ClassicAssert.AreEqual(jsonStr, "{\"test1\":{\"Id\":1,\"Name\":\"test1\",\"Price\":10,\"IsActive\":true,\"CreateTime\":\"2026-06-24T23:32:03\",\"Uid\":\"5789473f-32c1-43f4-b723-834e05b07afd\"},\"test2\":{\"Id\":2,\"Name\":\"test2\",\"Price\":20,\"IsActive\":false,\"CreateTime\":\"2026-06-24T23:32:03\",\"Uid\":\"0d6c8fd4-b18d-47d2-95c2-b07c9a5d8312\"}}");
         }
         public class JsonProptryNameAttributeTest
         {

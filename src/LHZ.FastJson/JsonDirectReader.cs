@@ -373,6 +373,69 @@ namespace LHZ.FastJson
             throw new JsonReadException(Position, "字符位置[" + Position + "]处，Json字符串解析错误，字符串未闭合");
         }
         /// <summary>
+        /// Read a JSON string and parse it as a DateTime.
+        /// Strings without escape sequences are parsed in place, without allocating a substring.
+        /// </summary>
+        /// <returns>The parsed value</returns>
+        /// <exception cref="JsonReadException"></exception>
+        internal DateTime ReadDateTime()
+        {
+            int startPosition = Position;
+            int scan = Position + 1;
+            while (scan < Length)
+            {
+                char c = Content[scan];
+                if (c == '"')
+                {
+                    break;
+                }
+                if (c == '\\' || c < 0x20)
+                {
+                    //Escapes or control characters: let ReadString decode / report them
+                    scan = -1;
+                    break;
+                }
+                scan++;
+            }
+
+            DateTime result;
+            if (scan > 0 && scan < Length)
+            {
+                int offset = startPosition + 1;
+                int length = scan - offset;
+                Position = scan + 1;
+                if (TryParseDateTime(Content, offset, length, out result))
+                {
+                    return result;
+                }
+                throw new JsonDirectDeserializationException(startPosition, JsonType.String, typeof(DateTime),
+                    "字符位置[" + startPosition + "]处，字符串\"" + Content.Substring(offset, length) + "\"不能解析成DateTime类型");
+            }
+
+            var str = ReadString();
+            if (TryParseDateTime(str, 0, str.Length, out result))
+            {
+                return result;
+            }
+            throw new JsonDirectDeserializationException(startPosition, JsonType.String, typeof(DateTime),
+                "字符位置[" + startPosition + "]处，字符串\"" + str + "\"不能解析成DateTime类型");
+        }
+
+        private bool TryParseDateTime(string source, int offset, int length, out DateTime result)
+        {
+            if (Utils.DateTimeFormatter.TryParseIso(source, offset, length, out result))
+            {
+                return true;
+            }
+            string text = source.Substring(offset, length);
+            string format = Options.DateTimeFormat;
+            if (format != null && DateTime.TryParseExact(text, format, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.RoundtripKind, out result))
+            {
+                return true;
+            }
+            return DateTime.TryParse(text, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.RoundtripKind, out result);
+        }
+        /// <summary>
         /// Read JSON Number object
         /// </summary>
         /// <returns>StringView object</returns>

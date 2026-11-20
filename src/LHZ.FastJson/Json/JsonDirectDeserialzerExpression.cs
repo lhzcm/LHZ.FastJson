@@ -345,7 +345,7 @@ namespace LHZ.FastJson.Json
             {
                 throw new JsonDirectDeserializationException(jsonDirectReader.Position, jsonDirectReader.JsonType, typeof(DateTime), "Json对象不为String类型不能解析成DateTime类型");
             }
-            return DateTime.Parse(jsonDirectReader.ReadString(), CultureInfo.CurrentCulture);
+            return jsonDirectReader.ReadDateTime();
         }
 
         /// <summary>

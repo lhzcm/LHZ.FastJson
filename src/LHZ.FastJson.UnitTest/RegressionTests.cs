@@ -57,7 +57,7 @@ namespace LHZ.FastJson.UnitTest
 
             var json = JsonConvert.Serialize(value);
 
-            ClassicAssert.AreEqual("\"2020-07-18 01:02:03\"", json);
+            ClassicAssert.AreEqual("\"2020-07-18T01:02:03\"", json);
         }
 
         /// <summary>

@@ -4,6 +4,25 @@
 
 本文档记录 LHZ.FastJson 的重要变更。
 
+## 未发布
+
+### 不兼容变更
+
+- `DateTime` 默认改为按 ISO 8601 往返格式序列化（与 System.Text.Json / Newtonsoft.Json 一致），不再使用 `yyyy-MM-dd HH:mm:ss`。保留小数秒（最多 7 位，省略末尾 0）和 `DateTimeKind`：`"2024-01-02T03:04:05.678Z"`（Utc）、`"2024-01-02T03:04:05.678+08:00"`（Local）、`"2024-01-02T03:04:05.678"`（Unspecified）。如需保持旧输出，设置 `JsonConvertOptions.DateTimeFormat = "yyyy-MM-dd HH:mm:ss"`。
+
+### 功能
+
+- 新增 `JsonConvertOptions.DateTimeFormat`，可用自定义格式（InvariantCulture）序列化 `DateTime`，反序列化时同样接受该格式。
+
+### 修复
+
+- `DateTime` 反序列化不再依赖当前区域设置。ISO 8601（`T` 或空格分隔、可选小数秒、`Z` 或 `±hh:mm` 偏移）及旧的 `yyyy-MM-dd HH:mm:ss` 由专用解析器处理，其他字符串回退到 InvariantCulture 解析。`Z` 解析为 `Utc`，带偏移解析为 `Local` 时间，无偏移为 `Unspecified`。
+- 非法日期字符串现在抛出带位置和原始文本的 `JsonDirectDeserializationException`。
+
+### 性能
+
+- `DateTime` 读写改为无额外分配的实现。1000 项 `List<DateTime>`：序列化提速约 23%、内存减少约 21%；反序列化提速约 3.8 倍、内存减少约 80%。
+
 ## 2.0.1 - 2026-11-17
 
 本版本新增按调用传入的命名风格（camelCase / snake_case / kebab-case）与嵌套深度选项，并移除旧的反序列化引擎。

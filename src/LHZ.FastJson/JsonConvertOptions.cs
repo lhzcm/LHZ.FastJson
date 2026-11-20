@@ -63,6 +63,16 @@ namespace LHZ.FastJson
         }
 
         /// <summary>
+        /// Custom <see cref="DateTime"/> format string (for example <c>"yyyy-MM-dd HH:mm:ss"</c>), always applied
+        /// with the invariant culture.
+        /// <para>Serialization: when <c>null</c> (the default) values are written in the ISO 8601 round-trip form,
+        /// e.g. <c>"2024-01-02T03:04:05.678Z"</c>; otherwise the given format is used.</para>
+        /// <para>Deserialization: ISO 8601 and <c>yyyy-MM-dd HH:mm:ss</c> are always accepted; when a format is set
+        /// it is tried as well, before falling back to a general invariant-culture parse.</para>
+        /// </summary>
+        public string DateTimeFormat { get; set; }
+
+        /// <summary>
         /// Resolve the options to use: the supplied instance, or the defaults when <c>null</c>.
         /// </summary>
         internal static JsonConvertOptions Resolve(JsonConvertOptions options)

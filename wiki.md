@@ -84,7 +84,7 @@ var student = new Student
 };
 
 string json = JsonConvert.Serialize(student);
-// 输出: {"NO":1,"Name":"张三","Age":20,"Birthday":"2002-01-01 00:00:00"}
+// 输出: {"NO":1,"Name":"张三","Age":20,"Birthday":"2002-01-01T00:00:00"}
 ```
 
 ### 反序列化对象
@@ -127,7 +127,7 @@ string json = JsonConvert.Serialize(anyObject);
 | 浮点 | `float`, `double`, `decimal` | 数字 |
 | 字符 | `char` | 字符串 `"c"` |
 | 字符串 | `string` | `"value"` （自动转义） |
-| 日期 | `DateTime` | `"yyyy-MM-dd HH:mm:ss"` |
+| 日期 | `DateTime` | ISO 8601：`"2024-01-02T03:04:05.678Z"`（可通过 `JsonConvertOptions.DateTimeFormat` 自定义） |
 | 枚举 | `Enum` | 数字字符串 `"1"` |
 | GUID | `Guid` | 字符串 `"xxxx-xxxx..."` |
 | 字典 | `IDictionary` | `{"key":value,...}` |
@@ -763,7 +763,7 @@ if (!JsonConvert.TryDeserialize(jsonString, out IJsonObject obj))
 | `float` | ✅ | |
 | `double` | ✅ | |
 | `decimal` | ✅ | |
-| `DateTime` | ✅ | 格式 `yyyy-MM-dd HH:mm:ss` |
+| `DateTime` | ✅ | ISO 8601 往返格式（可用 `JsonConvertOptions.DateTimeFormat` 自定义） |
 | `Guid` | ✅ | |
 | `string` | ✅ | |
 | `Enum` | ✅ | 序列化为数值字符串 |

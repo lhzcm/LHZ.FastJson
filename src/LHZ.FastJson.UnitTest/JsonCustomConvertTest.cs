@@ -168,10 +168,10 @@ namespace LHZ.FastJson.UnitTest
             ClassicAssert.AreEqual("{\"Id\":1,\"Name\":\"tom\",\"Birthday\":\"2020/01/02\"}", new JsonSerializer(person, dateConverter).Serialize());
 
             var intConverter = new JsonCustomConvert<int>(n => (n * 10).ToString());
-            ClassicAssert.AreEqual("{\"Id\":10,\"Name\":\"tom\",\"Birthday\":\"2020-01-02 00:00:00\"}", new JsonSerializer(person, intConverter).Serialize());
+            ClassicAssert.AreEqual("{\"Id\":10,\"Name\":\"tom\",\"Birthday\":\"2020-01-02T00:00:00\"}", new JsonSerializer(person, intConverter).Serialize());
 
             var stringConverter = new JsonCustomConvert<string>((string t) => "\"<" + t + ">\"");
-            ClassicAssert.AreEqual("{\"Id\":1,\"Name\":\"<tom>\",\"Birthday\":\"2020-01-02 00:00:00\"}", new JsonSerializer(person, stringConverter).Serialize());
+            ClassicAssert.AreEqual("{\"Id\":1,\"Name\":\"<tom>\",\"Birthday\":\"2020-01-02T00:00:00\"}", new JsonSerializer(person, stringConverter).Serialize());
 
             var colorConverter = new JsonCustomConvert<Color>(c => "\"" + c.ToString().ToLowerInvariant() + "\"");
             var order = new Order { Price = null, Color = Color.Green };
@@ -189,8 +189,8 @@ namespace LHZ.FastJson.UnitTest
 
             for (int i = 0; i < 3; i++)
             {
-                ClassicAssert.AreEqual("{\"Id\":1,\"Name\":\"tom\",\"Birthday\":\"2020-01-02 00:00:00\"}", new JsonSerializer(person).Serialize());
-                ClassicAssert.AreEqual("{\"Id\":0,\"Name\":\"tom\",\"Birthday\":\"2020-01-02 00:00:00\"}", new JsonSerializer(person, converter).Serialize());
+                ClassicAssert.AreEqual("{\"Id\":1,\"Name\":\"tom\",\"Birthday\":\"2020-01-02T00:00:00\"}", new JsonSerializer(person).Serialize());
+                ClassicAssert.AreEqual("{\"Id\":0,\"Name\":\"tom\",\"Birthday\":\"2020-01-02T00:00:00\"}", new JsonSerializer(person, converter).Serialize());
             }
         }
 
@@ -217,7 +217,7 @@ namespace LHZ.FastJson.UnitTest
             int calls = 0;
             var converter = new JsonCustomConvert<string>((string t) => { calls++; return "\"x\""; });
 
-            ClassicAssert.AreEqual("{\"Id\":0,\"Name\":null,\"Birthday\":\"0001-01-01 00:00:00\"}", new JsonSerializer(new Person(), converter).Serialize());
+            ClassicAssert.AreEqual("{\"Id\":0,\"Name\":null,\"Birthday\":\"0001-01-01T00:00:00\"}", new JsonSerializer(new Person(), converter).Serialize());
             ClassicAssert.AreEqual(0, calls);
         }
 
@@ -241,7 +241,7 @@ namespace LHZ.FastJson.UnitTest
         public void NonSerializeConvertersKeepBuiltInOutput()
         {
             var person = new Person { Id = 1, Name = "tom", Birthday = new DateTime(2020, 1, 2) };
-            const string expected = "{\"Id\":1,\"Name\":\"tom\",\"Birthday\":\"2020-01-02 00:00:00\"}";
+            const string expected = "{\"Id\":1,\"Name\":\"tom\",\"Birthday\":\"2020-01-02T00:00:00\"}";
 
             ClassicAssert.AreEqual(expected, new JsonSerializer(person, new JsonCustomConvert<int>(j => 99)).Serialize());
             ClassicAssert.AreEqual(expected, new JsonSerializer(person, new JsonCustomConvert<int>()).Serialize());
@@ -341,7 +341,7 @@ namespace LHZ.FastJson.UnitTest
             var person = new Person { Id = 1, Name = "tom", Birthday = new DateTime(2020, 1, 2) };
 
             ClassicAssert.AreEqual("{\"Price\":0,\"Color\":1}", new JsonSerializer(order, converter).Serialize());
-            ClassicAssert.AreEqual("{\"Id\":1,\"Name\":\"tom\",\"Birthday\":\"2020-01-02 00:00:00\"}", new JsonSerializer(person, converter).Serialize());
+            ClassicAssert.AreEqual("{\"Id\":1,\"Name\":\"tom\",\"Birthday\":\"2020-01-02T00:00:00\"}", new JsonSerializer(person, converter).Serialize());
         }
 
         #endregion

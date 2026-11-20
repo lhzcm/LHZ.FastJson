@@ -95,6 +95,7 @@ By default, property names are serialized exactly as declared (`CaseStyle.Pascal
 - Only object property names are converted; dictionary keys are left untouched;
 - The options only affect the call they are passed to; there is no global state, so different callers can use different naming styles at the same time;
 - `JsonConvertOptions.MaxDepth` (default 64) limits the nesting depth accepted by the readers.
+- `JsonConvertOptions.DateTimeFormat` (default `null`) sets a custom `DateTime` format. By default `DateTime` is written in the ISO 8601 round-trip form (`"2024-01-02T03:04:05.678Z"`); ISO 8601 and `yyyy-MM-dd HH:mm:ss` are always accepted when reading.
 
 #### Example
 

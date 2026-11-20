@@ -4,6 +4,25 @@
 
 This document records important changes to LHZ.FastJson.
 
+## Unreleased
+
+### Breaking changes
+
+- `DateTime` is now serialized in the ISO 8601 round-trip form (the same as System.Text.Json / Newtonsoft.Json) instead of `yyyy-MM-dd HH:mm:ss`. Fractional seconds (up to 7 digits, trailing zeros omitted) and the `DateTimeKind` are kept: `"2024-01-02T03:04:05.678Z"` (Utc), `"2024-01-02T03:04:05.678+08:00"` (Local), `"2024-01-02T03:04:05.678"` (Unspecified). Set `JsonConvertOptions.DateTimeFormat = "yyyy-MM-dd HH:mm:ss"` to keep the old output.
+
+### Features
+
+- Added `JsonConvertOptions.DateTimeFormat` to serialize `DateTime` with a custom format (invariant culture); the format is also accepted during deserialization.
+
+### Fixes
+
+- `DateTime` deserialization no longer depends on the current culture. ISO 8601 (`T` or space separator, optional fraction, `Z` or `±hh:mm` offset) and the legacy `yyyy-MM-dd HH:mm:ss` form are handled by a dedicated parser; other strings fall back to an invariant-culture parse. `Z` gives `Utc`, an offset gives a `Local` time, no offset gives `Unspecified`.
+- Invalid date strings now throw `JsonDirectDeserializationException` with the position and the offending text.
+
+### Performance
+
+- Allocation-free `DateTime` writer and parser. On a 1000-item `List<DateTime>`: serialization ~23% faster with ~21% less memory, deserialization ~3.8x faster with ~80% less memory.
+
 ## 2.0.1 - 2026-11-17
 
 This release adds per-call naming style (camelCase / snake_case / kebab-case) and nesting-depth options, and removes the legacy deserialization engine.

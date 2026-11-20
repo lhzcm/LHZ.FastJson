@@ -7,12 +7,12 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
-using System.Xml.Schema;
 using LHZ.FastJson.Enum;
 using LHZ.FastJson.Enum.CustomConverter;
 using LHZ.FastJson.Interface;
 using LHZ.FastJson.Json.Attributes;
 using LHZ.FastJson.Json.Utils;
+using LHZ.FastJson.Utils;
 
 namespace LHZ.FastJson.Json
 {
@@ -41,6 +41,9 @@ namespace LHZ.FastJson.Json
         private object _obj;
 
         private readonly JsonConvertOptions _options;
+
+        //Scratch buffer for the allocation-free ISO 8601 DateTime writer (created on first use)
+        private char[] _dateTimeBuffer;
 
         private Dictionary<Type, IJsonCustomConverter> _customConverters;
         private static readonly FieldInfo _customConvertersField = typeof(JsonSerializer).GetField(nameof(_customConverters), BindingFlags.NonPublic | BindingFlags.Instance);
@@ -495,8 +498,17 @@ namespace LHZ.FastJson.Json
         /// <param name="obj">Object to serialize</param>
         private void SerializeDateTime(DateTime obj)
         {
-            SerializeString(obj.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture));
-            return;
+            string format = _options.DateTimeFormat;
+            if (format != null)
+            {
+                SerializeString(obj.ToString(format, CultureInfo.InvariantCulture));
+                return;
+            }
+            if (_dateTimeBuffer == null)
+            {
+                _dateTimeBuffer = new char[DateTimeFormatter.MaxIsoLength + 2];
+            }
+            DateTimeFormatter.WriteIsoQuoted(_jsonStrBuilder, obj, _dateTimeBuffer);
         }
         /// <summary>
         /// Enum type serialization
