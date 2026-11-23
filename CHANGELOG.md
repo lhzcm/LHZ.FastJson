@@ -4,7 +4,7 @@
 
 This document records important changes to LHZ.FastJson.
 
-## 2.1.0 - 2026-11-20
+## 2.1.1 - 2026-11-20
 
 This release switches `DateTime` to the ISO 8601 round-trip format with a faster reader and writer, and applies custom serialize converters to primitive-typed properties.
 

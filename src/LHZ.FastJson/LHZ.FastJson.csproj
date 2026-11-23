@@ -3,13 +3,13 @@
     <TARGETFRAMEWORKS>NET40;NET45;NET46;NETSTANDARD2.0;NET5;NET6</TARGETFRAMEWORKS>
     <!--<TargetFramework>NETSTANDARD2.0</TargetFramework>-->
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>2.1.0</Version>
+    <Version>2.1.1</Version>
     <Authors>LHZ</Authors>
     <Description>轻巧便利的Json序列化和反序列化工具Lightweight and convenient tool for JSON serialization and deserialization</Description>
     <PackageIcon>logo.png</PackageIcon>
     <RepositoryType>Git</RepositoryType>
     <RepositoryUrl>https://github.com/lhzcm/LHZ.FastJson</RepositoryUrl>
-    <PackageReleaseNotes>2.1.0：DateTime 默认改为 ISO 8601 往返格式（保留小数秒与 DateTimeKind），反序列化不再依赖区域设置，新增 JsonConvertOptions.DateTimeFormat，DateTime 读写性能大幅提升；自定义序列化转换器作用于基础类型属性，修复枚举序列化异常。</PackageReleaseNotes>
+    <PackageReleaseNotes>2.1.1：DateTime 默认改为 ISO 8601 往返格式（保留小数秒与 DateTimeKind），反序列化不再依赖区域设置，新增 JsonConvertOptions.DateTimeFormat，DateTime 读写性能大幅提升；自定义序列化转换器作用于基础类型属性，修复枚举序列化异常。</PackageReleaseNotes>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <PackageReadmeFile>README.md</PackageReadmeFile>
