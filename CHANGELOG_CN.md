@@ -4,6 +4,17 @@
 
 本文档记录 LHZ.FastJson 的重要变更。
 
+## 2.1.2 - 2026-11-24
+
+本版本修复泛型字典接口属性的序列化，并让接口类型的集合与字典可以被反序列化。
+
+### 修复
+
+- 声明为 `IDictionary<TKey,TValue>` 或 `IReadOnlyDictionary<TKey,TValue>` 的字典属性现在写成 JSON 对象（`{"k":1}`），不再写成由 `{"Key":"k","Value":1}` 组成的数组。类型本身或其实现中带有 `IDictionary<,>` / `IReadOnlyDictionary<,>` 的，都按字典处理，key/value 类型从该接口解析，泛型字典子类也不会再在构建序列化表达式时抛出 `ArgumentException`。
+- 接口类型的集合与字典现在可以反序列化：`IDictionary<TKey,TValue>`、`IReadOnlyDictionary<TKey,TValue>`、`IList<T>`、`ICollection<T>`、`IEnumerable<T>`、`IReadOnlyList<T>`、`IReadOnlyCollection<T>`，以及非泛型的 `IDictionary`、`IList`、`ICollection`、`IEnumerable`。它们会落到 `Dictionary<TKey, TValue>` / `List<T>`（非泛型接口为 `Dictionary<string, object>` / `List<object>`）。此前会抛出 `JsonDirectDeserializationException`（“类型为接口或者是抽象接口，无法创建该类型对象”）。
+- 反序列化时字典键会按声明的键类型转换，`Dictionary<int, string>` 不再因为键是字符串而失败。
+- 序列化器直接输出 `IJsonObject` 节点的原文，因此 `object` 类型属性与非泛型集合（反序列化得到 `JsonObject` 节点）可以原样写回相同的 JSON。
+
 ## 2.1.1 - 2026-11-20
 
 本版本将 `DateTime` 改为 ISO 8601 往返格式并提升读写性能，同时让自定义序列化转换器作用于基础类型属性。

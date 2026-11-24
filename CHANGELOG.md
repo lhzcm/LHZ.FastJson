@@ -4,6 +4,17 @@
 
 This document records important changes to LHZ.FastJson.
 
+## 2.1.2 - 2026-11-24
+
+This release fixes dictionary serialization for generic interface types and makes interface-typed collections and dictionaries deserializable.
+
+### Fixes
+
+- Dictionary properties declared as `IDictionary<TKey,TValue>` or `IReadOnlyDictionary<TKey,TValue>` are written as JSON objects (`{"k":1}`) instead of arrays of `{"Key":"k","Value":1}` objects. Types that are, or implement, `IDictionary<,>` / `IReadOnlyDictionary<,>` are classified as dictionaries and the key/value types are resolved from that interface, so generic dictionary subclasses no longer throw `ArgumentException` while the serializer expression is built.
+- Interface-typed collections and dictionaries can now be deserialized: `IDictionary<TKey,TValue>`, `IReadOnlyDictionary<TKey,TValue>`, `IList<T>`, `ICollection<T>`, `IEnumerable<T>`, `IReadOnlyList<T>`, `IReadOnlyCollection<T>` as well as the non-generic `IDictionary`, `IList`, `ICollection` and `IEnumerable`. They are materialized as `Dictionary<TKey, TValue>` / `List<T>` (`Dictionary<string, object>` / `List<object>` for the non-generic interfaces). Previously they threw `JsonDirectDeserializationException` ("the type is an interface or abstract type").
+- Dictionary keys are converted to the declared key type during deserialization, so `Dictionary<int, string>` works instead of failing on the string key.
+- `IJsonObject` nodes are written verbatim by the serializer, so `object`-typed properties and untyped collections (which deserialize to `JsonObject` nodes) serialize back to the same JSON.
+
 ## 2.1.1 - 2026-11-20
 
 This release switches `DateTime` to the ISO 8601 round-trip format with a faster reader and writer, and applies custom serialize converters to primitive-typed properties.
