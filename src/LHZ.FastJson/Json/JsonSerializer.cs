@@ -28,6 +28,15 @@ namespace LHZ.FastJson.Json
         //so the delegates are cached per naming policy: indexed by (int)CaseStyle.
         private static readonly ConcurrentDictionary<Type, Action<JsonSerializer, object>>[] _serializationActions = CreateSerializationActionCaches();
 
+        //The dictionary serializers are looked up once: the generic one is closed over the
+        //dictionary's key/value types when the property expression is built.
+        private static readonly MethodInfo _dictionarySerializer = typeof(JsonSerializer).GetMethod(
+            "SerializeDictionary", BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { typeof(IDictionary) }, null);
+
+        private static readonly MethodInfo _genericDictionarySerializer = typeof(JsonSerializer)
+            .GetMethods(BindingFlags.NonPublic | BindingFlags.Instance)
+            .First(n => n.Name == "SerializeDictionary" && n.IsGenericMethod);
+
         private static ConcurrentDictionary<Type, Action<JsonSerializer, object>>[] CreateSerializationActionCaches()
         {
             var caches = new ConcurrentDictionary<Type, Action<JsonSerializer, object>>[JsonConvertOptions.CaseStyleCount];
@@ -227,15 +236,7 @@ namespace LHZ.FastJson.Json
                     case ObjectType.Nullable: builtInCall = false; exp = Expression.Call(thisObjParameter, ((Action<object>)SerializeAny).Method, Expression.Convert(Expression.Property(obj, item), typeof(object))); break;
                     case ObjectType.Dictionary:
                         {
-                            if(propertyType.IsGenericType)
-                            {
-                                var method = typeof(JsonSerializer).GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).First(n=>n.Name=="SerializeDictionary" && n.IsGenericMethod).MakeGenericMethod(propertyType.GetGenericArguments());
-                                exp = Expression.Call(thisObjParameter, method, Expression.Property(obj, item));
-                            }
-                            else
-                            {
-                                exp = Expression.Call(thisObjParameter, ((Action<IDictionary>)SerializeDictionary).Method, Expression.Property(obj, item));
-                            }
+                            exp = CreateDictionarySerializationExpression(thisObjParameter, propertyType, Expression.Property(obj, item));
                             break;
                         }
                     case ObjectType.Enumerable:
@@ -339,8 +340,7 @@ namespace LHZ.FastJson.Json
                 case ObjectType.Guid: exp = Expression.Call(thisObjParameter, ((Action<Guid>)SerializeGuid).Method, obj); break;
                 case ObjectType.String: exp = Expression.Call(thisObjParameter, ((Action<string>)SerializeString).Method, obj); break;
                 case ObjectType.Nullable: exp = Expression.Call(thisObjParameter, ((Action<object>)SerializeAny).Method, objParameter); break;
-                case ObjectType.Dictionary: exp = objType.IsGenericType ? Expression.Call(thisObjParameter, typeof(JsonSerializer).GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).First(n=>n.Name=="SerializeDictionary" && n.IsGenericMethod).MakeGenericMethod(objType.GetGenericArguments()), obj) 
-                    : Expression.Call(thisObjParameter, ((Action<IDictionary>)SerializeDictionary).Method, obj); break;
+                case ObjectType.Dictionary: exp = CreateDictionarySerializationExpression(thisObjParameter, objType, obj); break;
                 case ObjectType.Enumerable: exp = Expression.Call(thisObjParameter, ((Action<IEnumerable>)SerializeEnumerable).Method, obj); break;
                 default: exp = Expression.Invoke(CreateObjectSerializationExpression(objType), thisObjParameter, objParameter); break;
             }
@@ -387,12 +387,89 @@ namespace LHZ.FastJson.Json
                 return ObjectType.Enum;
             else if (type == typeof(Guid))
                 return ObjectType.Guid;
-            else if (typeof(IDictionary).IsAssignableFrom(type) || type.GetInterfaces().Any(n => n.IsGenericType && n.GetGenericTypeDefinition() == typeof(IDictionary<,>)))
+            else if (typeof(IDictionary).IsAssignableFrom(type) || IsGenericDictionary(type))
                 return ObjectType.Dictionary;
             else if (typeof(IEnumerable).IsAssignableFrom(type))
                 return ObjectType.Enumerable;
             else
                 return ObjectType.Object;
+        }
+
+        /// <summary>
+        /// Whether the type is, or implements, a generic dictionary interface
+        /// (IDictionary&lt;TKey,TValue&gt; or, when the target framework provides it,
+        /// IReadOnlyDictionary&lt;TKey,TValue&gt;). These types are not assignable to the
+        /// non-generic IDictionary, so they need the generic serializer.
+        /// </summary>
+        private static bool IsGenericDictionary(Type type)
+        {
+            Type keyType, valueType;
+            return TryGetDictionaryTypes(type, out keyType, out valueType);
+        }
+
+        /// <summary>
+        /// Get the key/value types of a type that is, or implements, a generic dictionary interface.
+        /// </summary>
+        private static bool TryGetDictionaryTypes(Type type, out Type keyType, out Type valueType)
+        {
+            if (IsGenericDictionaryInterface(type))
+            {
+                var arguments = type.GetGenericArguments();
+                keyType = arguments[0];
+                valueType = arguments[1];
+                return true;
+            }
+            foreach (var item in type.GetInterfaces())
+            {
+                if (IsGenericDictionaryInterface(item))
+                {
+                    var arguments = item.GetGenericArguments();
+                    keyType = arguments[0];
+                    valueType = arguments[1];
+                    return true;
+                }
+            }
+            keyType = null;
+            valueType = null;
+            return false;
+        }
+
+        private static bool IsGenericDictionaryInterface(Type type)
+        {
+            if (!type.IsGenericType)
+            {
+                return false;
+            }
+            var definition = type.GetGenericTypeDefinition();
+            if (definition == typeof(IDictionary<,>))
+            {
+                return true;
+            }
+#if NET45_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+            if (definition == typeof(IReadOnlyDictionary<,>))
+            {
+                return true;
+            }
+#endif
+            return false;
+        }
+
+        /// <summary>
+        /// Create the expression that serializes a dictionary value.
+        /// Types that are, or implement, a generic dictionary interface (a property declared
+        /// as IDictionary&lt;TKey,TValue&gt; for example) cannot be passed to the non-generic
+        /// overload, so the generic serializer is closed over the dictionary's key/value types.
+        /// </summary>
+        private static Expression CreateDictionarySerializationExpression(ParameterExpression thisObjParameter, Type dictionaryType, Expression value)
+        {
+            Type keyType, valueType;
+            if (TryGetDictionaryTypes(dictionaryType, out keyType, out valueType))
+            {
+                var pairType = typeof(KeyValuePair<,>).MakeGenericType(keyType, valueType);
+                var enumerableType = typeof(IEnumerable<>).MakeGenericType(pairType);
+                return Expression.Call(thisObjParameter, _genericDictionarySerializer.MakeGenericMethod(keyType, valueType), Expression.Convert(value, enumerableType));
+            }
+            return Expression.Call(thisObjParameter, _dictionarySerializer, value);
         }
 
         /// <summary>
@@ -610,7 +687,7 @@ namespace LHZ.FastJson.Json
         /// Dictionary type serialization
         /// </summary>
         /// <param name="obj">Object to serialize</param>
-        private void SerializeDictionary<TKey, TValue>(IDictionary<TKey, TValue> obj)
+        private void SerializeDictionary<TKey, TValue>(IEnumerable<KeyValuePair<TKey, TValue>> obj)
         {
             if (IsCircularReference(obj))
             {
