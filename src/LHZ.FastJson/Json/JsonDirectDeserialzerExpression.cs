@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -129,6 +129,7 @@ namespace LHZ.FastJson.Json
                 case ObjectType.Dictionary: return ConvertToDictionary();
                 case ObjectType.Array: return ConvertToArray();
                 case ObjectType.List: return ConvertToList();
+                case ObjectType.Enumerable: return ConvertToList();
                 //case ObjectType.Enumerable:  
                 default:
                     return ConvertToObject(caseStyle);
@@ -150,11 +151,13 @@ namespace LHZ.FastJson.Json
                 return ObjectType.Nullable;
             else if (type.IsEnum)
                 return ObjectType.Enum;
-            else if (typeof(IDictionary).IsAssignableFrom(type))
+            else if (typeof(JsonObject).IsAssignableFrom(type))
+                return ObjectType.Object;
+            else if (typeof(IDictionary).IsAssignableFrom(type) || IsGenericDictionary(type))
                 return ObjectType.Dictionary;
             else if (type.IsArray)
                 return ObjectType.Array;
-            else if (typeof(IList).IsAssignableFrom(type))
+            else if (typeof(IList).IsAssignableFrom(type) || type == typeof(ICollection) || IsGenericList(type))
                 return ObjectType.List;
             else if (type == typeof(Guid))
                 return ObjectType.Guid;
@@ -163,6 +166,103 @@ namespace LHZ.FastJson.Json
             else
                 return ObjectType.Object;
 
+        }
+
+        /// <summary>
+        /// Whether the type is, or implements, a generic dictionary interface
+        /// (IDictionary&lt;TKey,TValue&gt; or, when the target framework provides it,
+        /// IReadOnlyDictionary&lt;TKey,TValue&gt;).
+        /// </summary>
+        private static bool IsGenericDictionary(Type type)
+        {
+            //Only interfaces need the generic path: concrete dictionaries are handled by the
+            //non-generic IDictionary check that runs before this one.
+            if (!type.IsInterface)
+            {
+                return false;
+            }
+            Type keyType, valueType;
+            return TryGetDictionaryTypes(type, out keyType, out valueType);
+        }
+
+        /// <summary>
+        /// Get the key/value types of a type that is, or implements, a generic dictionary interface.
+        /// The non-generic IDictionary has no generic arguments and reports false.
+        /// </summary>
+        private static bool TryGetDictionaryTypes(Type type, out Type keyType, out Type valueType)
+        {
+            if (IsGenericDictionaryInterface(type))
+            {
+                var arguments = type.GetGenericArguments();
+                keyType = arguments[0];
+                valueType = arguments[1];
+                return true;
+            }
+            foreach (var item in type.GetInterfaces())
+            {
+                if (IsGenericDictionaryInterface(item))
+                {
+                    var arguments = item.GetGenericArguments();
+                    keyType = arguments[0];
+                    valueType = arguments[1];
+                    return true;
+                }
+            }
+            keyType = null;
+            valueType = null;
+            return false;
+        }
+
+        private static bool IsGenericDictionaryInterface(Type type)
+        {
+            if (!type.IsGenericType)
+            {
+                return false;
+            }
+            var definition = type.GetGenericTypeDefinition();
+            if (definition == typeof(IDictionary<,>))
+            {
+                return true;
+            }
+#if NET45_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+            if (definition == typeof(IReadOnlyDictionary<,>))
+            {
+                return true;
+            }
+#endif
+            return false;
+        }
+
+        /// <summary>
+        /// Whether the type is, or implements, a generic list interface
+        /// (IList&lt;T&gt;, ICollection&lt;T&gt;, IEnumerable&lt;T&gt; and, when the target
+        /// framework provides them, IReadOnlyList&lt;T&gt; / IReadOnlyCollection&lt;T&gt;).
+        /// </summary>
+        private static bool IsGenericList(Type type)
+        {
+            //Only interfaces need the default implementation: concrete collection types
+            //(List<T>, HashSet<T>, Queue<T>, ...) are instantiated as they are.
+            return type.IsInterface && IsListInterface(type);
+        }
+
+        private static bool IsListInterface(Type type)
+        {
+            if (!type.IsGenericType)
+            {
+                return false;
+            }
+            var definition = type.GetGenericTypeDefinition();
+            if (definition == typeof(IList<>) || definition == typeof(ICollection<>) || definition == typeof(IEnumerable<>))
+            {
+                return true;
+            }
+#if NET45_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+            if (definition == typeof(IReadOnlyList<>) || definition == typeof(IReadOnlyCollection<>))
+            {
+                return true;
+            }
+#endif
+            return false;
         }
 
         /// <summary>
@@ -430,19 +530,28 @@ namespace LHZ.FastJson.Json
             ParameterExpression jsonObjectParameter = Expression.Parameter(typeof(JsonDirectReader), "jsonDirectReader");
             ParameterExpression jsonCustomConvertersParameter = Expression.Parameter(typeof(Dictionary<Type, IJsonCustomConverter>), "jsonCustomConverters");
             var curType = _type;
-            var genericType = typeof(object);
-#if NET40
 
-            Type[] genericTypes = curType.GetGenericArguments();
-#else
-            Type[] genericTypes = curType.GenericTypeArguments;
-#endif
-            if (genericTypes.Length == 2)
+            //The key/value types of the dictionary interface; the non-generic IDictionary
+            //has no generic arguments, so it defaults to string keys and object values.
+            Type keyType, valueType;
+            if (!TryGetDictionaryTypes(curType, out keyType, out valueType))
             {
-                genericType = genericTypes[1];
+                keyType = typeof(string);
+                valueType = typeof(object);
+            }
+            //Interfaces and abstract types cannot be instantiated: use Dictionary<TKey, TValue> instead
+            var dictionaryType = curType;
+            if (curType.IsInterface || curType.IsAbstract)
+            {
+                var defaultDictionary = typeof(Dictionary<,>).MakeGenericType(keyType, valueType);
+                if (curType.IsAssignableFrom(defaultDictionary))
+                {
+                    dictionaryType = defaultDictionary;
+                }
             }
 
             var result = Expression.Variable(curType, "result");
+            var dictionary = Expression.Variable(dictionaryType, "dictionary");
             var enumerator = Expression.Variable(typeof(IEnumerator<KeyValuePair<JsonPropertyName, JsonDirectReader>>), "enumerator");
             var keyValue = Expression.Variable(typeof(KeyValuePair<JsonPropertyName, JsonDirectReader>), "keyValue");
             var returnLabel = Expression.Label("returnLable");
@@ -450,6 +559,14 @@ namespace LHZ.FastJson.Json
 
             List<Expression> expres = new List<Expression>();
             List<Expression> loopexpres = new List<Expression>();
+
+            //Determine if the object can be instantiated
+            if (dictionaryType.GetConstructor(EmptyArray<Type>.Value) == null)
+            {
+                var exception = Expression.New(typeof(JsonDirectDeserializationException).GetConstructor(new Type[] { typeof(int), typeof(JsonType), typeof(Type), typeof(string) }),
+                Expression.Constant(0), Expression.Property(jsonObjectParameter, "JsonType"), Expression.Constant(curType), Expression.Constant("反序列化类型没有默认的构造函数，无法创建该类型对象"));
+                return Expression.Lambda<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Throw(exception, curType), jsonObjectParameter, jsonCustomConvertersParameter);
+            }
 
             //Determine if the JSON object is null
             expres.Add(Expression.IfThen(Expression.Equal(Expression.Property(jsonObjectParameter, "JsonType"), Expression.Constant(JsonType.Null)),
@@ -460,14 +577,7 @@ namespace LHZ.FastJson.Json
                 Expression.Throw(Expression.New(typeof(JsonDirectDeserializationException).GetConstructor(new Type[] { typeof(int), typeof(JsonType), typeof(Type), typeof(string) }),
                 Expression.Property(jsonObjectParameter, "Position"), Expression.Property(jsonObjectParameter, "JsonType"), Expression.Constant(curType), Expression.Constant("Json对象不为Content类型不能解析成Dictionary类型")))));
 
-            //Determine if the object can be instantiated
-            if (curType.GetConstructor(EmptyArray<Type>.Value) == null)
-            {
-                expres.Add(Expression.Throw(Expression.New(typeof(JsonDirectDeserializationException).GetConstructor(new Type[] { typeof(int), typeof(JsonType), typeof(Type), typeof(string) }),
-                Expression.Constant(0), Expression.Property(jsonObjectParameter, "JsonType"), Expression.Constant(curType), Expression.Constant("反序列化类型没有默认的构造函数，无法创建该类型对象"))));
-                return Expression.Lambda<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Block(new ParameterExpression[] { result }, expres), jsonObjectParameter, jsonCustomConvertersParameter);
-            }
-            expres.Add(Expression.Assign(result, Expression.New(curType)));
+            expres.Add(Expression.Assign(dictionary, Expression.New(dictionaryType)));
             expres.Add(Expression.Assign(enumerator, Expression.Call(
                 Expression.Call(jsonObjectParameter, typeof(JsonDirectReader).GetMethod("ReadContent")),
                 typeof(IEnumerable<KeyValuePair<JsonPropertyName, JsonDirectReader>>).GetMethod("GetEnumerator"))));
@@ -475,23 +585,27 @@ namespace LHZ.FastJson.Json
             loopexpres.Add(Expression.IfThen(Expression.IsFalse(Expression.Call(enumerator, typeof(IEnumerator).GetMethod("MoveNext"))), Expression.Break(loopLabel)));
             loopexpres.Add(Expression.Assign(keyValue, Expression.Property(enumerator, "Current")));
 
-            //Value types require boxing
-            if (genericType.IsValueType)
+            //Keys are JSON strings: convert them to the dictionary's key type when it is not string
+            Expression keyExpression = Expression.Call(Expression.Property(keyValue, "Key"), "ToString", EmptyArray<Type>.Value);
+            if (keyType != typeof(string))
             {
-                loopexpres.Add(Expression.Call(result, typeof(IDictionary).GetMethod("Add", new Type[] { typeof(object), typeof(object) }), Expression.Call(Expression.Property(keyValue, "Key"), "ToString", EmptyArray<Type>.Value),
-                    Expression.Convert(Expression.Call(typeof(JsonDirectDeserialzerExpression<>).MakeGenericType(genericType).GetMethod("Deserialzer", new Type[] { typeof(JsonDirectReader), typeof(Dictionary<Type, IJsonCustomConverter>) }), Expression.Property(keyValue, "Value"), jsonCustomConvertersParameter), typeof(object))));
+                keyExpression = Expression.Call(typeof(Convert).GetMethod("ChangeType", new Type[] { typeof(object), typeof(Type) }),
+                    Expression.Convert(keyExpression, typeof(object)), Expression.Constant(keyType, typeof(Type)));
             }
-            else
-            {
-                loopexpres.Add(Expression.Call(result, typeof(IDictionary).GetMethod("Add", new Type[] { typeof(object), typeof(object) }), Expression.Call(Expression.Property(keyValue, "Key"), "ToString", EmptyArray<Type>.Value),
-                    Expression.Call(typeof(JsonDirectDeserialzerExpression<>).MakeGenericType(genericType).GetMethod("Deserialzer", new Type[] { typeof(JsonDirectReader), typeof(Dictionary<Type, IJsonCustomConverter>) }), Expression.Property(keyValue, "Value"), jsonCustomConvertersParameter)));
-            }
+            keyExpression = Expression.Convert(keyExpression, typeof(object));
+
+            Expression valueExpression = Expression.Call(
+                typeof(JsonDirectDeserialzerExpression<>).MakeGenericType(valueType).GetMethod("Deserialzer", new Type[] { typeof(JsonDirectReader), typeof(Dictionary<Type, IJsonCustomConverter>) }),
+                Expression.Property(keyValue, "Value"), jsonCustomConvertersParameter);
+            loopexpres.Add(Expression.Call(dictionary, typeof(IDictionary).GetMethod("Add", new Type[] { typeof(object), typeof(object) }),
+                keyExpression, Expression.Convert(valueExpression, typeof(object))));
 
             expres.Add(Expression.Loop(Expression.Block(loopexpres), loopLabel));
+            expres.Add(Expression.Assign(result, Expression.Convert(dictionary, curType)));
             expres.Add(Expression.Label(returnLabel));
             expres.Add(result);
 
-            return Expression.Lambda<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Block(new ParameterExpression[] { result, enumerator, keyValue }, expres), jsonObjectParameter, jsonCustomConvertersParameter);
+            return Expression.Lambda<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Block(new ParameterExpression[] { result, dictionary, enumerator, keyValue }, expres), jsonObjectParameter, jsonCustomConvertersParameter);
         }
 
         /// <summary>
@@ -556,8 +670,9 @@ namespace LHZ.FastJson.Json
             ParameterExpression jsonCustomConvertersParameter = Expression.Parameter(typeof(Dictionary<Type, IJsonCustomConverter>), "jsonCustomConverters");
 
             var curType = _type;
-            //Get the generic type
-            var genericType = curType.GetGenericArguments().FirstOrDefault();
+            //Get the generic type; non-generic collection types fall back to object elements
+            var genericType = curType.IsGenericType ? curType.GetGenericArguments().FirstOrDefault() : null;
+            var elementType = genericType ?? typeof(object);
 
             var result = Expression.Variable(curType, "result");
             var enumerator = Expression.Variable(typeof(IEnumerator<JsonDirectReader>), "enumerator");
@@ -568,13 +683,23 @@ namespace LHZ.FastJson.Json
             List<Expression> expres = new List<Expression>();
             List<Expression> loopexpres = new List<Expression>();
 
-            if (genericType == null)
+            //Interfaces and abstract types cannot be instantiated: use List<T> instead
+            var listType = curType;
+            if (curType.IsInterface || curType.IsAbstract)
             {
-                expres.Add(Expression.Throw(Expression.New(typeof(JsonDirectDeserializationException).GetConstructor(new Type[] { typeof(int), typeof(JsonType),
-                    typeof(Type), typeof(string) }), Expression.Constant(0), Expression.Property(jsonObjectParameter, "JsonType"), Expression.Constant(curType), Expression.Constant("泛型列化出错获取List泛型出错！"))));
-                expres.Add(result);
-                return Expression.Lambda<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Block(new ParameterExpression[] { result }, expres), jsonObjectParameter, jsonCustomConvertersParameter);
+                var defaultList = typeof(List<>).MakeGenericType(elementType);
+                if (curType.IsAssignableFrom(defaultList))
+                {
+                    listType = defaultList;
+                }
+                else
+                {
+                    var exception = Expression.New(typeof(JsonDirectDeserializationException).GetConstructor(new Type[] { typeof(int), typeof(JsonType), typeof(Type), typeof(string) }),
+                        Expression.Constant(0), Expression.Property(jsonObjectParameter, "JsonType"), Expression.Constant(curType), Expression.Constant("无法为集合接口创建默认实现类型"));
+                    return Expression.Lambda<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Throw(exception, curType), jsonObjectParameter, jsonCustomConvertersParameter);
+                }
             }
+            var list = Expression.Variable(listType, "list");
 
             //Determine if the JSON object is null
             expres.Add(Expression.IfThen(Expression.Equal(Expression.Property(jsonObjectParameter, "JsonType"), Expression.Constant(JsonType.Null)),
@@ -586,19 +711,20 @@ namespace LHZ.FastJson.Json
                 Expression.Throw(Expression.New(typeof(JsonDirectDeserializationException).GetConstructor(new Type[] { typeof(int), typeof(JsonType), typeof(Type), typeof(string) }),
                 Expression.Property(jsonObjectParameter, "Position"), Expression.Property(jsonObjectParameter, "JsonType"), Expression.Constant(curType), Expression.Constant("Json对象不为Array类型不能解析成List类型")))));
             //Initialize List and enumerator
-            expres.Add(Expression.Assign(result, Expression.New(curType)));
+            expres.Add(Expression.Assign(list, Expression.New(listType)));
             expres.Add(Expression.Assign(enumerator, Expression.Call(
                 Expression.Call(jsonObjectParameter, typeof(JsonDirectReader).GetMethod("ReadArray")),
                 typeof(IEnumerable<JsonDirectReader>).GetMethod("GetEnumerator"))));
             //Loop to assign List values
             loopexpres.Add(Expression.IfThen(Expression.IsFalse(Expression.Call(enumerator, typeof(IEnumerator).GetMethod("MoveNext"))), Expression.Break(loopLabel)));
             loopexpres.Add(Expression.Assign(item, Expression.Convert(Expression.Property(enumerator, "Current"), typeof(JsonDirectReader))));
-            loopexpres.Add(Expression.Call(result, curType.GetMethod("Add", new Type[] { genericType }),
-                Expression.Call(typeof(JsonDirectDeserialzerExpression<>).MakeGenericType(genericType).GetMethod("Deserialzer", new Type[] { typeof(JsonDirectReader), typeof(Dictionary<Type, IJsonCustomConverter>) }), item, jsonCustomConvertersParameter)));
+            loopexpres.Add(Expression.Call(list, listType.GetMethod("Add", new Type[] { elementType }),
+                Expression.Call(typeof(JsonDirectDeserialzerExpression<>).MakeGenericType(elementType).GetMethod("Deserialzer", new Type[] { typeof(JsonDirectReader), typeof(Dictionary<Type, IJsonCustomConverter>) }), item, jsonCustomConvertersParameter)));
             expres.Add(Expression.Loop(Expression.Block(loopexpres), loopLabel));
+            expres.Add(Expression.Assign(result, Expression.Convert(list, curType)));
             expres.Add(Expression.Label(returnLabel));
             expres.Add(result);
-            return Expression.Lambda<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Block(new ParameterExpression[] { enumerator, item, result }, expres), jsonObjectParameter, jsonCustomConvertersParameter);
+            return Expression.Lambda<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Block(new ParameterExpression[] { enumerator, item, result, list }, expres), jsonObjectParameter, jsonCustomConvertersParameter);
 
         }
 

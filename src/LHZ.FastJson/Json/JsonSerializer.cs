@@ -320,6 +320,14 @@ namespace LHZ.FastJson.Json
             //Expression
             Expression exp = null;
 
+            //JSON node types are JSON already: write their text instead of reflecting over their members
+            if (typeof(IJsonObject).IsAssignableFrom(objType))
+            {
+                return Expression.Lambda<Action<JsonSerializer, object>>(
+                    Expression.Call(thisObjParameter, ((Action<IJsonObject>)SerializeJsonObject).Method, obj),
+                    thisObjParameter, objParameter);
+            }
+
             ObjectType objectType = GetObjectType(objType);
             switch (objectType)
             {
@@ -595,6 +603,19 @@ namespace LHZ.FastJson.Json
                 _dateTimeBuffer = new char[DateTimeFormatter.MaxIsoLength + 2];
             }
             DateTimeFormatter.WriteIsoQuoted(_jsonStrBuilder, obj, _dateTimeBuffer);
+        }
+        /// <summary>
+        /// JSON node serialization: the node already holds its JSON text, so it is appended as-is
+        /// </summary>
+        /// <param name="obj">JSON node to serialize</param>
+        private void SerializeJsonObject(IJsonObject obj)
+        {
+            if (obj == null)
+            {
+                _jsonStrBuilder.Append("null");
+                return;
+            }
+            obj.ToStringBuilder(_jsonStrBuilder);
         }
         /// <summary>
         /// Enum type serialization
