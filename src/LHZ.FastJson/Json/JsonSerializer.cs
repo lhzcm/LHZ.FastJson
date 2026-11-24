@@ -227,7 +227,15 @@ namespace LHZ.FastJson.Json
                     case ObjectType.Nullable: builtInCall = false; exp = Expression.Call(thisObjParameter, ((Action<object>)SerializeAny).Method, Expression.Convert(Expression.Property(obj, item), typeof(object))); break;
                     case ObjectType.Dictionary:
                         {
-                            exp = Expression.Call(thisObjParameter, ((Action<IDictionary>)SerializeDictionary).Method, Expression.Property(obj, item));
+                            if(propertyType.IsGenericType)
+                            {
+                                var method = typeof(JsonSerializer).GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).First(n=>n.Name=="SerializeDictionary" && n.IsGenericMethod).MakeGenericMethod(propertyType.GetGenericArguments());
+                                exp = Expression.Call(thisObjParameter, method, Expression.Property(obj, item));
+                            }
+                            else
+                            {
+                                exp = Expression.Call(thisObjParameter, ((Action<IDictionary>)SerializeDictionary).Method, Expression.Property(obj, item));
+                            }
                             break;
                         }
                     case ObjectType.Enumerable:
@@ -331,7 +339,8 @@ namespace LHZ.FastJson.Json
                 case ObjectType.Guid: exp = Expression.Call(thisObjParameter, ((Action<Guid>)SerializeGuid).Method, obj); break;
                 case ObjectType.String: exp = Expression.Call(thisObjParameter, ((Action<string>)SerializeString).Method, obj); break;
                 case ObjectType.Nullable: exp = Expression.Call(thisObjParameter, ((Action<object>)SerializeAny).Method, objParameter); break;
-                case ObjectType.Dictionary: exp = Expression.Call(thisObjParameter, ((Action<IDictionary>)SerializeDictionary).Method, obj); break;
+                case ObjectType.Dictionary: exp = objType.IsGenericType ? Expression.Call(thisObjParameter, typeof(JsonSerializer).GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).First(n=>n.Name=="SerializeDictionary" && n.IsGenericMethod).MakeGenericMethod(objType.GetGenericArguments()), obj) 
+                    : Expression.Call(thisObjParameter, ((Action<IDictionary>)SerializeDictionary).Method, obj); break;
                 case ObjectType.Enumerable: exp = Expression.Call(thisObjParameter, ((Action<IEnumerable>)SerializeEnumerable).Method, obj); break;
                 default: exp = Expression.Invoke(CreateObjectSerializationExpression(objType), thisObjParameter, objParameter); break;
             }
@@ -378,7 +387,7 @@ namespace LHZ.FastJson.Json
                 return ObjectType.Enum;
             else if (type == typeof(Guid))
                 return ObjectType.Guid;
-            else if (typeof(IDictionary).IsAssignableFrom(type))
+            else if (typeof(IDictionary).IsAssignableFrom(type) || type.GetInterfaces().Any(n => n.IsGenericType && n.GetGenericTypeDefinition() == typeof(IDictionary<,>)))
                 return ObjectType.Dictionary;
             else if (typeof(IEnumerable).IsAssignableFrom(type))
                 return ObjectType.Enumerable;
@@ -583,6 +592,34 @@ namespace LHZ.FastJson.Json
             _jsonStrBuilder.Append('{');
             int i = 0;
             foreach (DictionaryEntry item in obj)
+            {
+                if (i == 0)
+                    SerializePropertyName(item.Key.ToString());
+                else
+                {
+                    _jsonStrBuilder.Append(',');
+                    SerializePropertyName(item.Key.ToString());
+                }
+                SerializeAny(item.Value);
+                i++;
+            }
+            _jsonStrBuilder.Append('}');
+            this._objStack.Pop();
+        }
+        /// <summary>
+        /// Dictionary type serialization
+        /// </summary>
+        /// <param name="obj">Object to serialize</param>
+        private void SerializeDictionary<TKey, TValue>(IDictionary<TKey, TValue> obj)
+        {
+            if (IsCircularReference(obj))
+            {
+                throw new Exception("循环引用");
+            }
+            this._objStack.Push(obj);
+            _jsonStrBuilder.Append('{');
+            int i = 0;
+            foreach (var item in obj)
             {
                 if (i == 0)
                     SerializePropertyName(item.Key.ToString());
