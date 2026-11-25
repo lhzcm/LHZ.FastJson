@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Columns;
 using LHZ.FastJson.Json;
 
 namespace LHZ.FastJson.Benchmark
@@ -9,6 +11,8 @@ namespace LHZ.FastJson.Benchmark
     /// </summary>
     [MemoryDiagnoser]
     [RankColumn]
+    [CategoriesColumn]
+    [GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByCategory)]
     public class SerializationBenchmarks
     {
         private SmallModel _smallModel;
@@ -41,43 +45,43 @@ namespace LHZ.FastJson.Benchmark
             return JsonConvert.Serialize(_smallModel);
         }
 
-        [BenchmarkCategory("MediumObject"), Benchmark]
+        [BenchmarkCategory("MediumObject"), Benchmark(Baseline = true)]
         public string LHZ_FastJson_Serialize_MediumObject()
         {
             return JsonConvert.Serialize(_mediumModel);
         }
 
-        [BenchmarkCategory("LargeList"), Benchmark]
+        [BenchmarkCategory("LargeList"), Benchmark(Baseline = true)]
         public string LHZ_FastJson_Serialize_LargeList()
         {
             return JsonConvert.Serialize(_largeList);
         }
 
-        [BenchmarkCategory("Dictionary"), Benchmark]
+        [BenchmarkCategory("Dictionary"), Benchmark(Baseline = true)]
         public string LHZ_FastJson_Serialize_Dictionary()
         {
             return JsonConvert.Serialize(_dictionary);
         }
 
-        [BenchmarkCategory("StringEscapes"), Benchmark]
+        [BenchmarkCategory("StringEscapes"), Benchmark(Baseline = true)]
         public string LHZ_FastJson_Serialize_StringWithEscapes()
         {
             return JsonConvert.Serialize(_stringWithEscapes);
         }
 
-        [BenchmarkCategory("Nullable_WithValues"), Benchmark]
+        [BenchmarkCategory("Nullable_WithValues"), Benchmark(Baseline = true)]
         public string LHZ_FastJson_Serialize_NullableWithValues()
         {
             return JsonConvert.Serialize(_nullableWithValues);
         }
 
-        [BenchmarkCategory("Nullable_WithNulls"), Benchmark]
+        [BenchmarkCategory("Nullable_WithNulls"), Benchmark(Baseline = true)]
         public string LHZ_FastJson_Serialize_NullableWithNulls()
         {
             return JsonConvert.Serialize(_nullableWithNulls);
         }
 
-        [BenchmarkCategory("Enum"), Benchmark]
+        [BenchmarkCategory("Enum"), Benchmark(Baseline = true)]
         public string LHZ_FastJson_Serialize_Enum()
         {
             return JsonConvert.Serialize(_enumModel);

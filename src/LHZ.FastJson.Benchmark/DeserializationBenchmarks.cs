@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Columns;
 
 namespace LHZ.FastJson.Benchmark
 {
@@ -8,6 +10,8 @@ namespace LHZ.FastJson.Benchmark
     /// </summary>
     [MemoryDiagnoser]
     [RankColumn]
+    [CategoriesColumn]
+    [GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByCategory)]
     public class DeserializationBenchmarks
     {
         private string _smallModelJson;
@@ -41,43 +45,43 @@ namespace LHZ.FastJson.Benchmark
             return JsonConvert.Deserialize<SmallModel>(_smallModelJson);
         }
 
-        [BenchmarkCategory("MediumObject"), Benchmark]
+        [BenchmarkCategory("MediumObject"), Benchmark(Baseline = true)]
         public MediumModel LHZ_FastJson_Deserialize_MediumObject()
         {
             return JsonConvert.Deserialize<MediumModel>(_mediumModelJson);
         }
 
-        [BenchmarkCategory("LargeList"), Benchmark]
+        [BenchmarkCategory("LargeList"), Benchmark(Baseline = true)]
         public List<SmallModel> LHZ_FastJson_Deserialize_LargeList()
         {
             return JsonConvert.Deserialize<List<SmallModel>>(_largeListJson);
         }
 
-        [BenchmarkCategory("Dictionary"), Benchmark]
+        [BenchmarkCategory("Dictionary"), Benchmark(Baseline = true)]
         public Dictionary<string, int> LHZ_FastJson_Deserialize_Dictionary()
         {
             return JsonConvert.Deserialize<Dictionary<string, int>>(_dictionaryJson);
         }
 
-        [BenchmarkCategory("StringEscapes"), Benchmark]
+        [BenchmarkCategory("StringEscapes"), Benchmark(Baseline = true)]
         public StringEscapeModel LHZ_FastJson_Deserialize_StringWithEscapes()
         {
             return JsonConvert.Deserialize<StringEscapeModel>(_stringWithEscapesJson);
         }
 
-        [BenchmarkCategory("Nullable_WithValues"), Benchmark]
+        [BenchmarkCategory("Nullable_WithValues"), Benchmark(Baseline = true)]
         public NullableModel LHZ_FastJson_Deserialize_NullableWithValues()
         {
             return JsonConvert.Deserialize<NullableModel>(_nullableWithValuesJson);
         }
 
-        [BenchmarkCategory("Nullable_WithNulls"), Benchmark]
+        [BenchmarkCategory("Nullable_WithNulls"), Benchmark(Baseline = true)]
         public NullableModel LHZ_FastJson_Deserialize_NullableWithNulls()
         {
             return JsonConvert.Deserialize<NullableModel>(_nullableWithNullsJson);
         }
 
-        [BenchmarkCategory("Enum"), Benchmark]
+        [BenchmarkCategory("Enum"), Benchmark(Baseline = true)]
         public EnumModel LHZ_FastJson_Deserialize_Enum()
         {
             return JsonConvert.Deserialize<EnumModel>(_enumModelJson);

@@ -200,27 +200,82 @@ if (!isJson)
 | `true` / `false` | `JsonBoolean` | `bool` |
 | `null` | `JsonNull` | `null` |
 
-## Serialization Performance
+## Performance
 
-LHZ.FastJson has been re-architected with a highly optimized serialization engine. The table below compares serialization performance across LHZ.FastJson, Newtonsoft.Json, and System.Text.Json:
+Benchmarks compare LHZ.FastJson with Newtonsoft.Json 13.0.3 and System.Text.Json (built into .NET 10) using [BenchmarkDotNet](https://benchmarkdotnet.org/). The source is in [`src/LHZ.FastJson.Benchmark`](src/LHZ.FastJson.Benchmark); run it with:
 
-``` ini
-BenchmarkDotNet=v0.13.1, OS=Windows 10.0.19044.1706 (21H2)
-Intel Core i7-9700K CPU 3.60GHz (Coffee Lake), 1 CPU, 8 logical and 8 physical cores
-.NET SDK=6.0.201
-  [Host]     : .NET 6.0.3 (6.0.322.12309), X64 RyuJIT
-  DefaultJob : .NET 6.0.3 (6.0.322.12309), X64 RyuJIT
+``` shell
+cd src/LHZ.FastJson.Benchmark
+dotnet run -c Release -- --filter "*"
 ```
 
-|             Method  |      Mean |     Error |    StdDev |
-|-------------------- |----------:|----------:|----------:|
-|       LHZ.FastJson  |  7.014 μs | 0.0298 μs | 0.0279 μs |
-|       Newtonsoft.Json | 18.943 μs | 0.1786 μs | 0.1671 μs |
-|    System.Text.Json | 10.410 μs | 0.0499 μs | 0.0467 μs |
+``` ini
+BenchmarkDotNet v0.15.8, Windows 11 (10.0.26200.9974/25H2/2025Update/HudsonValley2)
+Intel Core Ultra 9 285H 2.90GHz, 1 CPU, 16 logical and 16 physical cores
+.NET SDK 10.0.404
+  [Host]     : .NET 10.0.15 (10.0.15, 10.0.1526.53008), X64 RyuJIT x86-64-v3
+  DefaultJob : .NET 10.0.15 (10.0.15, 10.0.1526.53008), X64 RyuJIT x86-64-v3
+```
 
-## Deserialization Performance
+Each cell shows the mean time with the ratio to LHZ.FastJson in parentheses (below `1.00` is faster than LHZ.FastJson). Test data: `SmallObject` / `MediumObject` are plain POCOs, `LargeList` is a `List<SmallModel>`, `Dictionary` is `Dictionary<string, int>`, `StringEscapes` is a string containing characters that must be escaped, and `Nullable_*` / `Enum` are models with nullable and enum properties.
 
-LHZ.FastJson has also been re-architected for deserialization, achieving nearly **2x** performance improvement over versions prior to 1.6.0:
+> **Reading the numbers:** results fluctuate by roughly 10-20% between runs on a desktop machine. Treat differences against System.Text.Json within that range as a tie. The consistent findings are that LHZ.FastJson is about **1.2x-3x faster than Newtonsoft.Json** in every scenario, and allocates more than System.Text.Json.
+
+### Serialization
+
+| Scenario            | LHZ.FastJson | Newtonsoft.Json   | System.Text.Json  |
+|---------------------|-------------:|------------------:|------------------:|
+| SmallObject         |    108.4 ns  |  225.9 ns (2.08)  |  134.3 ns (1.24)  |
+| MediumObject        |    537.4 ns  |  776.0 ns (1.44)  |  426.5 ns (0.79)  |
+| LargeList           |     6.00 μs  |  12.40 μs (2.08)  |   6.22 μs (1.04)  |
+| Dictionary          |    276.1 ns  |  397.7 ns (1.44)  |  204.4 ns (0.74)  |
+| StringEscapes       |    120.8 ns  |  258.0 ns (2.14)  |  187.2 ns (1.55)  |
+| Nullable_WithValues |    197.8 ns  |  335.3 ns (1.71)  |  176.9 ns (0.90)  |
+| Nullable_WithNulls  |     61.6 ns  |  181.7 ns (2.95)  |   70.8 ns (1.15)  |
+| Enum                |     65.8 ns  |  147.5 ns (2.27)  |   85.2 ns (1.31)  |
+
+Allocated per operation:
+
+| Scenario            | LHZ.FastJson | Newtonsoft.Json | System.Text.Json |
+|---------------------|-------------:|----------------:|-----------------:|
+| SmallObject         |        744 B |          1512 B |            168 B |
+| MediumObject        |       2464 B |          3208 B |           1160 B |
+| LargeList           |      29368 B |         34712 B |          12504 B |
+| Dictionary          |       1000 B |          1816 B |            224 B |
+| StringEscapes       |        680 B |          1496 B |            216 B |
+| Nullable_WithValues |        856 B |          1576 B |            176 B |
+| Nullable_WithNulls  |        624 B |          1344 B |            144 B |
+| Enum                |        592 B |          1408 B |             88 B |
+
+### Deserialization
+
+| Scenario            | LHZ.FastJson | Newtonsoft.Json   | System.Text.Json  |
+|---------------------|-------------:|------------------:|------------------:|
+| SmallObject         |    143.3 ns  |  286.8 ns (2.00)  |  119.9 ns (0.84)  |
+| MediumObject        |    858.3 ns  | 1668.8 ns (1.95)  |  845.6 ns (0.99)  |
+| LargeList           |    13.57 μs  |  25.32 μs (1.87)  |  15.21 μs (1.12)  |
+| Dictionary          |    512.3 ns  |  598.0 ns (1.17)  |  533.6 ns (1.04)  |
+| StringEscapes       |    185.6 ns  |  359.6 ns (1.94)  |  235.2 ns (1.27)  |
+| Nullable_WithValues |    200.3 ns  |  438.1 ns (2.19)  |  206.0 ns (1.03)  |
+| Nullable_WithNulls  |    120.3 ns  |  331.0 ns (2.76)  |  142.7 ns (1.19)  |
+| Enum                |     95.2 ns  |  292.4 ns (3.07)  |  115.3 ns (1.21)  |
+
+Allocated per operation:
+
+| Scenario            | LHZ.FastJson | Newtonsoft.Json | System.Text.Json |
+|---------------------|-------------:|----------------:|-----------------:|
+| SmallObject         |        248 B |          2760 B |            104 B |
+| MediumObject        |       1216 B |          3880 B |           1320 B |
+| LargeList           |      19808 B |         19936 B |          10664 B |
+| Dictionary          |       1920 B |          3952 B |           1320 B |
+| StringEscapes       |        632 B |          4832 B |            176 B |
+| Nullable_WithValues |        280 B |          2888 B |            104 B |
+| Nullable_WithNulls  |        176 B |          2648 B |             64 B |
+| Enum                |        256 B |          2704 B |             72 B |
+
+### Version history
+
+LHZ.FastJson was re-architected in 1.6.0, achieving nearly **2x** deserialization performance compared with earlier versions. These numbers were measured on older hardware and .NET 6 and are not comparable with the tables above:
 
 ``` ini
 BenchmarkDotNet=v0.13.1, OS=Windows 10.0.19044.1889 (21H2)
