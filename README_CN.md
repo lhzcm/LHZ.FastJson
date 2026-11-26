@@ -4,24 +4,24 @@
 [English](README.md) | [更新日志](CHANGELOG_CN.md)
 
 # 如何安装 
-### 下面展示不同的安装方法，以安装[LHZ.FastJson 2.1.2](https://www.nuget.org/packages/LHZ.FastJson/2.1.2)版本为例
+### 下面展示不同的安装方法，以安装[LHZ.FastJson 3.0.0](https://www.nuget.org/packages/LHZ.FastJson/3.0.0)版本为例
 ### Package Manager
 ``` bash
-Install-Package LHZ.FastJson -Version 2.1.2
+Install-Package LHZ.FastJson -Version 3.0.0
 ```
 ### .NET CLI
 ``` bash
-dotnet add package LHZ.FastJson --version 2.1.2
+dotnet add package LHZ.FastJson --version 3.0.0
 ```
 
 ### package-reference
 ``` xml
-<PackageReference Include="LHZ.FastJson" Version="2.1.2" />
+<PackageReference Include="LHZ.FastJson" Version="3.0.0" />
 ```
 
 ### Paket CLI
 ``` bash
-paket add LHZ.FastJson --version 2.1.2
+paket add LHZ.FastJson --version 3.0.0
 ```
 
 # 如何使用

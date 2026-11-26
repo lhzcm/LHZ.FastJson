@@ -3,13 +3,13 @@
     <TARGETFRAMEWORKS>NET40;NET45;NET46;NETSTANDARD2.0;NET5;NET6</TARGETFRAMEWORKS>
     <!--<TargetFramework>NETSTANDARD2.0</TargetFramework>-->
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>2.1.2</Version>
+    <Version>3.0.0</Version>
     <Authors>LHZ</Authors>
     <Description>轻巧便利的Json序列化和反序列化工具Lightweight and convenient tool for JSON serialization and deserialization</Description>
     <PackageIcon>logo.png</PackageIcon>
     <RepositoryType>Git</RepositoryType>
     <RepositoryUrl>https://github.com/lhzcm/LHZ.FastJson</RepositoryUrl>
-    <PackageReleaseNotes>2.1.2：修复泛型字典接口属性被写成 {"Key":..,"Value":..} 数组的问题，接口类型的集合/字典（IDictionary&lt;TKey,TValue&gt;、IReadOnlyDictionary&lt;TKey,TValue&gt;、IList&lt;T&gt;、ICollection&lt;T&gt;、IEnumerable&lt;T&gt; 等及非泛型 IDictionary/IList）现在可以反序列化并落到 Dictionary/List 默认实现，字典键按声明类型转换，IJsonObject 节点可原样写回。</PackageReleaseNotes>
+    <PackageReleaseNotes>3.0.0（不兼容更新）：移除自定义转换器（IJsonCustomConverter、JsonCustomConvert&lt;T&gt;、JsonCustomConvertItem、JsonCustomConverterException 及所有接受转换器的重载），保持库的小巧与转换路径的精简；序列化改为按类型编译强类型委托，可空值类型属性不再装箱；CaseStyle 移至 LHZ.FastJson.Enum 命名空间；序列化包含自身的集合时改为抛出 Exception。</PackageReleaseNotes>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <PackageReadmeFile>README.md</PackageReadmeFile>

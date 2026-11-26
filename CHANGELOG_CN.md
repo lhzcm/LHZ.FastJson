@@ -4,13 +4,19 @@
 
 本文档记录 LHZ.FastJson 的重要变更。
 
-## 未发布
+## 3.0.0 - 2026-11-26
+
+本版本移除自定义转换器以保持库的小巧，并为每种类型编译强类型的序列化委托。
 
 ### 不兼容变更
 
 - 移除自定义转换器功能，保持库的小巧和转换路径的精简。`IJsonCustomConverter`、`JsonCustomConvert<T>`、`JsonCustomConvertItem` 和 `JsonCustomConverterException` 已删除，接受转换器的重载也一并删除：`JsonConvert.Deserialize<T>(string, params IJsonCustomConverter[])`、`JsonConvert.Deserialize<T>(string, JsonConvertOptions, params IJsonCustomConverter[])` 和 `JsonSerializer(object, params IJsonCustomConverter[])`。构造函数 `JsonSerializer(object, JsonConvertOptions, params IJsonCustomConverter[])` 改为 `JsonSerializer(object, JsonConvertOptions)`，`JsonDeserializer<T>.Deserialize()` 不再接受转换器参数。编译后的反序列化委托不再在每一层嵌套调用中传递转换器表。如需控制某个值的输出，可以先把它转换为受支持的类型（例如 `string` 属性），或用 `JsonContent` / `JsonArray` 节点构建并赋给 `object` 类型的属性，序列化时会原样输出。
 - `CaseStyle` 从 `LHZ.FastJson` 命名空间移到 `LHZ.FastJson.Enum`，与其他枚举放在一起。使用 `CaseStyle` 的地方需要添加 `using LHZ.FastJson.Enum;`，例如 `new JsonConvertOptions { CaseStyle = CaseStyle.CamelCase }`。
 - 序列化包含自身的集合（数组、列表或其他 `IEnumerable`）时，现在抛出 `System.Exception`（"循环引用"），与对象或字典之间循环引用时抛出的异常相同，不再是 `InvalidOperationException`。原来捕获 `InvalidOperationException` 处理这种情况的代码需要改为捕获 `Exception`。
+
+### 性能
+
+- 序列化按类型和命名风格编译强类型委托。值类型和 sealed 类型的属性直接调用该委托，可空值类型属性不再装箱：在基准测试中，序列化包含三个有值可空属性的对象，耗时减少约 20%，内存分配减少 80 B。
 
 ## 2.1.2 - 2026-11-24
 
