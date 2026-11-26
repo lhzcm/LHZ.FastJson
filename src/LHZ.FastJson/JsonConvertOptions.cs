@@ -1,4 +1,5 @@
 using System;
+using LHZ.FastJson.Enum;
 
 namespace LHZ.FastJson
 {
@@ -83,10 +84,10 @@ namespace LHZ.FastJson
         /// <summary>
         /// Convert a property name to the given naming style.
         /// <list type="bullet">
-        /// <item><description><see cref="FastJson.CaseStyle.PascalCase"/>: returned unchanged.</description></item>
-        /// <item><description><see cref="FastJson.CaseStyle.CamelCase"/>: <c>UserName</c> -> <c>userName</c>, <c>URLValue</c> -> <c>urlValue</c>.</description></item>
-        /// <item><description><see cref="FastJson.CaseStyle.SnakeCase"/>: <c>UserName</c> -> <c>user_name</c>, <c>HTTPServer2Id</c> -> <c>http_server2_id</c>.</description></item>
-        /// <item><description><see cref="FastJson.CaseStyle.KebabCase"/>: <c>UserName</c> -> <c>user-name</c>.</description></item>
+        /// <item><description><see cref="FastJson.Enum.CaseStyle.PascalCase"/>: returned unchanged.</description></item>
+        /// <item><description><see cref="FastJson.Enum.CaseStyle.CamelCase"/>: <c>UserName</c> -> <c>userName</c>, <c>URLValue</c> -> <c>urlValue</c>.</description></item>
+        /// <item><description><see cref="FastJson.Enum.CaseStyle.SnakeCase"/>: <c>UserName</c> -> <c>user_name</c>, <c>HTTPServer2Id</c> -> <c>http_server2_id</c>.</description></item>
+        /// <item><description><see cref="FastJson.Enum.CaseStyle.KebabCase"/>: <c>UserName</c> -> <c>user-name</c>.</description></item>
         /// </list>
         /// </summary>
         /// <param name="name">The property name</param>

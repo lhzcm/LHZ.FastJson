@@ -1,5 +1,4 @@
-﻿using LHZ.FastJson.Interface;
-using LHZ.FastJson.Json;
+﻿using LHZ.FastJson.Json;
 using LHZ.FastJson.JsonClass;
 using System;
 using System.Collections.Generic;
@@ -91,32 +90,6 @@ namespace LHZ.FastJson
         {
             JsonDeserializer<T> deserializer = new JsonDeserializer<T>(jsonString, options);
             return deserializer.Deserialize();
-        }
-
-        /// <summary>
-        /// Deserialize JSON string to T type
-        /// </summary>
-        /// <typeparam name="T">Deserialization target type</typeparam>
-        /// <param name="jsonString">JsonObject type</param>
-        /// <param name="jsonCustomConverters">Custom JSON converters</param>
-        /// <returns>Deserialized target object</returns>
-        public static T Deserialize<T>(string jsonString, params IJsonCustomConverter[] jsonCustomConverters)
-        {
-            return Deserialize<T>(jsonString, (JsonConvertOptions)null, jsonCustomConverters);
-        }
-
-        /// <summary>
-        /// Deserialize JSON string to T type
-        /// </summary>
-        /// <typeparam name="T">Deserialization target type</typeparam>
-        /// <param name="jsonString">JSON string</param>
-        /// <param name="options">Options (null uses the defaults)</param>
-        /// <param name="jsonCustomConverters">Custom JSON converters</param>
-        /// <returns>Deserialized target object</returns>
-        public static T Deserialize<T>(string jsonString, JsonConvertOptions options, params IJsonCustomConverter[] jsonCustomConverters)
-        {
-            JsonDeserializer<T> deserializer = new JsonDeserializer<T>(jsonString, options);
-            return deserializer.Deserialize(jsonCustomConverters);
         }
 
         /// <summary>

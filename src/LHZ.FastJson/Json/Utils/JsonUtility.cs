@@ -1,3 +1,4 @@
+using LHZ.FastJson.Enum;
 using LHZ.FastJson.Json.Attributes;
 using System;
 using System.Collections.Generic;

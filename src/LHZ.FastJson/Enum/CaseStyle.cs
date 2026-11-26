@@ -1,4 +1,4 @@
-namespace LHZ.FastJson
+namespace LHZ.FastJson.Enum
 {
     /// <summary>
     /// Naming style applied to object property names during serialization and deserialization.

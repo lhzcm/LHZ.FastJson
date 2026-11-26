@@ -9,7 +9,6 @@ using System.Reflection;
 using LHZ.FastJson;
 using LHZ.FastJson.Enum;
 using LHZ.FastJson.Exceptions;
-using LHZ.FastJson.Interface;
 using LHZ.FastJson.Json.Attributes;
 using LHZ.FastJson.Json.Utils;
 using LHZ.FastJson.JsonClass;
@@ -23,15 +22,15 @@ namespace LHZ.FastJson.Json
 
         //Property names are baked into the compiled expression,
         //so the delegate is cached per naming policy: indexed by (int)CaseStyle.
-        private static readonly Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>[] _funcDeserialize =
-            new Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>[JsonConvertOptions.CaseStyleCount];
+        private static readonly Func<JsonDirectReader, T>[] _funcDeserialize =
+            new Func<JsonDirectReader, T>[JsonConvertOptions.CaseStyleCount];
         private static readonly object _funcDeserializeLock = new object();
         private static readonly Type _type = typeof(T);
 
         /// <summary>
         /// Get the deserialization delegate for the given naming policy.
         /// </summary>
-        private static Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T> GetDeserializeFunc(CaseStyle caseStyle)
+        private static Func<JsonDirectReader, T> GetDeserializeFunc(CaseStyle caseStyle)
         {
             int slot = (int)caseStyle;
             var func = _funcDeserialize[slot];
@@ -53,17 +52,7 @@ namespace LHZ.FastJson.Json
         {
             // if(jsonObject.IsReadEnd)
             //     return default(T);
-            return GetDeserializeFunc(jsonObject.Options.CaseStyle)(jsonObject, null);
-        }
-        public static T Deserialzer(JsonDirectReader jsonObject, Dictionary<Type, IJsonCustomConverter> jsonCustomConverters)
-        {
-            // if(jsonObject.IsReadEnd)
-            //     return default(T);
-            if (jsonCustomConverters != null && jsonCustomConverters.TryGetValue(_type, out IJsonCustomConverter customConverter))
-            {
-                return (T)customConverter.Deserialize(jsonObject.ReadAsJsonObject());
-            }
-            return GetDeserializeFunc(jsonObject.Options.CaseStyle)(jsonObject, jsonCustomConverters);
+            return GetDeserializeFunc(jsonObject.Options.CaseStyle)(jsonObject);
         }
 
         /// <summary>
@@ -71,59 +60,58 @@ namespace LHZ.FastJson.Json
         /// </summary>
         /// <param name="caseStyle">The naming style used to match property names</param>
         /// <returns></returns>
-        private static Expression<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>> CreateExpression(CaseStyle caseStyle)
+        private static Expression<Func<JsonDirectReader, T>> CreateExpression(CaseStyle caseStyle)
         {
             ParameterExpression jsonObjectParameter = Expression.Parameter(typeof(JsonDirectReader), "jsonDirectReader");
-            ParameterExpression jsonCustomConvertersParameter = Expression.Parameter(typeof(Dictionary<Type, IJsonCustomConverter>), "jsonCustomConverters");
             var curType = _type;
             ObjectType objectType = GetObjectType(curType);
             switch (objectType)
             {
                 case ObjectType.Boolean:
-                    return Expression.Lambda<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Call(
-                        ((Func<JsonDirectReader, bool>)ConvertToBoolean).Method, jsonObjectParameter), jsonObjectParameter, jsonCustomConvertersParameter);
+                    return Expression.Lambda<Func<JsonDirectReader, T>>(Expression.Call(
+                        ((Func<JsonDirectReader, bool>)ConvertToBoolean).Method, jsonObjectParameter), jsonObjectParameter);
                 case ObjectType.Byte:
-                    return Expression.Lambda<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Call(
-                        ((Func<JsonDirectReader, byte>)ConvertToByte).Method, jsonObjectParameter),  jsonObjectParameter, jsonCustomConvertersParameter);
+                    return Expression.Lambda<Func<JsonDirectReader, T>>(Expression.Call(
+                        ((Func<JsonDirectReader, byte>)ConvertToByte).Method, jsonObjectParameter),  jsonObjectParameter);
                 case ObjectType.Char:
-                    return Expression.Lambda<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Call(
-                        ((Func<JsonDirectReader, char>)ConvertToChar).Method, jsonObjectParameter),  jsonObjectParameter, jsonCustomConvertersParameter);
+                    return Expression.Lambda<Func<JsonDirectReader, T>>(Expression.Call(
+                        ((Func<JsonDirectReader, char>)ConvertToChar).Method, jsonObjectParameter),  jsonObjectParameter);
                 case ObjectType.Int16:
-                    return Expression.Lambda<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Call(
-                        ((Func<JsonDirectReader, short>)ConvertToInt16).Method, jsonObjectParameter),  jsonObjectParameter, jsonCustomConvertersParameter);
+                    return Expression.Lambda<Func<JsonDirectReader, T>>(Expression.Call(
+                        ((Func<JsonDirectReader, short>)ConvertToInt16).Method, jsonObjectParameter),  jsonObjectParameter);
                 case ObjectType.UInt16:
-                    return Expression.Lambda<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Call(
-                        ((Func<JsonDirectReader, ushort>)ConvertToUInt16).Method, jsonObjectParameter),  jsonObjectParameter, jsonCustomConvertersParameter);
+                    return Expression.Lambda<Func<JsonDirectReader, T>>(Expression.Call(
+                        ((Func<JsonDirectReader, ushort>)ConvertToUInt16).Method, jsonObjectParameter),  jsonObjectParameter);
                 case ObjectType.Int32:
-                    return Expression.Lambda<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Call(
-                        ((Func<JsonDirectReader, int>)ConvertToInt32).Method, jsonObjectParameter),  jsonObjectParameter, jsonCustomConvertersParameter);
+                    return Expression.Lambda<Func<JsonDirectReader, T>>(Expression.Call(
+                        ((Func<JsonDirectReader, int>)ConvertToInt32).Method, jsonObjectParameter),  jsonObjectParameter);
                 case ObjectType.UInt32:
-                    return Expression.Lambda<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Call(
-                        ((Func<JsonDirectReader, uint>)ConvertToUInt32).Method, jsonObjectParameter),  jsonObjectParameter, jsonCustomConvertersParameter);
+                    return Expression.Lambda<Func<JsonDirectReader, T>>(Expression.Call(
+                        ((Func<JsonDirectReader, uint>)ConvertToUInt32).Method, jsonObjectParameter),  jsonObjectParameter);
                 case ObjectType.Int64:
-                    return Expression.Lambda<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Call(
-                        ((Func<JsonDirectReader, long>)ConvertToInt64).Method, jsonObjectParameter),  jsonObjectParameter, jsonCustomConvertersParameter);
+                    return Expression.Lambda<Func<JsonDirectReader, T>>(Expression.Call(
+                        ((Func<JsonDirectReader, long>)ConvertToInt64).Method, jsonObjectParameter),  jsonObjectParameter);
                 case ObjectType.UInt64:
-                    return Expression.Lambda<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Call(
-                        ((Func<JsonDirectReader, ulong>)ConvertToUInt64).Method, jsonObjectParameter),  jsonObjectParameter, jsonCustomConvertersParameter);
+                    return Expression.Lambda<Func<JsonDirectReader, T>>(Expression.Call(
+                        ((Func<JsonDirectReader, ulong>)ConvertToUInt64).Method, jsonObjectParameter),  jsonObjectParameter);
                 case ObjectType.Float:
-                    return Expression.Lambda<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Call(
-                        ((Func<JsonDirectReader, float>)ConvertToFloat).Method, jsonObjectParameter),  jsonObjectParameter, jsonCustomConvertersParameter);
+                    return Expression.Lambda<Func<JsonDirectReader, T>>(Expression.Call(
+                        ((Func<JsonDirectReader, float>)ConvertToFloat).Method, jsonObjectParameter),  jsonObjectParameter);
                 case ObjectType.Double:
-                    return Expression.Lambda<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Call(
-                        ((Func<JsonDirectReader, double>)ConvertToDouble).Method, jsonObjectParameter),  jsonObjectParameter, jsonCustomConvertersParameter);
+                    return Expression.Lambda<Func<JsonDirectReader, T>>(Expression.Call(
+                        ((Func<JsonDirectReader, double>)ConvertToDouble).Method, jsonObjectParameter),  jsonObjectParameter);
                 case ObjectType.Decimal:
-                    return Expression.Lambda<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Call(
-                        ((Func<JsonDirectReader, decimal>)ConvertToDecimal).Method, jsonObjectParameter),  jsonObjectParameter, jsonCustomConvertersParameter);
+                    return Expression.Lambda<Func<JsonDirectReader, T>>(Expression.Call(
+                        ((Func<JsonDirectReader, decimal>)ConvertToDecimal).Method, jsonObjectParameter),  jsonObjectParameter);
                 case ObjectType.DateTime:
-                    return Expression.Lambda<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Call(
-                        ((Func<JsonDirectReader, DateTime>)ConvertToDateTime).Method, jsonObjectParameter), jsonObjectParameter, jsonCustomConvertersParameter);
+                    return Expression.Lambda<Func<JsonDirectReader, T>>(Expression.Call(
+                        ((Func<JsonDirectReader, DateTime>)ConvertToDateTime).Method, jsonObjectParameter), jsonObjectParameter);
                 case ObjectType.Guid:
-                    return Expression.Lambda<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Call(
-                        ((Func<JsonDirectReader, Guid>)ConvertToGuid).Method, jsonObjectParameter), jsonObjectParameter, jsonCustomConvertersParameter);
+                    return Expression.Lambda<Func<JsonDirectReader, T>>(Expression.Call(
+                        ((Func<JsonDirectReader, Guid>)ConvertToGuid).Method, jsonObjectParameter), jsonObjectParameter);
                 case ObjectType.String:
-                    return Expression.Lambda<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Call( 
-                        ((Func<JsonDirectReader, string>)ConvertToString).Method, jsonObjectParameter),  jsonObjectParameter, jsonCustomConvertersParameter);
+                    return Expression.Lambda<Func<JsonDirectReader, T>>(Expression.Call( 
+                        ((Func<JsonDirectReader, string>)ConvertToString).Method, jsonObjectParameter),  jsonObjectParameter);
                 case ObjectType.Enum: return ConvertToEnum();
                 case ObjectType.Nullable: return ConvertToNullable();
                 case ObjectType.Dictionary: return ConvertToDictionary();
@@ -491,16 +479,15 @@ namespace LHZ.FastJson.Json
         /// Parse to enum
         /// </summary>
         /// <returns>Enum</returns>
-        private static Expression<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>> ConvertToEnum()
+        private static Expression<Func<JsonDirectReader, T>> ConvertToEnum()
         {
             ParameterExpression jsonObjectParameter = Expression.Parameter(typeof(JsonDirectReader), "jsonDirectReader");
-            ParameterExpression jsonCustomConvertersParameter = Expression.Parameter(typeof(Dictionary<Type, IJsonCustomConverter>), "jsonCustomConverters");
 
-            return Expression.Lambda<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>>(
+            return Expression.Lambda<Func<JsonDirectReader, T>>(
                 Expression.Convert(
                     Expression.Call(((Func<JsonDirectReader, object>)ConvertToEnum).Method, jsonObjectParameter),
                     _type),
-                jsonObjectParameter, jsonCustomConvertersParameter);
+                jsonObjectParameter);
         }
 
 
@@ -525,10 +512,9 @@ namespace LHZ.FastJson.Json
         /// Parse to dictionary type
         /// </summary>
         /// <returns>Deserialized dictionary expression</returns>
-        private static Expression<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>> ConvertToDictionary()
+        private static Expression<Func<JsonDirectReader, T>> ConvertToDictionary()
         {
             ParameterExpression jsonObjectParameter = Expression.Parameter(typeof(JsonDirectReader), "jsonDirectReader");
-            ParameterExpression jsonCustomConvertersParameter = Expression.Parameter(typeof(Dictionary<Type, IJsonCustomConverter>), "jsonCustomConverters");
             var curType = _type;
 
             //The key/value types of the dictionary interface; the non-generic IDictionary
@@ -565,7 +551,7 @@ namespace LHZ.FastJson.Json
             {
                 var exception = Expression.New(typeof(JsonDirectDeserializationException).GetConstructor(new Type[] { typeof(int), typeof(JsonType), typeof(Type), typeof(string) }),
                 Expression.Constant(0), Expression.Property(jsonObjectParameter, "JsonType"), Expression.Constant(curType), Expression.Constant("反序列化类型没有默认的构造函数，无法创建该类型对象"));
-                return Expression.Lambda<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Throw(exception, curType), jsonObjectParameter, jsonCustomConvertersParameter);
+                return Expression.Lambda<Func<JsonDirectReader, T>>(Expression.Throw(exception, curType), jsonObjectParameter);
             }
 
             //Determine if the JSON object is null
@@ -595,8 +581,8 @@ namespace LHZ.FastJson.Json
             keyExpression = Expression.Convert(keyExpression, typeof(object));
 
             Expression valueExpression = Expression.Call(
-                typeof(JsonDirectDeserialzerExpression<>).MakeGenericType(valueType).GetMethod("Deserialzer", new Type[] { typeof(JsonDirectReader), typeof(Dictionary<Type, IJsonCustomConverter>) }),
-                Expression.Property(keyValue, "Value"), jsonCustomConvertersParameter);
+                typeof(JsonDirectDeserialzerExpression<>).MakeGenericType(valueType).GetMethod("Deserialzer", new Type[] { typeof(JsonDirectReader) }),
+                Expression.Property(keyValue, "Value"));
             loopexpres.Add(Expression.Call(dictionary, typeof(IDictionary).GetMethod("Add", new Type[] { typeof(object), typeof(object) }),
                 keyExpression, Expression.Convert(valueExpression, typeof(object))));
 
@@ -605,17 +591,16 @@ namespace LHZ.FastJson.Json
             expres.Add(Expression.Label(returnLabel));
             expres.Add(result);
 
-            return Expression.Lambda<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Block(new ParameterExpression[] { result, dictionary, enumerator, keyValue }, expres), jsonObjectParameter, jsonCustomConvertersParameter);
+            return Expression.Lambda<Func<JsonDirectReader, T>>(Expression.Block(new ParameterExpression[] { result, dictionary, enumerator, keyValue }, expres), jsonObjectParameter);
         }
 
         /// <summary>
         /// Parse to array
         /// </summary>
         /// <returns>Deserialized array expression</returns>
-        private static Expression<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>> ConvertToArray()
+        private static Expression<Func<JsonDirectReader, T>> ConvertToArray()
         {
             ParameterExpression jsonObjectParameter = Expression.Parameter(typeof(JsonDirectReader), "jsonDirectReader");
-            ParameterExpression jsonCustomConvertersParameter = Expression.Parameter(typeof(Dictionary<Type, IJsonCustomConverter>), "jsonCustomConverters");
 
             var curType = _type;
             var elementType = curType.GetElementType();
@@ -650,7 +635,7 @@ namespace LHZ.FastJson.Json
             loopexpres.Add(Expression.IfThen(Expression.IsFalse(Expression.Call(enumerator, typeof(IEnumerator).GetMethod("MoveNext"))), Expression.Break(loopLabel)));
             loopexpres.Add(Expression.Assign(item, Expression.Convert(Expression.Property(enumerator, "Current"), typeof(JsonDirectReader))));
             loopexpres.Add(Expression.Call(list, typeof(List<>).MakeGenericType(elementType).GetMethod("Add"),
-                Expression.Call(typeof(JsonDirectDeserialzerExpression<>).MakeGenericType(elementType).GetMethod("Deserialzer", new Type[] { typeof(JsonDirectReader), typeof(Dictionary<Type, IJsonCustomConverter>) }), item, jsonCustomConvertersParameter)));
+                Expression.Call(typeof(JsonDirectDeserialzerExpression<>).MakeGenericType(elementType).GetMethod("Deserialzer", new Type[] { typeof(JsonDirectReader) }), item)));
 
             expres.Add(Expression.Loop(Expression.Block(loopexpres), loopLabel));
 
@@ -658,16 +643,15 @@ namespace LHZ.FastJson.Json
             expres.Add(Expression.Assign(result, Expression.Call(list, typeof(List<>).MakeGenericType(elementType).GetMethod("ToArray"))));
             expres.Add(Expression.Label(returnLabel));
             expres.Add(result);
-            return Expression.Lambda<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Block(new ParameterExpression[] { list, enumerator, item, result }, expres), jsonObjectParameter, jsonCustomConvertersParameter);
+            return Expression.Lambda<Func<JsonDirectReader, T>>(Expression.Block(new ParameterExpression[] { list, enumerator, item, result }, expres), jsonObjectParameter);
         }
         /// <summary>
         /// Parse to list collection
         /// </summary>
         /// <returns>List collection</returns>
-        private static Expression<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>> ConvertToList()
+        private static Expression<Func<JsonDirectReader, T>> ConvertToList()
         {
             ParameterExpression jsonObjectParameter = Expression.Parameter(typeof(JsonDirectReader), "jsonDirectReader");
-            ParameterExpression jsonCustomConvertersParameter = Expression.Parameter(typeof(Dictionary<Type, IJsonCustomConverter>), "jsonCustomConverters");
 
             var curType = _type;
             //Get the generic type; non-generic collection types fall back to object elements
@@ -696,7 +680,7 @@ namespace LHZ.FastJson.Json
                 {
                     var exception = Expression.New(typeof(JsonDirectDeserializationException).GetConstructor(new Type[] { typeof(int), typeof(JsonType), typeof(Type), typeof(string) }),
                         Expression.Constant(0), Expression.Property(jsonObjectParameter, "JsonType"), Expression.Constant(curType), Expression.Constant("无法为集合接口创建默认实现类型"));
-                    return Expression.Lambda<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Throw(exception, curType), jsonObjectParameter, jsonCustomConvertersParameter);
+                    return Expression.Lambda<Func<JsonDirectReader, T>>(Expression.Throw(exception, curType), jsonObjectParameter);
                 }
             }
             var list = Expression.Variable(listType, "list");
@@ -719,12 +703,12 @@ namespace LHZ.FastJson.Json
             loopexpres.Add(Expression.IfThen(Expression.IsFalse(Expression.Call(enumerator, typeof(IEnumerator).GetMethod("MoveNext"))), Expression.Break(loopLabel)));
             loopexpres.Add(Expression.Assign(item, Expression.Convert(Expression.Property(enumerator, "Current"), typeof(JsonDirectReader))));
             loopexpres.Add(Expression.Call(list, listType.GetMethod("Add", new Type[] { elementType }),
-                Expression.Call(typeof(JsonDirectDeserialzerExpression<>).MakeGenericType(elementType).GetMethod("Deserialzer", new Type[] { typeof(JsonDirectReader), typeof(Dictionary<Type, IJsonCustomConverter>) }), item, jsonCustomConvertersParameter)));
+                Expression.Call(typeof(JsonDirectDeserialzerExpression<>).MakeGenericType(elementType).GetMethod("Deserialzer", new Type[] { typeof(JsonDirectReader) }), item)));
             expres.Add(Expression.Loop(Expression.Block(loopexpres), loopLabel));
             expres.Add(Expression.Assign(result, Expression.Convert(list, curType)));
             expres.Add(Expression.Label(returnLabel));
             expres.Add(result);
-            return Expression.Lambda<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Block(new ParameterExpression[] { enumerator, item, result, list }, expres), jsonObjectParameter, jsonCustomConvertersParameter);
+            return Expression.Lambda<Func<JsonDirectReader, T>>(Expression.Block(new ParameterExpression[] { enumerator, item, result, list }, expres), jsonObjectParameter);
 
         }
 
@@ -732,10 +716,9 @@ namespace LHZ.FastJson.Json
         /// Parse to object
         /// </summary>
         /// <returns>Object</returns>
-        private static Expression<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>> ConvertToObject(CaseStyle caseStyle)
+        private static Expression<Func<JsonDirectReader, T>> ConvertToObject(CaseStyle caseStyle)
         {
             ParameterExpression jsonObjectParameter = Expression.Parameter(typeof(JsonDirectReader), "jsonDirectReader");
-            ParameterExpression jsonCustomConvertersParameter = Expression.Parameter(typeof(Dictionary<Type, IJsonCustomConverter>), "jsonCustomConverters");
 
             var curType = _type;
 
@@ -772,7 +755,7 @@ namespace LHZ.FastJson.Json
             {
                 expres.Add(Expression.Return(returnLabel, Expression.Call(jsonObjectParameter, "ReadAsJsonObject", EmptyArray<Type>.Value)));
                 expres.Add(Expression.Label(returnLabel, result));
-                return Expression.Lambda<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Block(variables, expres), jsonObjectParameter, jsonCustomConvertersParameter);
+                return Expression.Lambda<Func<JsonDirectReader, T>>(Expression.Block(variables, expres), jsonObjectParameter);
             }
             else if (typeof(JsonObject).IsAssignableFrom(curType))
             {
@@ -787,7 +770,7 @@ namespace LHZ.FastJson.Json
                         Expression.Property(jsonObj, "Position"), Expression.Property(jsonObj, "Type"), Expression.Constant(curType), Expression.Constant("反序列化失败，无法进行显式的JsonObject类型转换"))
                     )));
                     expres.Add(Expression.Label(returnLabel, result));
-                    return Expression.Lambda<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Block(variables, expres), jsonObjectParameter, jsonCustomConvertersParameter);
+                    return Expression.Lambda<Func<JsonDirectReader, T>>(Expression.Block(variables, expres), jsonObjectParameter);
                 }
                 else if(typeof(JsonBoolean).IsAssignableFrom(curType))
                 {
@@ -797,7 +780,7 @@ namespace LHZ.FastJson.Json
                         Expression.Property(jsonObj, "Position"), Expression.Property(jsonObj, "Type"), Expression.Constant(curType), Expression.Constant("反序列化失败，无法进行显式的JsonObject类型转换"))
                     )));
                     expres.Add(Expression.Label(returnLabel, result));
-                    return Expression.Lambda<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Block(variables, expres), jsonObjectParameter, jsonCustomConvertersParameter);
+                    return Expression.Lambda<Func<JsonDirectReader, T>>(Expression.Block(variables, expres), jsonObjectParameter);
                 }
                 else if(typeof(JsonContent).IsAssignableFrom(curType))
                 {
@@ -807,7 +790,7 @@ namespace LHZ.FastJson.Json
                         Expression.Property(jsonObj, "Position"), Expression.Property(jsonObj, "Type"), Expression.Constant(curType), Expression.Constant("反序列化失败，无法进行显式的JsonObject类型转换"))
                     )));
                     expres.Add(Expression.Label(returnLabel, result));
-                    return Expression.Lambda<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Block(variables, expres), jsonObjectParameter, jsonCustomConvertersParameter);
+                    return Expression.Lambda<Func<JsonDirectReader, T>>(Expression.Block(variables, expres), jsonObjectParameter);
                 }
                 else if(typeof(JsonNull).IsAssignableFrom(curType))
                 {
@@ -817,7 +800,7 @@ namespace LHZ.FastJson.Json
                         Expression.Property(jsonObj, "Position"), Expression.Property(jsonObj, "Type"), Expression.Constant(curType), Expression.Constant("反序列化失败，无法进行显式的JsonObject类型转换"))
                     )));
                     expres.Add(Expression.Label(returnLabel, result));
-                    return Expression.Lambda<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Block(variables, expres), jsonObjectParameter, jsonCustomConvertersParameter);
+                    return Expression.Lambda<Func<JsonDirectReader, T>>(Expression.Block(variables, expres), jsonObjectParameter);
                 }
                 else if(typeof(JsonNumber).IsAssignableFrom(curType))
                 {
@@ -827,7 +810,7 @@ namespace LHZ.FastJson.Json
                         Expression.Property(jsonObj, "Position"), Expression.Property(jsonObj, "Type"), Expression.Constant(curType), Expression.Constant("反序列化失败，无法进行显式的JsonObject类型转换"))
                     )));
                     expres.Add(Expression.Label(returnLabel, result));
-                    return Expression.Lambda<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Block(variables, expres), jsonObjectParameter, jsonCustomConvertersParameter);
+                    return Expression.Lambda<Func<JsonDirectReader, T>>(Expression.Block(variables, expres), jsonObjectParameter);
                 }
                 else if(typeof(JsonString).IsAssignableFrom(curType))
                 {
@@ -837,7 +820,7 @@ namespace LHZ.FastJson.Json
                         Expression.Property(jsonObj, "Position"), Expression.Property(jsonObj, "Type"), Expression.Constant(curType), Expression.Constant("反序列化失败，无法进行显式的JsonObject类型转换"))
                     )));
                     expres.Add(Expression.Label(returnLabel, result));
-                    return Expression.Lambda<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Block(variables, expres), jsonObjectParameter, jsonCustomConvertersParameter);
+                    return Expression.Lambda<Func<JsonDirectReader, T>>(Expression.Block(variables, expres), jsonObjectParameter);
                 }
             }
             //Check if the type is an interface or abstract type
@@ -846,7 +829,7 @@ namespace LHZ.FastJson.Json
                 expres.Add(Expression.Throw(Expression.New(typeof(JsonDirectDeserializationException).GetConstructor(new Type[] { typeof(int), typeof(JsonType), typeof(Type), typeof(string) }),
                 Expression.Constant(0), Expression.Property(jsonObjectParameter, "JsonType"), Expression.Constant(curType), Expression.Constant("类型为接口或者是抽象接口，无法创建该类型对象"))));
                 expres.Add(Expression.Label(returnLabel, Expression.Default(curType)));
-                return Expression.Lambda<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Block(variables, expres), jsonObjectParameter, jsonCustomConvertersParameter);
+                return Expression.Lambda<Func<JsonDirectReader, T>>(Expression.Block(variables, expres), jsonObjectParameter);
             }
             //Check if the type has a default constructor (value types are always constructible)
             if (!curType.IsValueType && curType.GetConstructor(EmptyArray<Type>.Value) == null)
@@ -854,7 +837,7 @@ namespace LHZ.FastJson.Json
                 expres.Add(Expression.Throw(Expression.New(typeof(JsonDirectDeserializationException).GetConstructor(new Type[] { typeof(int), typeof(JsonType), typeof(Type), typeof(string) }),
                 Expression.Constant(0), Expression.Property(jsonObjectParameter, "JsonType"), Expression.Constant(curType), Expression.Constant("反序列化类型没有默认的构造函数，无法创建该类型对象"))));
                 expres.Add(Expression.Label(returnLabel, Expression.Default(curType)));
-                return Expression.Lambda<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Block(variables, expres), jsonObjectParameter, jsonCustomConvertersParameter);
+                return Expression.Lambda<Func<JsonDirectReader, T>>(Expression.Block(variables, expres), jsonObjectParameter);
             }
 
             //Type check: must be Content
@@ -891,17 +874,17 @@ namespace LHZ.FastJson.Json
                     propVarMap[propertie.Value] = propertyValue;
                     bindings.Add(Expression.Bind(propertie.Value, propertyValue));
                     var deserializerMethod = typeof(JsonDirectDeserialzerExpression<>).MakeGenericType(propertie.Value.PropertyType)
-                    .GetMethod("Deserialzer", new Type[] { typeof(JsonDirectReader), typeof(Dictionary<Type, IJsonCustomConverter>) });
+                    .GetMethod("Deserialzer", new Type[] { typeof(JsonDirectReader) });
                     if(ifExp == null)
                     {
                         ifExp = Expression.IfThenElse(Expression.Equal(Expression.Constant(propertie.Key), Expression.Property(kvp, "Key")),
-                            Expression.Assign(propertyValue, Expression.Call(deserializerMethod, Expression.Property(kvp, "Value"), jsonCustomConvertersParameter)),
+                            Expression.Assign(propertyValue, Expression.Call(deserializerMethod, Expression.Property(kvp, "Value"))),
                             Expression.Call(jsonObjectParameter, "SkipCurrentObject", EmptyArray<Type>.Value));
                     }
                     else
                     {
                         ifExp = Expression.IfThenElse(Expression.Equal(Expression.Constant(propertie.Key), Expression.Property(kvp, "Key")),
-                            Expression.Assign(propertyValue, Expression.Call(deserializerMethod, Expression.Property(kvp, "Value"), jsonCustomConvertersParameter)),
+                            Expression.Assign(propertyValue, Expression.Call(deserializerMethod, Expression.Property(kvp, "Value"))),
                             ifExp);
                     }
                 }
@@ -925,13 +908,12 @@ namespace LHZ.FastJson.Json
             expres.Add(Expression.Assign(result, Expression.MemberInit(Expression.New(curType), bindings)));
             expres.Add(Expression.Label(returnLabel, result));
 
-            return Expression.Lambda<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Block(variables, expres), jsonObjectParameter, jsonCustomConvertersParameter);
+            return Expression.Lambda<Func<JsonDirectReader, T>>(Expression.Block(variables, expres), jsonObjectParameter);
         }
 
-        private static Expression<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>> ConvertToNullable()
+        private static Expression<Func<JsonDirectReader, T>> ConvertToNullable()
         {
             ParameterExpression jsonObjectParameter = Expression.Parameter(typeof(JsonDirectReader), "jsonDirectReader");
-            ParameterExpression jsonCustomConvertersParameter = Expression.Parameter(typeof(Dictionary<Type, IJsonCustomConverter>), "jsonCustomConverters");
             var curType = _type;
 
             List<Expression> expres = new List<Expression>();
@@ -943,19 +925,19 @@ namespace LHZ.FastJson.Json
             var genericType = curType.GetGenericArguments().FirstOrDefault();
             if (genericType == null)
             {
-                return Expression.Lambda<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Throw(Expression.New(typeof(JsonDirectDeserializationException).GetConstructor(new Type[] { typeof(int), typeof(JsonType),
-                    typeof(Type), typeof(string) }), Expression.Constant(0), Expression.Property(jsonObjectParameter, "JsonType"), Expression.Constant(curType), Expression.Constant("反序列化出错获取，获取Nullable泛型出错！"))), jsonObjectParameter, jsonCustomConvertersParameter);
+                return Expression.Lambda<Func<JsonDirectReader, T>>(Expression.Throw(Expression.New(typeof(JsonDirectDeserializationException).GetConstructor(new Type[] { typeof(int), typeof(JsonType),
+                    typeof(Type), typeof(string) }), Expression.Constant(0), Expression.Property(jsonObjectParameter, "JsonType"), Expression.Constant(curType), Expression.Constant("反序列化出错获取，获取Nullable泛型出错！"))), jsonObjectParameter);
             }
             //Determine if the JSON object is null
             expres.Add(Expression.IfThen(Expression.Equal(Expression.Property(jsonObjectParameter, "JsonType"), Expression.Constant(JsonType.Null)),
                 Expression.Block(new Expression[]{Expression.Call(jsonObjectParameter, "SkipCurrentObject", EmptyArray<Type>.Value), Expression.Return(returnLabel)})));
             expres.Add(Expression.Assign(result, Expression.New(curType.GetConstructor(new Type[] { genericType }),
-                Expression.Call(typeof(JsonDirectDeserialzerExpression<>).MakeGenericType(genericType).GetMethod("Deserialzer", new Type[] { typeof(JsonDirectReader), typeof(Dictionary<Type, IJsonCustomConverter>) }), jsonObjectParameter, jsonCustomConvertersParameter))));
+                Expression.Call(typeof(JsonDirectDeserialzerExpression<>).MakeGenericType(genericType).GetMethod("Deserialzer", new Type[] { typeof(JsonDirectReader) }), jsonObjectParameter))));
 
             expres.Add(Expression.Label(returnLabel));
             expres.Add(result);
 
-            return Expression.Lambda<Func<JsonDirectReader, Dictionary<Type, IJsonCustomConverter>, T>>(Expression.Block(new ParameterExpression[] { result }, expres), jsonObjectParameter, jsonCustomConvertersParameter);
+            return Expression.Lambda<Func<JsonDirectReader, T>>(Expression.Block(new ParameterExpression[] { result }, expres), jsonObjectParameter);
         }
     }
 }

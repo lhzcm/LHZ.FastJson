@@ -5,7 +5,6 @@ using System.Linq.Expressions;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using LHZ.FastJson.Json;
-using LHZ.FastJson.Json.CustomConverter;
 using NUnit.Framework;
 using static LHZ.FastJson.UnitTest.TestJsonSerizlizer;
 
@@ -466,17 +465,6 @@ namespace LHZ.FastJson.UnitTest
             var testStr = @"{""Name"":""test"",""Age"":10,""Height"":170}";
             var testObj = LHZ.FastJson.JsonConvert.Deserialize<TestJsonTgnoredClass>(testStr);
             ClassicAssert.AreEqual(testObj.Height, 0);
-        }
-
-        /// <summary>
-        /// 验证自定义转换器会影响反序列化。
-        /// </summary>
-        [Test]
-        public void TestCustomSerialize()
-        {
-            var jsonStr = "{\"Id\":1, \"Name\":\"tom\"}";
-            var obj = JsonConvert.Deserialize<TestObjClass>(jsonStr, new JsonCustomConvert<int>(n=> 2));
-            ClassicAssert.AreEqual(obj.Id, 2);
         }
 
         /// <summary>

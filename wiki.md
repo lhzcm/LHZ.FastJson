@@ -15,7 +15,6 @@
 - [API 参考 | API Reference](#api-参考--api-reference)
 - [JSON 类型系统 | JSON Type System](#json-类型系统--json-type-system)
 - [特性注解 | Attributes](#特性注解--attributes)
-- [自定义转换器 | Custom Converters](#自定义转换器--custom-converters)
 - [扩展方法 | Extension Methods](#扩展方法--extension-methods)
 - [异常处理 | Exceptions](#异常处理--exceptions)
 - [性能 | Performance](#性能--performance)
@@ -37,7 +36,6 @@ LHZ.FastJson 是一个针对 .NET 平台（net40~net6）的轻量级 JSON 库，
 | 特性 | 说明 |
 |------|------|
 | 🚀 高性能 | 基于 `unsafe` 指针解析 + Expression Tree 编译 |
-| 🔌 可扩展 | 支持自定义转换器 (`IJsonCustomConverter`) |
 | 🏷️ 注解支持 | `JsonPropertyAttribute` / `JsonIgnoredAttribute` |
 | 🔄 循环引用检测 | 自动检测并跳过循环引用 |
 | 📦 多目标框架 | net40 / net45 / net46 / netstandard2.0 / net5 / net6 |
@@ -403,9 +401,6 @@ public static bool TryDeserialize(string jsonString, out IJsonObject dist)
 // 泛型反序列化
 public static T Deserialize<T>(string jsonString)
 
-// 带自定义转换器的泛型反序列化
-public static T Deserialize<T>(string jsonString, params IJsonCustomConverter[] jsonCustomConverters)
-
 // 安全泛型反序列化
 public static bool TryDeserialize<T>(string jsonString, out T dist)
 ```
@@ -600,87 +595,6 @@ public class User
 
 ---
 
-## 自定义转换器 | Custom Converters
-
-### 实现 `IJsonCustomConverter` 接口
-
-```csharp
-using LHZ.FastJson.Interface;
-using LHZ.FastJson.Enum.CustomConverter;
-
-public class DateTimeCustomConverter : IJsonCustomConverter
-{
-    public Type ConvertType => typeof(DateTime);
-
-    public JsonCustomConvertItem CustomItem => JsonCustomConvertItem.All;
-
-    public string Serialize(object dist)
-    {
-        var dt = (DateTime)dist;
-        return $"\"{dt:yyyy/MM/dd}\"";
-    }
-
-    public object Deserialize(IJsonObject jsonObject)
-    {
-        return DateTime.ParseExact(
-            jsonObject.Value.ToString(),
-            "yyyy/MM/dd",
-            System.Globalization.CultureInfo.InvariantCulture
-        );
-    }
-}
-```
-
-### 使用 `JsonCustomConvert<T>` 便捷类
-
-```csharp
-// 仅自定义序列化
-var converter = new JsonCustomConvert<DateTime>(
-    serializeFunc: dt => $"\"{dt:yyyy/MM/dd}\""
-);
-
-// 仅自定义反序列化
-var converter = new JsonCustomConvert<DateTime>(
-    deserializeFunc: jsonObj =>
-        DateTime.Parse(jsonObj.Value.ToString())
-);
-
-// 同时自定义序列化和反序列化
-var converter = new JsonCustomConvert<DateTime>(
-    serializeFunc: dt => $"\"{dt:yyyy/MM/dd}\"",
-    deserializeFunc: jsonObj =>
-        DateTime.Parse(jsonObj.Value.ToString())
-);
-```
-
-### 在反序列化中使用自定义转换器
-
-```csharp
-var converters = new IJsonCustomConverter[]
-{
-    new DateTimeCustomConverter(),
-    new MyTypeConverter()
-};
-
-// 方式 1：通过 JsonConvert
-var obj = JsonConvert.Deserialize<MyClass>(jsonString, converters);
-
-// 方式 2：通过 JsonDeserializer
-var deserializer = new JsonDeserializer<MyClass>(jsonString);
-var obj = deserializer.Deserialize(converters);
-```
-
-### `JsonCustomConvertItem` 标志枚举
-
-| 值 | 说明 |
-|----|------|
-| `None` | 不自定义 |
-| `CustomSerialize` | 自定义序列化 |
-| `CustomDeSerialize` | 自定义反序列化 |
-| `All` | 全部自定义 |
-
----
-
 ## 扩展方法 | Extension Methods
 
 LHZ.FastJson 提供了两个便捷扩展方法：
@@ -705,7 +619,6 @@ Student student = jsonString.FromJson<Student>();
 | `JsonReadException` | `Exception` | JSON 解析错误，包含 `Position` 属性指示错误位置 |
 | `JsonDeserializationException` | `JsonReadException` | 反序列化类型错误，包含 `JsonType` 和 `TargetType` |
 | `JsonFormatterException` | `Exception` | 格式化错误（已废弃） |
-| `JsonCustomConverterException` | `Exception` | 自定义转换器错误 |
 
 ### 验证 JSON 有效性
 

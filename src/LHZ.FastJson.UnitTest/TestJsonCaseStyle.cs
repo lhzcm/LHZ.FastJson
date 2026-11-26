@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using LHZ.FastJson.Enum;
 using LHZ.FastJson.Json.Attributes;
 using NUnit.Framework;
 

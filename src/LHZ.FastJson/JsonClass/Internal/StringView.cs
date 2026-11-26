@@ -10,7 +10,13 @@ namespace LHZ.FastJson.JsonClass.Internal
     /// </summary>
     internal struct StringView : IConvertible
     {
+        #if NET46_OR_GREATER
+        private static readonly char[] _charArrayEmpty = Array.Empty<char>();
+        #else
+        #pragma warning disable CA1825 
         private static readonly char[] _charArrayEmpty = new char[0];
+        #pragma warning restore CA1825 
+        #endif
         /// <summary>
         /// Initialize with a specified range
         /// </summary>

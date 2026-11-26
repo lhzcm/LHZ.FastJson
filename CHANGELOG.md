@@ -4,6 +4,14 @@
 
 This document records important changes to LHZ.FastJson.
 
+## Unreleased
+
+### Breaking changes
+
+- Removed custom converters to keep the library small and the conversion path lean. `IJsonCustomConverter`, `JsonCustomConvert<T>`, `JsonCustomConvertItem` and `JsonCustomConverterException` are gone, together with the overloads that accepted converters: `JsonConvert.Deserialize<T>(string, params IJsonCustomConverter[])`, `JsonConvert.Deserialize<T>(string, JsonConvertOptions, params IJsonCustomConverter[])` and `JsonSerializer(object, params IJsonCustomConverter[])`. The `JsonSerializer(object, JsonConvertOptions, params IJsonCustomConverter[])` constructor is now `JsonSerializer(object, JsonConvertOptions)`, and `JsonDeserializer<T>.Deserialize()` no longer takes converters. The compiled deserializers no longer pass a converter table through every nested call. To control how a value is written, map it to a supported type (for example a `string` property), or build it from `JsonContent` / `JsonArray` nodes and assign them to an `object`-typed property, which the serializer writes verbatim.
+- `CaseStyle` moved from the `LHZ.FastJson` namespace to `LHZ.FastJson.Enum`, next to the other enums. Add `using LHZ.FastJson.Enum;` where `CaseStyle` is used, for example `new JsonConvertOptions { CaseStyle = CaseStyle.CamelCase }`.
+- Serializing a collection (array, list or other `IEnumerable`) that contains itself now throws `System.Exception` ("循环引用"), the same exception as circular references between objects or dictionaries, instead of `InvalidOperationException`. Code that caught `InvalidOperationException` for this case must catch `Exception` instead.
+
 ## 2.1.2 - 2026-11-24
 
 This release fixes dictionary serialization for generic interface types and makes interface-typed collections and dictionaries deserializable.

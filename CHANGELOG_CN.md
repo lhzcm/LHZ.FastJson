@@ -4,6 +4,14 @@
 
 本文档记录 LHZ.FastJson 的重要变更。
 
+## 未发布
+
+### 不兼容变更
+
+- 移除自定义转换器功能，保持库的小巧和转换路径的精简。`IJsonCustomConverter`、`JsonCustomConvert<T>`、`JsonCustomConvertItem` 和 `JsonCustomConverterException` 已删除，接受转换器的重载也一并删除：`JsonConvert.Deserialize<T>(string, params IJsonCustomConverter[])`、`JsonConvert.Deserialize<T>(string, JsonConvertOptions, params IJsonCustomConverter[])` 和 `JsonSerializer(object, params IJsonCustomConverter[])`。构造函数 `JsonSerializer(object, JsonConvertOptions, params IJsonCustomConverter[])` 改为 `JsonSerializer(object, JsonConvertOptions)`，`JsonDeserializer<T>.Deserialize()` 不再接受转换器参数。编译后的反序列化委托不再在每一层嵌套调用中传递转换器表。如需控制某个值的输出，可以先把它转换为受支持的类型（例如 `string` 属性），或用 `JsonContent` / `JsonArray` 节点构建并赋给 `object` 类型的属性，序列化时会原样输出。
+- `CaseStyle` 从 `LHZ.FastJson` 命名空间移到 `LHZ.FastJson.Enum`，与其他枚举放在一起。使用 `CaseStyle` 的地方需要添加 `using LHZ.FastJson.Enum;`，例如 `new JsonConvertOptions { CaseStyle = CaseStyle.CamelCase }`。
+- 序列化包含自身的集合（数组、列表或其他 `IEnumerable`）时，现在抛出 `System.Exception`（"循环引用"），与对象或字典之间循环引用时抛出的异常相同，不再是 `InvalidOperationException`。原来捕获 `InvalidOperationException` 处理这种情况的代码需要改为捕获 `Exception`。
+
 ## 2.1.2 - 2026-11-24
 
 本版本修复泛型字典接口属性的序列化，并让接口类型的集合与字典可以被反序列化。

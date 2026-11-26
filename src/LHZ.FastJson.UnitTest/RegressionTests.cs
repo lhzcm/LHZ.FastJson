@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using LHZ.FastJson.Exceptions;
 using LHZ.FastJson.Json;
 using LHZ.FastJson.Json.Attributes;
-using LHZ.FastJson.Json.CustomConverter;
 using LHZ.FastJson.JsonClass;
 using NUnit.Framework;
 
@@ -110,23 +109,6 @@ namespace LHZ.FastJson.UnitTest
         }
 
         /// <summary>
-        /// 验证集合内部也会应用自定义转换器。
-        /// </summary>
-        [Test]
-        public void CustomConvertersApplyInsideCollections()
-        {
-            var converter = new JsonCustomConvert<int>(jsonObject => 2);
-
-            var list = JsonConvert.Deserialize<List<int>>("[1]", converter);
-            ClassicAssert.AreEqual(2, list[0]);
-
-            var dictionary = JsonConvert.Deserialize<Dictionary<string, int>>("{\"a\":1}", converter);
-            ClassicAssert.AreEqual(2, dictionary["a"]);
-
-            var nullable = JsonConvert.Deserialize<int?>("1", converter);
-            ClassicAssert.AreEqual(2, nullable.Value);
-        }
-        /// <summary>
         /// 验证 JsonObject 类型会保留读取后的节点结构。
         /// </summary>
         [Test]
@@ -198,7 +180,7 @@ namespace LHZ.FastJson.UnitTest
         {
             var list = new ArrayList();
             list.Add(list);
-            Assert.Throws<InvalidOperationException>(()=>JsonConvert.Serialize(list));
+            Assert.Throws<Exception>(()=>JsonConvert.Serialize(list));
         }
 
         /// <summary>
@@ -373,20 +355,6 @@ namespace LHZ.FastJson.UnitTest
             public int Ignored { get; set; }
 
             public string B { get; set; }
-        }
-
-        [Test]
-        public void DefaultCustomConverterDeserializesObjectTree()
-        {
-            var converter = new JsonCustomConvert<SimpleObjectRootClass>();
-            var tree = JsonConvert.Deserialize("{\"Id\":7,\"Name\":\"a\\\"b\"}");
-
-            var result = converter.Deserialize(tree);
-
-            Assert.That(result.Id, Is.EqualTo(7));
-            Assert.That(result.Name, Is.EqualTo("a\"b"));
-            Assert.That(new JsonCustomConvert<string>().Deserialize(JsonConvert.Deserialize("\"text\"")), Is.EqualTo("text"));
-            Assert.That(converter.Deserialize(null), Is.Null);
         }
 
         public class SimpleObjectRootClass

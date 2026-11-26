@@ -1,6 +1,5 @@
 ﻿using LHZ.FastJson.Enum;
 using LHZ.FastJson.Exceptions;
-using LHZ.FastJson.Interface;
 using LHZ.FastJson.JsonClass;
 using System;
 using System.Collections;
@@ -46,29 +45,9 @@ namespace LHZ.FastJson.Json
         /// Perform deserialization
         /// </summary>
         /// <returns>Returns the deserialized typed object</returns>
-        public T Deserialize(params IJsonCustomConverter[] jsonCustomConverters)
+        public T Deserialize()
         {
-            Dictionary<Type, IJsonCustomConverter> customConverters = null;
-            if (jsonCustomConverters != null && jsonCustomConverters.Length > 0)
-            {
-                customConverters = new Dictionary<Type, IJsonCustomConverter>(jsonCustomConverters.Length + 4);
-                foreach (var item in jsonCustomConverters)
-                {
-                    if ((item.CustomItem & Enum.CustomConverter.JsonCustomConvertItem.CustomDeSerialize) != Enum.CustomConverter.JsonCustomConvertItem.CustomDeSerialize)
-                    {
-                        continue;
-                    }
-                    if (customConverters.ContainsKey(item.ConvertType))
-                    {
-                        customConverters[item.ConvertType] = item;
-                    }
-                    else
-                    {
-                        customConverters.Add(item.ConvertType, item);
-                    }
-                }
-            }
-            return JsonDirectDeserialzerExpression<T>.Deserialzer(_obj, customConverters);
+            return JsonDirectDeserialzerExpression<T>.Deserialzer(_obj);
         }
     }
 }

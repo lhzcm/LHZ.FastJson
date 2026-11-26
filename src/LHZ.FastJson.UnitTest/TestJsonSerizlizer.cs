@@ -5,7 +5,7 @@ using System.Text;
 using LHZ.FastJson.Enum;
 using LHZ.FastJson.Json;
 using LHZ.FastJson.Json.Attributes;
-using LHZ.FastJson.Json.CustomConverter;
+using LHZ.FastJson.JsonClass;
 using NUnit.Framework;
 
 namespace LHZ.FastJson.UnitTest
@@ -272,20 +272,28 @@ namespace LHZ.FastJson.UnitTest
         }
 
         /// <summary>
-        /// 验证 JsonCustomConvert 同时自定义序列化和反序列化。
+        /// 验证枚举作为根对象、集合元素、object 类型属性和字典值时都序列化为数值。
         /// </summary>
         [Test]
-        public void TestCustomConvertBoth()
+        public void TestEnumSerializeInContainers()
         {
-            var converter = new JsonCustomConvert<int>(
-                (int n) => (n * 2).ToString(),
-                (IJsonObject json) => int.Parse(json.Value.ToString()) + 10
-            );
-            var json = new JsonSerializer(5, converter).Serialize();
-            ClassicAssert.AreEqual("10", json);
+            ClassicAssert.AreEqual("1", new JsonSerializer(SerializeColor.Green).Serialize());
+            ClassicAssert.AreEqual("[0,1]", new JsonSerializer(new List<SerializeColor> { SerializeColor.Red, SerializeColor.Green }).Serialize());
+            ClassicAssert.AreEqual("{\"Value\":1}", new JsonSerializer(new SerializeObjectHolder { Value = SerializeColor.Green }).Serialize());
+            ClassicAssert.AreEqual("{\"a\":1}", new JsonSerializer(new Dictionary<string, SerializeColor> { { "a", SerializeColor.Green } }).Serialize());
+        }
 
-            var obj = JsonConvert.Deserialize<int>("5", converter);
-            ClassicAssert.AreEqual(15, obj);
+        /// <summary>
+        /// 验证手动构建的 JSON 节点放在 object 类型属性中时会原样输出（替代自定义转换器的写法）。
+        /// </summary>
+        [Test]
+        public void TestJsonNodeInObjectPropertySerialize()
+        {
+            var money = new JsonContent();
+            money.AddJsonProperty("amount", new JsonNumber(12.5));
+            money.AddJsonProperty("currency", new JsonString("CNY"));
+
+            ClassicAssert.AreEqual("{\"Value\":{\"amount\":12.5,\"currency\":\"CNY\"}}", new JsonSerializer(new SerializeObjectHolder { Value = money }).Serialize());
         }
 
         /// <summary>
@@ -302,23 +310,6 @@ namespace LHZ.FastJson.UnitTest
             };
             var testStr = LHZ.FastJson.JsonConvert.Serialize(testJsonTgnoredClass);
             ClassicAssert.AreEqual(testStr, @"{""Name"":""test"",""Age"":10}");
-        }
-
-        /// <summary>
-        /// 验证自定义序列化转换器会生效。
-        /// </summary>
-        [Test]
-        public void TestCustomSerialize()
-        {
-            var str = (new JsonSerializer(1, new JsonCustomConvert<int>((int o) =>
-            {
-                ClassicAssert.AreEqual(1, o);
-                return "2";
-            }))).Serialize();
-            ClassicAssert.AreEqual(str, "2");
-
-            str = (new JsonSerializer(new TestObj(), new JsonCustomConvert<TestObj>((TestObj o) => "CustomConvert"))).Serialize();
-            ClassicAssert.AreEqual(str, "CustomConvert");
         }
 
         /// <summary>
@@ -440,6 +431,17 @@ namespace LHZ.FastJson.UnitTest
             public int Age { get; set; }
             [Json.Attributes.JsonIgnored(Enum.JsonMethods.All)]
             public float Height { get; set; }
+        }
+
+        public enum SerializeColor
+        {
+            Red = 0,
+            Green = 1
+        }
+
+        public class SerializeObjectHolder
+        {
+            public object Value { get; set; }
         }
     }
 }
