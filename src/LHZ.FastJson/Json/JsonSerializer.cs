@@ -9,6 +9,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using LHZ.FastJson.Enum;
+using LHZ.FastJson.Exceptions;
 using LHZ.FastJson.Json.Attributes;
 using LHZ.FastJson.Json.Utils;
 using LHZ.FastJson.Utils;
@@ -49,7 +50,7 @@ namespace LHZ.FastJson.Json
             foreach (var item in _objStack)
             {
                 if (obj == item)
-                    throw new Exception("循环引用");
+                    throw JsonExceptions.CircularReference(obj.GetType());
             }
             _objStack.Push(obj);
         }

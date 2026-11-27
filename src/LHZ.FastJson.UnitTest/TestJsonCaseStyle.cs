@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using LHZ.FastJson.Enum;
+using LHZ.FastJson.Exceptions;
 using LHZ.FastJson.Json.Attributes;
 using NUnit.Framework;
 
@@ -247,7 +248,7 @@ namespace LHZ.FastJson.UnitTest
         {
             var obj = new DuplicateAfterSnakeModel { UserName = "a", userName = "b" };
             Assert.DoesNotThrow(() => JsonConvert.Serialize(obj));
-            Assert.Throws<Exception>(() => JsonConvert.Serialize(obj, Options(CaseStyle.SnakeCase)));
+            Assert.Throws<JsonSerializationException>(() => JsonConvert.Serialize(obj, Options(CaseStyle.SnakeCase)));
         }
 
         public class CaseStyleTestModel

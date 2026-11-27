@@ -92,7 +92,9 @@ namespace LHZ.FastJson.UnitTest
         [Test]
         public void SerializeDuplicateJsonPropertyNamesThrows()
         {
-            Assert.Throws<Exception>(() => JsonConvert.Serialize(new DuplicatePropertyNameClass { A = 1, B = 2 }));
+            var ex = Assert.Throws<JsonSerializationException>(() => JsonConvert.Serialize(new DuplicatePropertyNameClass { A = 1, B = 2 }));
+            Assert.That(ex.Message, Does.Contain("same"));
+            Assert.That(ex.SerializedType, Is.EqualTo(typeof(DuplicatePropertyNameClass)));
         }
 
         /// <summary>
@@ -180,7 +182,7 @@ namespace LHZ.FastJson.UnitTest
         {
             var list = new ArrayList();
             list.Add(list);
-            Assert.Throws<Exception>(()=>JsonConvert.Serialize(list));
+            Assert.Throws<JsonSerializationException>(() => JsonConvert.Serialize(list));
         }
 
         /// <summary>

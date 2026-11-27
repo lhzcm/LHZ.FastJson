@@ -30,8 +30,9 @@ namespace LHZ.FastJson.Json
         /// <summary>
         /// Get the deserialization delegate for the given naming policy.
         /// </summary>
-        private static Func<JsonDirectReader, T> GetDeserializeFunc(CaseStyle caseStyle)
+        private static Func<JsonDirectReader, T> GetDeserializeFunc(JsonDirectReader reader)
         {
+            CaseStyle caseStyle = reader.Options.CaseStyle;
             int slot = (int)caseStyle;
             var func = _funcDeserialize[slot];
             if (func != null)
@@ -42,7 +43,15 @@ namespace LHZ.FastJson.Json
             {
                 if (_funcDeserialize[slot] == null)
                 {
-                    _funcDeserialize[slot] = CreateExpression(caseStyle).Compile();
+                    try
+                    {
+                        _funcDeserialize[slot] = CreateExpression(caseStyle).Compile();
+                    }
+                    catch (Exception e) when (e is ArgumentException || e is InvalidOperationException || e is NotSupportedException)
+                    {
+                        //The expression tree cannot be built for this type (for example a collection without a usable constructor)
+                        throw JsonExceptions.UnsupportedType(reader, _type, e);
+                    }
                 }
                 return _funcDeserialize[slot];
             }
@@ -52,8 +61,29 @@ namespace LHZ.FastJson.Json
         {
             // if(jsonObject.IsReadEnd)
             //     return default(T);
-            return GetDeserializeFunc(jsonObject.Options.CaseStyle)(jsonObject);
+            return GetDeserializeFunc(jsonObject)(jsonObject);
         }
+
+        #region Exception expressions
+
+        //The compiled deserializers throw through the JsonExceptions factories so that the wording stays in one place
+        //and the position / JSON type are read from the reader when the error happens.
+        private static MethodCallExpression CreateException(string factoryName, Expression reader, Type target)
+        {
+            return Expression.Call(typeof(JsonExceptions).GetMethod(factoryName), reader, Expression.Constant(target, typeof(Type)));
+        }
+
+        private static MethodCallExpression CreateTypeMismatch(Expression reader, JsonType expected, Type target)
+        {
+            return Expression.Call(typeof(JsonExceptions).GetMethod("TypeMismatch"), reader, Expression.Constant(expected), Expression.Constant(target, typeof(Type)));
+        }
+
+        private static MethodCallExpression CreateNodeMismatch(Expression node, Type target)
+        {
+            return Expression.Call(typeof(JsonExceptions).GetMethod("NodeMismatch"), node, Expression.Constant(target, typeof(Type)));
+        }
+
+        #endregion
 
         /// <summary>
         /// Get deserialization expression tree
@@ -262,7 +292,7 @@ namespace LHZ.FastJson.Json
         {
             if (jsonDirectReader.JsonType != JsonType.Boolean)
             {
-                throw new JsonDirectDeserializationException(jsonDirectReader.Position, jsonDirectReader.JsonType, typeof(bool), "Json对象不为Boolean类型不能解析成Boolean类型");
+                throw JsonExceptions.TypeMismatch(jsonDirectReader, JsonType.Boolean, typeof(bool));
             }
             return jsonDirectReader.ReadBoolean();
         }
@@ -276,9 +306,18 @@ namespace LHZ.FastJson.Json
         {
             if (jsonDirectReader.JsonType != JsonType.Number)
             {
-                throw new JsonDirectDeserializationException(jsonDirectReader.Position, jsonDirectReader.JsonType, typeof(Byte), "Json对象不为Number类型不能解析成Byte类型");
+                throw JsonExceptions.TypeMismatch(jsonDirectReader, JsonType.Number, typeof(Byte));
             }
-            return jsonDirectReader.ReadNumber().ToByte(CultureInfo.InvariantCulture);
+            int position = jsonDirectReader.Position;
+            var number = jsonDirectReader.ReadNumber();
+            try
+            {
+                return number.ToByte(CultureInfo.InvariantCulture);
+            }
+            catch (Exception e) when (e is FormatException || e is OverflowException)
+            {
+                throw JsonExceptions.InvalidNumber(position, number.ToString(), typeof(Byte), e);
+            }
         }
 
         /// <summary>
@@ -290,12 +329,13 @@ namespace LHZ.FastJson.Json
         {
             if (jsonDirectReader.JsonType != JsonType.String)
             {
-                throw new JsonDirectDeserializationException(jsonDirectReader.Position, jsonDirectReader.JsonType, typeof(Char), "Json对象不为String类型不能解析成Char类型");
+                throw JsonExceptions.TypeMismatch(jsonDirectReader, JsonType.String, typeof(Char));
             }
+            int position = jsonDirectReader.Position;
             var str = jsonDirectReader.ReadString();
             if (str.Length != 1)
             {
-                throw new JsonDirectDeserializationException(jsonDirectReader.Position, jsonDirectReader.JsonType, typeof(Char), "Json对象字符串长度不等于1，不能解析成Char类型");
+                throw JsonExceptions.InvalidChar(position);
             }
             return str[0];
         }
@@ -309,9 +349,18 @@ namespace LHZ.FastJson.Json
         {
             if (jsonDirectReader.JsonType != JsonType.Number)
             {
-                throw new JsonDirectDeserializationException(jsonDirectReader.Position, jsonDirectReader.JsonType, typeof(Int16), "Json对象不为Number类型不能解析成Int16类型");
+                throw JsonExceptions.TypeMismatch(jsonDirectReader, JsonType.Number, typeof(Int16));
             }
-            return jsonDirectReader.ReadNumber().ToInt16(CultureInfo.InvariantCulture);
+            int position = jsonDirectReader.Position;
+            var number = jsonDirectReader.ReadNumber();
+            try
+            {
+                return number.ToInt16(CultureInfo.InvariantCulture);
+            }
+            catch (Exception e) when (e is FormatException || e is OverflowException)
+            {
+                throw JsonExceptions.InvalidNumber(position, number.ToString(), typeof(Int16), e);
+            }
         }
         /// <summary>
         /// Parse to uint16 type
@@ -322,9 +371,18 @@ namespace LHZ.FastJson.Json
         {
             if (jsonDirectReader.JsonType != JsonType.Number)
             {
-                throw new JsonDirectDeserializationException(jsonDirectReader.Position, jsonDirectReader.JsonType, typeof(UInt16), "Json对象不为Number类型不能解析成UInt16类型");
+                throw JsonExceptions.TypeMismatch(jsonDirectReader, JsonType.Number, typeof(UInt16));
             }
-            return jsonDirectReader.ReadNumber().ToUInt16(CultureInfo.InvariantCulture);
+            int position = jsonDirectReader.Position;
+            var number = jsonDirectReader.ReadNumber();
+            try
+            {
+                return number.ToUInt16(CultureInfo.InvariantCulture);
+            }
+            catch (Exception e) when (e is FormatException || e is OverflowException)
+            {
+                throw JsonExceptions.InvalidNumber(position, number.ToString(), typeof(UInt16), e);
+            }
         }
 
         /// <summary>
@@ -336,9 +394,18 @@ namespace LHZ.FastJson.Json
         {
             if (jsonDirectReader.JsonType != JsonType.Number)
             {
-                throw new JsonDirectDeserializationException(jsonDirectReader.Position, jsonDirectReader.JsonType, typeof(int), "Json对象不为Number类型不能解析成Int32类型");
+                throw JsonExceptions.TypeMismatch(jsonDirectReader, JsonType.Number, typeof(int));
             }
-            return jsonDirectReader.ReadNumber().ToInt32(CultureInfo.InvariantCulture);
+            int position = jsonDirectReader.Position;
+            var number = jsonDirectReader.ReadNumber();
+            try
+            {
+                return number.ToInt32(CultureInfo.InvariantCulture);
+            }
+            catch (Exception e) when (e is FormatException || e is OverflowException)
+            {
+                throw JsonExceptions.InvalidNumber(position, number.ToString(), typeof(Int32), e);
+            }
         }
         /// <summary>
         /// Parse to uint32 type
@@ -349,9 +416,18 @@ namespace LHZ.FastJson.Json
         {
             if (jsonDirectReader.JsonType != JsonType.Number)
             {
-                throw new JsonDirectDeserializationException(jsonDirectReader.Position, jsonDirectReader.JsonType, typeof(uint), "Json对象不为Number类型不能解析成UInt32类型");
+                throw JsonExceptions.TypeMismatch(jsonDirectReader, JsonType.Number, typeof(uint));
             }
-            return jsonDirectReader.ReadNumber().ToUInt32(CultureInfo.InvariantCulture);
+            int position = jsonDirectReader.Position;
+            var number = jsonDirectReader.ReadNumber();
+            try
+            {
+                return number.ToUInt32(CultureInfo.InvariantCulture);
+            }
+            catch (Exception e) when (e is FormatException || e is OverflowException)
+            {
+                throw JsonExceptions.InvalidNumber(position, number.ToString(), typeof(UInt32), e);
+            }
         }
 
         /// <summary>
@@ -363,9 +439,18 @@ namespace LHZ.FastJson.Json
         {
             if (jsonDirectReader.JsonType != JsonType.Number)
             {
-                throw new JsonDirectDeserializationException(jsonDirectReader.Position, jsonDirectReader.JsonType, typeof(long), "Json对象不为Number类型不能解析成Int64类型");
+                throw JsonExceptions.TypeMismatch(jsonDirectReader, JsonType.Number, typeof(long));
             }
-            return jsonDirectReader.ReadNumber().ToInt64(CultureInfo.InvariantCulture);
+            int position = jsonDirectReader.Position;
+            var number = jsonDirectReader.ReadNumber();
+            try
+            {
+                return number.ToInt64(CultureInfo.InvariantCulture);
+            }
+            catch (Exception e) when (e is FormatException || e is OverflowException)
+            {
+                throw JsonExceptions.InvalidNumber(position, number.ToString(), typeof(Int64), e);
+            }
         }
 
         /// <summary>
@@ -377,9 +462,18 @@ namespace LHZ.FastJson.Json
         {
             if (jsonDirectReader.JsonType != JsonType.Number)
             {
-                throw new JsonDirectDeserializationException(jsonDirectReader.Position, jsonDirectReader.JsonType, typeof(ulong), "Json对象不为Number类型不能解析成UInt64类型");
+                throw JsonExceptions.TypeMismatch(jsonDirectReader, JsonType.Number, typeof(ulong));
             }
-            return jsonDirectReader.ReadNumber().ToUInt64(CultureInfo.InvariantCulture);
+            int position = jsonDirectReader.Position;
+            var number = jsonDirectReader.ReadNumber();
+            try
+            {
+                return number.ToUInt64(CultureInfo.InvariantCulture);
+            }
+            catch (Exception e) when (e is FormatException || e is OverflowException)
+            {
+                throw JsonExceptions.InvalidNumber(position, number.ToString(), typeof(UInt64), e);
+            }
         }
 
         /// <summary>
@@ -391,9 +485,18 @@ namespace LHZ.FastJson.Json
         {
             if (jsonDirectReader.JsonType != JsonType.Number)
             {
-                throw new JsonDirectDeserializationException(jsonDirectReader.Position, jsonDirectReader.JsonType, typeof(float), "Json对象不为Number类型不能解析成Float类型");
+                throw JsonExceptions.TypeMismatch(jsonDirectReader, JsonType.Number, typeof(float));
             }
-            return jsonDirectReader.ReadNumber().ToSingle(CultureInfo.InvariantCulture);
+            int position = jsonDirectReader.Position;
+            var number = jsonDirectReader.ReadNumber();
+            try
+            {
+                return number.ToSingle(CultureInfo.InvariantCulture);
+            }
+            catch (Exception e) when (e is FormatException || e is OverflowException)
+            {
+                throw JsonExceptions.InvalidNumber(position, number.ToString(), typeof(Single), e);
+            }
         }
         /// <summary>
         /// Parse to double-precision floating-point type
@@ -404,9 +507,18 @@ namespace LHZ.FastJson.Json
         {
             if (jsonDirectReader.JsonType != JsonType.Number)
             {
-                throw new JsonDirectDeserializationException(jsonDirectReader.Position, jsonDirectReader.JsonType, typeof(double), "Json对象不为Number类型不能解析成Double类型");
+                throw JsonExceptions.TypeMismatch(jsonDirectReader, JsonType.Number, typeof(double));
             }
-            return jsonDirectReader.ReadNumber().ToDouble(CultureInfo.InvariantCulture);
+            int position = jsonDirectReader.Position;
+            var number = jsonDirectReader.ReadNumber();
+            try
+            {
+                return number.ToDouble(CultureInfo.InvariantCulture);
+            }
+            catch (Exception e) when (e is FormatException || e is OverflowException)
+            {
+                throw JsonExceptions.InvalidNumber(position, number.ToString(), typeof(Double), e);
+            }
         }
         /// <summary>
         /// Parse to decimal type
@@ -417,9 +529,18 @@ namespace LHZ.FastJson.Json
         {
             if (jsonDirectReader.JsonType != JsonType.Number)
             {
-                throw new JsonDirectDeserializationException(jsonDirectReader.Position, jsonDirectReader.JsonType, typeof(decimal), "Json对象不为Number类型不能解析成Decimal类型");
+                throw JsonExceptions.TypeMismatch(jsonDirectReader, JsonType.Number, typeof(decimal));
             }
-            return jsonDirectReader.ReadNumber().ToDecimal(CultureInfo.InvariantCulture);
+            int position = jsonDirectReader.Position;
+            var number = jsonDirectReader.ReadNumber();
+            try
+            {
+                return number.ToDecimal(CultureInfo.InvariantCulture);
+            }
+            catch (Exception e) when (e is FormatException || e is OverflowException)
+            {
+                throw JsonExceptions.InvalidNumber(position, number.ToString(), typeof(Decimal), e);
+            }
         }
 
         /// <summary>
@@ -431,7 +552,7 @@ namespace LHZ.FastJson.Json
         {
             if (jsonDirectReader.JsonType != JsonType.String)
             {
-                throw new JsonDirectDeserializationException(jsonDirectReader.Position, jsonDirectReader.JsonType, typeof(DateTime), "Json对象不为String类型不能解析成DateTime类型");
+                throw JsonExceptions.TypeMismatch(jsonDirectReader, JsonType.String, typeof(DateTime));
             }
             return jsonDirectReader.ReadDateTime();
         }
@@ -443,23 +564,41 @@ namespace LHZ.FastJson.Json
         private static object ConvertToEnum(JsonDirectReader jsonDirectReader)
         {
             var type = _type;
-            if (jsonDirectReader.JsonType == JsonType.String)
+            JsonType jsonType = jsonDirectReader.JsonType;
+            int position = jsonDirectReader.Position;
+            if (jsonType == JsonType.String)
             {
-                EnumConverter converter = new EnumConverter(type);
-                return converter.ConvertFromString(jsonDirectReader.ReadString());
-            }
-            else if (jsonDirectReader.JsonType == JsonType.Number)
-            {
-                int value = jsonDirectReader.ReadNumber().ToInt32(CultureInfo.InvariantCulture);
-                if (!System.Enum.IsDefined(type, value))
+                string text = jsonDirectReader.ReadString();
+                try
                 {
-                    throw new JsonDirectDeserializationException(jsonDirectReader.Position, jsonDirectReader.JsonType, type, "当前Number数字，在枚举中未定义");
+                    EnumConverter converter = new EnumConverter(type);
+                    return converter.ConvertFromString(text);
                 }
-                return System.Enum.ToObject(type, value);
+                catch (Exception e) when (e is FormatException || e is ArgumentException)
+                {
+                    throw JsonExceptions.InvalidEnumName(position, type, text, e);
+                }
+            }
+            else if (jsonType == JsonType.Number)
+            {
+                var number = jsonDirectReader.ReadNumber();
+                try
+                {
+                    int value = number.ToInt32(CultureInfo.InvariantCulture);
+                    if (!System.Enum.IsDefined(type, value))
+                    {
+                        throw JsonExceptions.EnumValueNotDefined(position, type, value);
+                    }
+                    return System.Enum.ToObject(type, value);
+                }
+                catch (Exception e) when (e is FormatException || e is OverflowException || e is ArgumentException)
+                {
+                    throw JsonExceptions.InvalidEnumNumber(position, number.ToString(), type, e);
+                }
             }
             else
             {
-                throw new JsonDirectDeserializationException(jsonDirectReader.Position, jsonDirectReader.JsonType, type, "Json对象的" + jsonDirectReader.JsonType.ToString() + "类型不能解析成Enum类型");
+                throw JsonExceptions.EnumTypeMismatch(jsonDirectReader, type);
             }
         }
         /// <summary>
@@ -471,9 +610,18 @@ namespace LHZ.FastJson.Json
         {
             if (jsonDirectReader.JsonType != JsonType.String)
             {
-                throw new JsonDirectDeserializationException(jsonDirectReader.Position, jsonDirectReader.JsonType, typeof(Guid), "Json对象不为String类型不能解析成Guid类型");
+                throw JsonExceptions.TypeMismatch(jsonDirectReader, JsonType.String, typeof(Guid));
             }
-            return Guid.Parse(jsonDirectReader.ReadString());
+            int position = jsonDirectReader.Position;
+            string text = jsonDirectReader.ReadString();
+            try
+            {
+                return Guid.Parse(text);
+            }
+            catch (Exception e) when (e is FormatException || e is OverflowException)
+            {
+                throw JsonExceptions.InvalidGuid(position, text, e);
+            }
         }
         /// <summary>
         /// Parse to enum
@@ -504,7 +652,37 @@ namespace LHZ.FastJson.Json
             {
                 case JsonType.String : return jsonDirectReader.ReadString();
                 case JsonType.Null : return jsonDirectReader.ReadNull<string>();
-                default: throw new JsonDirectDeserializationException(jsonDirectReader.Position, jsonDirectReader.JsonType, typeof(string), "Json对象不为String类型不能解析成String类型");
+                default: throw JsonExceptions.TypeMismatch(jsonDirectReader, JsonType.String, typeof(string));
+            }
+        }
+
+        /// <summary>
+        /// Convert a JSON property name to the key type of a dictionary.
+        /// </summary>
+        private static object ConvertDictionaryKey(string key, Type keyType, Type dictionaryType, JsonDirectReader reader)
+        {
+            try
+            {
+                return Convert.ChangeType(key, keyType, CultureInfo.InvariantCulture);
+            }
+            catch (Exception e) when (e is FormatException || e is InvalidCastException || e is OverflowException)
+            {
+                throw JsonExceptions.InvalidDictionaryKey(reader, dictionaryType, keyType, key, e);
+            }
+        }
+
+        /// <summary>
+        /// Add an entry to a dictionary; a duplicate key is reported as a deserialization error.
+        /// </summary>
+        private static void AddDictionaryEntry(IDictionary dictionary, object key, object value, Type dictionaryType, JsonDirectReader reader)
+        {
+            try
+            {
+                dictionary.Add(key, value);
+            }
+            catch (ArgumentException e)
+            {
+                throw JsonExceptions.DuplicateDictionaryKey(reader, dictionaryType, Convert.ToString(key, CultureInfo.InvariantCulture), e);
             }
         }
 
@@ -549,8 +727,7 @@ namespace LHZ.FastJson.Json
             //Determine if the object can be instantiated
             if (dictionaryType.GetConstructor(EmptyArray<Type>.Value) == null)
             {
-                var exception = Expression.New(typeof(JsonDirectDeserializationException).GetConstructor(new Type[] { typeof(int), typeof(JsonType), typeof(Type), typeof(string) }),
-                Expression.Constant(0), Expression.Property(jsonObjectParameter, "JsonType"), Expression.Constant(curType), Expression.Constant("反序列化类型没有默认的构造函数，无法创建该类型对象"));
+                var exception = CreateException("NoDefaultConstructor", jsonObjectParameter, curType);
                 return Expression.Lambda<Func<JsonDirectReader, T>>(Expression.Throw(exception, curType), jsonObjectParameter);
             }
 
@@ -560,8 +737,7 @@ namespace LHZ.FastJson.Json
 
             //Determine if it is JsonContent; if not, throw an exception
             expres.Add(Expression.IfThen(Expression.NotEqual(Expression.Property(jsonObjectParameter, "JsonType"), Expression.Constant(JsonType.Content)),
-                Expression.Throw(Expression.New(typeof(JsonDirectDeserializationException).GetConstructor(new Type[] { typeof(int), typeof(JsonType), typeof(Type), typeof(string) }),
-                Expression.Property(jsonObjectParameter, "Position"), Expression.Property(jsonObjectParameter, "JsonType"), Expression.Constant(curType), Expression.Constant("Json对象不为Content类型不能解析成Dictionary类型")))));
+                Expression.Throw(CreateTypeMismatch(jsonObjectParameter, JsonType.Content, curType))));
 
             expres.Add(Expression.Assign(dictionary, Expression.New(dictionaryType)));
             expres.Add(Expression.Assign(enumerator, Expression.Call(
@@ -575,16 +751,17 @@ namespace LHZ.FastJson.Json
             Expression keyExpression = Expression.Call(Expression.Property(keyValue, "Key"), "ToString", EmptyArray<Type>.Value);
             if (keyType != typeof(string))
             {
-                keyExpression = Expression.Call(typeof(Convert).GetMethod("ChangeType", new Type[] { typeof(object), typeof(Type) }),
-                    Expression.Convert(keyExpression, typeof(object)), Expression.Constant(keyType, typeof(Type)));
+                keyExpression = Expression.Call(((Func<string, Type, Type, JsonDirectReader, object>)ConvertDictionaryKey).Method,
+                    keyExpression, Expression.Constant(keyType, typeof(Type)), Expression.Constant(curType, typeof(Type)), jsonObjectParameter);
             }
             keyExpression = Expression.Convert(keyExpression, typeof(object));
 
             Expression valueExpression = Expression.Call(
                 typeof(JsonDirectDeserialzerExpression<>).MakeGenericType(valueType).GetMethod("Deserialzer", new Type[] { typeof(JsonDirectReader) }),
                 Expression.Property(keyValue, "Value"));
-            loopexpres.Add(Expression.Call(dictionary, typeof(IDictionary).GetMethod("Add", new Type[] { typeof(object), typeof(object) }),
-                keyExpression, Expression.Convert(valueExpression, typeof(object))));
+            loopexpres.Add(Expression.Call(((Action<IDictionary, object, object, Type, JsonDirectReader>)AddDictionaryEntry).Method,
+                Expression.Convert(dictionary, typeof(IDictionary)), keyExpression, Expression.Convert(valueExpression, typeof(object)),
+                Expression.Constant(curType, typeof(Type)), jsonObjectParameter));
 
             expres.Add(Expression.Loop(Expression.Block(loopexpres), loopLabel));
             expres.Add(Expression.Assign(result, Expression.Convert(dictionary, curType)));
@@ -622,8 +799,7 @@ namespace LHZ.FastJson.Json
             //Determine if the JSON object is an array type
             expres.Add(
             Expression.IfThen(Expression.NotEqual(Expression.Property(jsonObjectParameter, "JsonType"), Expression.Constant(JsonType.Array)),
-                Expression.Throw(Expression.New(typeof(JsonDirectDeserializationException).GetConstructor(new Type[] { typeof(int), typeof(JsonType), typeof(Type), typeof(string) }),
-                Expression.Property(jsonObjectParameter, "Position"), Expression.Property(jsonObjectParameter, "JsonType"), Expression.Constant(curType), Expression.Constant("Json对象不为Array类型不能解析成Array类型")))));
+                Expression.Throw(CreateTypeMismatch(jsonObjectParameter, JsonType.Array, curType))));
 
             //Initialize list and enumerator
             expres.Add(Expression.Assign(list, Expression.New(typeof(List<>).MakeGenericType(elementType))));
@@ -678,8 +854,7 @@ namespace LHZ.FastJson.Json
                 }
                 else
                 {
-                    var exception = Expression.New(typeof(JsonDirectDeserializationException).GetConstructor(new Type[] { typeof(int), typeof(JsonType), typeof(Type), typeof(string) }),
-                        Expression.Constant(0), Expression.Property(jsonObjectParameter, "JsonType"), Expression.Constant(curType), Expression.Constant("无法为集合接口创建默认实现类型"));
+                    var exception = CreateException("NoCollectionImplementation", jsonObjectParameter, curType);
                     return Expression.Lambda<Func<JsonDirectReader, T>>(Expression.Throw(exception, curType), jsonObjectParameter);
                 }
             }
@@ -692,8 +867,7 @@ namespace LHZ.FastJson.Json
             //Determine if the JSON object is an array type
             expres.Add(
             Expression.IfThen(Expression.NotEqual(Expression.Property(jsonObjectParameter, "JsonType"), Expression.Constant(JsonType.Array)),
-                Expression.Throw(Expression.New(typeof(JsonDirectDeserializationException).GetConstructor(new Type[] { typeof(int), typeof(JsonType), typeof(Type), typeof(string) }),
-                Expression.Property(jsonObjectParameter, "Position"), Expression.Property(jsonObjectParameter, "JsonType"), Expression.Constant(curType), Expression.Constant("Json对象不为Array类型不能解析成List类型")))));
+                Expression.Throw(CreateTypeMismatch(jsonObjectParameter, JsonType.Array, curType))));
             //Initialize List and enumerator
             expres.Add(Expression.Assign(list, Expression.New(listType)));
             expres.Add(Expression.Assign(enumerator, Expression.Call(
@@ -742,8 +916,7 @@ namespace LHZ.FastJson.Json
             if (curType.IsValueType)
             {
                expres.Add(Expression.IfThen(Expression.Equal(Expression.Property(jsonObjectParameter, "JsonType"), Expression.Constant(JsonType.Null)),
-               Expression.Throw(Expression.New(typeof(JsonDirectDeserializationException).GetConstructor(new Type[] { typeof(int), typeof(JsonType), typeof(Type), typeof(string) }),
-               Expression.Property(jsonObjectParameter, "Position"), Expression.Constant(JsonType.Null), Expression.Constant(curType), Expression.Constant("反序列化失败，无法将json的null类型转换成值类型")))));
+               Expression.Throw(CreateException("NullForValueType", jsonObjectParameter, curType))));
             }
             else
             {
@@ -766,9 +939,7 @@ namespace LHZ.FastJson.Json
                 {
                     expres.Add(Expression.IfThenElse(Expression.Equal(Expression.Property(jsonObj, "Type"), Expression.Constant(JsonType.Array)),
                     Expression.Return(returnLabel, Expression.Convert(jsonObj, curType)),
-                    Expression.Throw(Expression.New(typeof(JsonDirectDeserializationException).GetConstructor(new Type[] { typeof(int), typeof(JsonType), typeof(Type), typeof(string) }),
-                        Expression.Property(jsonObj, "Position"), Expression.Property(jsonObj, "Type"), Expression.Constant(curType), Expression.Constant("反序列化失败，无法进行显式的JsonObject类型转换"))
-                    )));
+                    Expression.Throw(CreateNodeMismatch(jsonObj, curType))));
                     expres.Add(Expression.Label(returnLabel, result));
                     return Expression.Lambda<Func<JsonDirectReader, T>>(Expression.Block(variables, expres), jsonObjectParameter);
                 }
@@ -776,9 +947,7 @@ namespace LHZ.FastJson.Json
                 {
                     expres.Add(Expression.IfThenElse(Expression.Equal(Expression.Property(jsonObj, "Type"), Expression.Constant(JsonType.Boolean)),
                     Expression.Return(returnLabel, Expression.Convert(jsonObj, curType)),
-                    Expression.Throw(Expression.New(typeof(JsonDirectDeserializationException).GetConstructor(new Type[] { typeof(int), typeof(JsonType), typeof(Type), typeof(string) }),
-                        Expression.Property(jsonObj, "Position"), Expression.Property(jsonObj, "Type"), Expression.Constant(curType), Expression.Constant("反序列化失败，无法进行显式的JsonObject类型转换"))
-                    )));
+                    Expression.Throw(CreateNodeMismatch(jsonObj, curType))));
                     expres.Add(Expression.Label(returnLabel, result));
                     return Expression.Lambda<Func<JsonDirectReader, T>>(Expression.Block(variables, expres), jsonObjectParameter);
                 }
@@ -786,9 +955,7 @@ namespace LHZ.FastJson.Json
                 {
                     expres.Add(Expression.IfThenElse(Expression.Equal(Expression.Property(jsonObj, "Type"), Expression.Constant(JsonType.Content)),
                     Expression.Return(returnLabel, Expression.Convert(jsonObj, curType)),
-                    Expression.Throw(Expression.New(typeof(JsonDirectDeserializationException).GetConstructor(new Type[] { typeof(int), typeof(JsonType), typeof(Type), typeof(string) }),
-                        Expression.Property(jsonObj, "Position"), Expression.Property(jsonObj, "Type"), Expression.Constant(curType), Expression.Constant("反序列化失败，无法进行显式的JsonObject类型转换"))
-                    )));
+                    Expression.Throw(CreateNodeMismatch(jsonObj, curType))));
                     expres.Add(Expression.Label(returnLabel, result));
                     return Expression.Lambda<Func<JsonDirectReader, T>>(Expression.Block(variables, expres), jsonObjectParameter);
                 }
@@ -796,9 +963,7 @@ namespace LHZ.FastJson.Json
                 {
                     expres.Add(Expression.IfThenElse(Expression.Equal(Expression.Property(jsonObj, "Type"), Expression.Constant(JsonType.Null)),
                     Expression.Return(returnLabel, Expression.Convert(jsonObj, curType)),
-                    Expression.Throw(Expression.New(typeof(JsonDirectDeserializationException).GetConstructor(new Type[] { typeof(int), typeof(JsonType), typeof(Type), typeof(string) }),
-                        Expression.Property(jsonObj, "Position"), Expression.Property(jsonObj, "Type"), Expression.Constant(curType), Expression.Constant("反序列化失败，无法进行显式的JsonObject类型转换"))
-                    )));
+                    Expression.Throw(CreateNodeMismatch(jsonObj, curType))));
                     expres.Add(Expression.Label(returnLabel, result));
                     return Expression.Lambda<Func<JsonDirectReader, T>>(Expression.Block(variables, expres), jsonObjectParameter);
                 }
@@ -806,9 +971,7 @@ namespace LHZ.FastJson.Json
                 {
                     expres.Add(Expression.IfThenElse(Expression.Equal(Expression.Property(jsonObj, "Type"), Expression.Constant(JsonType.Number)),
                     Expression.Return(returnLabel, Expression.Convert(jsonObj, curType)),
-                    Expression.Throw(Expression.New(typeof(JsonDirectDeserializationException).GetConstructor(new Type[] { typeof(int), typeof(JsonType), typeof(Type), typeof(string) }),
-                        Expression.Property(jsonObj, "Position"), Expression.Property(jsonObj, "Type"), Expression.Constant(curType), Expression.Constant("反序列化失败，无法进行显式的JsonObject类型转换"))
-                    )));
+                    Expression.Throw(CreateNodeMismatch(jsonObj, curType))));
                     expres.Add(Expression.Label(returnLabel, result));
                     return Expression.Lambda<Func<JsonDirectReader, T>>(Expression.Block(variables, expres), jsonObjectParameter);
                 }
@@ -816,9 +979,7 @@ namespace LHZ.FastJson.Json
                 {
                     expres.Add(Expression.IfThenElse(Expression.Equal(Expression.Property(jsonObj, "Type"), Expression.Constant(JsonType.String)),
                     Expression.Return(returnLabel, Expression.Convert(jsonObj, curType)),
-                    Expression.Throw(Expression.New(typeof(JsonDirectDeserializationException).GetConstructor(new Type[] { typeof(int), typeof(JsonType), typeof(Type), typeof(string) }),
-                        Expression.Property(jsonObj, "Position"), Expression.Property(jsonObj, "Type"), Expression.Constant(curType), Expression.Constant("反序列化失败，无法进行显式的JsonObject类型转换"))
-                    )));
+                    Expression.Throw(CreateNodeMismatch(jsonObj, curType))));
                     expres.Add(Expression.Label(returnLabel, result));
                     return Expression.Lambda<Func<JsonDirectReader, T>>(Expression.Block(variables, expres), jsonObjectParameter);
                 }
@@ -826,16 +987,14 @@ namespace LHZ.FastJson.Json
             //Check if the type is an interface or abstract type
             if (curType.IsInterface || curType.IsAbstract)
             {
-                expres.Add(Expression.Throw(Expression.New(typeof(JsonDirectDeserializationException).GetConstructor(new Type[] { typeof(int), typeof(JsonType), typeof(Type), typeof(string) }),
-                Expression.Constant(0), Expression.Property(jsonObjectParameter, "JsonType"), Expression.Constant(curType), Expression.Constant("类型为接口或者是抽象接口，无法创建该类型对象"))));
+                expres.Add(Expression.Throw(CreateException("AbstractType", jsonObjectParameter, curType)));
                 expres.Add(Expression.Label(returnLabel, Expression.Default(curType)));
                 return Expression.Lambda<Func<JsonDirectReader, T>>(Expression.Block(variables, expres), jsonObjectParameter);
             }
             //Check if the type has a default constructor (value types are always constructible)
             if (!curType.IsValueType && curType.GetConstructor(EmptyArray<Type>.Value) == null)
             {
-                expres.Add(Expression.Throw(Expression.New(typeof(JsonDirectDeserializationException).GetConstructor(new Type[] { typeof(int), typeof(JsonType), typeof(Type), typeof(string) }),
-                Expression.Constant(0), Expression.Property(jsonObjectParameter, "JsonType"), Expression.Constant(curType), Expression.Constant("反序列化类型没有默认的构造函数，无法创建该类型对象"))));
+                expres.Add(Expression.Throw(CreateException("NoDefaultConstructor", jsonObjectParameter, curType)));
                 expres.Add(Expression.Label(returnLabel, Expression.Default(curType)));
                 return Expression.Lambda<Func<JsonDirectReader, T>>(Expression.Block(variables, expres), jsonObjectParameter);
             }
@@ -843,9 +1002,7 @@ namespace LHZ.FastJson.Json
             //Type check: must be Content
             expres.Add(Expression.IfThen(
                 Expression.NotEqual(Expression.Property(jsonObjectParameter, "JsonType"), Expression.Constant(JsonType.Content)),
-                Expression.Throw(Expression.New(typeof(JsonDirectDeserializationException).GetConstructor(new Type[] { typeof(int), typeof(JsonType), typeof(Type), typeof(string) }),
-                Expression.Property(jsonObjectParameter, "Position"), Expression.Property(jsonObjectParameter, "JsonType"), Expression.Constant(curType),
-                Expression.Constant("Json对象不为Content类型不能解析成Object类型")))));
+                Expression.Throw(CreateTypeMismatch(jsonObjectParameter, JsonType.Content, curType))));
 
             //Get writable instance properties and create variables for each.
             //Static properties and indexers cannot be used with MemberInit.
@@ -925,8 +1082,7 @@ namespace LHZ.FastJson.Json
             var genericType = curType.GetGenericArguments().FirstOrDefault();
             if (genericType == null)
             {
-                return Expression.Lambda<Func<JsonDirectReader, T>>(Expression.Throw(Expression.New(typeof(JsonDirectDeserializationException).GetConstructor(new Type[] { typeof(int), typeof(JsonType),
-                    typeof(Type), typeof(string) }), Expression.Constant(0), Expression.Property(jsonObjectParameter, "JsonType"), Expression.Constant(curType), Expression.Constant("反序列化出错获取，获取Nullable泛型出错！"))), jsonObjectParameter);
+                return Expression.Lambda<Func<JsonDirectReader, T>>(Expression.Throw(CreateException("InvalidNullableType", jsonObjectParameter, curType)), jsonObjectParameter);
             }
             //Determine if the JSON object is null
             expres.Add(Expression.IfThen(Expression.Equal(Expression.Property(jsonObjectParameter, "JsonType"), Expression.Constant(JsonType.Null)),

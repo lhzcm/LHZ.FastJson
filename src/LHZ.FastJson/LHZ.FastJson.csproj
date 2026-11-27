@@ -5,11 +5,11 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Version>3.0.0</Version>
     <Authors>LHZ</Authors>
-    <Description>轻巧便利的Json序列化和反序列化工具Lightweight and convenient tool for JSON serialization and deserialization</Description>
+    <Description>Lightweight and convenient tool for JSON serialization and deserialization</Description>
     <PackageIcon>logo.png</PackageIcon>
     <RepositoryType>Git</RepositoryType>
     <RepositoryUrl>https://github.com/lhzcm/LHZ.FastJson</RepositoryUrl>
-    <PackageReleaseNotes>3.0.0（不兼容更新）：移除自定义转换器（IJsonCustomConverter、JsonCustomConvert&lt;T&gt;、JsonCustomConvertItem、JsonCustomConverterException 及所有接受转换器的重载），保持库的小巧与转换路径的精简；序列化改为按类型编译强类型委托，可空值类型属性不再装箱；CaseStyle 移至 LHZ.FastJson.Enum 命名空间；序列化包含自身的集合时改为抛出 Exception。</PackageReleaseNotes>
+    <PackageReleaseNotes>3.0.0 (breaking): custom converters were removed (IJsonCustomConverter, JsonCustomConvert&lt;T&gt;, JsonCustomConvertItem, JsonCustomConverterException and every overload that accepted converters) to keep the library small and the conversion path lean; serialization now compiles a strongly typed delegate per type, so nullable value-type properties are no longer boxed; CaseStyle moved to the LHZ.FastJson.Enum namespace; serializing a collection that contains itself now throws a general exception instead of InvalidOperationException.</PackageReleaseNotes>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <PackageReadmeFile>README.md</PackageReadmeFile>

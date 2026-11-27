@@ -66,7 +66,7 @@ namespace LHZ.FastJson.JsonClass.Internal
                                         var uchar = _value.SourceString[valueIndex++];
                                         if (!TryHexToInt(uchar, out int hexValue))
                                         {
-                                            throw new JsonReadException((valueIndex - 1), "字符位置[" + (valueIndex - 1) + "]处，Json字符串解析错误，Unicode转义字符格式错误");
+                                            throw JsonExceptions.InvalidUnicodeEscape((valueIndex - 1));
                                         }
                                         value = (value << 4) + hexValue;
                                     }

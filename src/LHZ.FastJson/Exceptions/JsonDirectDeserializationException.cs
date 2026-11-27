@@ -3,30 +3,34 @@ using LHZ.FastJson.Enum;
 
 namespace LHZ.FastJson.Exceptions
 {
-    public class JsonDirectDeserializationException : JsonReadException
+    /// <summary>
+    /// The exception thrown by <c>JsonConvert.Deserialize&lt;T&gt;</c> when valid JSON cannot be converted to the
+    /// requested type. It derives from <see cref="JsonDeserializationException"/>, so catching that type (or
+    /// <see cref="JsonReadException"/>) also catches it.
+    /// </summary>
+    public class JsonDirectDeserializationException : JsonDeserializationException
     {
-        private JsonType _jsonType;
-        //private ObjectType _objType;
-        private Type _targetType;
         /// <summary>
-        /// Initialize JSON deserialization exception
+        /// Initializes a new instance of the <see cref="JsonDirectDeserializationException"/> class.
         /// </summary>
-        /// <param name="Position">Position</param>
-        /// <param name="targetType">Target type</param>
-        /// <param name="msg">Exception message</param>
-        public JsonDirectDeserializationException(int Position, JsonType jsonType, Type targetType, string msg) : base(Position, msg)
+        /// <param name="position">The zero-based character position in the JSON text where the value starts</param>
+        /// <param name="jsonType">The type of the JSON value that was found</param>
+        /// <param name="targetType">The type the value could not be converted to</param>
+        /// <param name="msg">The error message</param>
+        public JsonDirectDeserializationException(int position, JsonType jsonType, Type targetType, string msg) : base(position, jsonType, targetType, msg)
         {
-            this._targetType = targetType;
-            this._jsonType = jsonType;
         }
 
         /// <summary>
-        /// JSON type
+        /// Initializes a new instance of the <see cref="JsonDirectDeserializationException"/> class with an inner exception.
         /// </summary>
-        public JsonType JsonType { get { return this._jsonType; } }
-        /// <summary>
-        /// Target type
-        /// </summary>
-        public Type TargetType { get { return this._targetType; } }
+        /// <param name="position">The zero-based character position in the JSON text where the value starts</param>
+        /// <param name="jsonType">The type of the JSON value that was found</param>
+        /// <param name="targetType">The type the value could not be converted to</param>
+        /// <param name="msg">The error message</param>
+        /// <param name="innerException">The exception that is the cause of this exception</param>
+        public JsonDirectDeserializationException(int position, JsonType jsonType, Type targetType, string msg, Exception innerException) : base(position, jsonType, targetType, msg, innerException)
+        {
+        }
     }
 }

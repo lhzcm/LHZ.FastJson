@@ -1,36 +1,40 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace LHZ.FastJson.Exceptions
 {
     /// <summary>
-    /// JSON read exception
+    /// The exception that is thrown when the JSON text being read is not valid JSON, or ends unexpectedly.
+    /// It is the base class of all exceptions thrown while reading or deserializing JSON text:
+    /// <see cref="JsonDeserializationException"/> (valid JSON that cannot be mapped to the requested type)
+    /// derives from it.
     /// </summary>
     public class JsonReadException : Exception
     {
-        private int _position;
+        private readonly int _position;
+
         /// <summary>
-        /// Initialize JSON read exception
+        /// Initializes a new instance of the <see cref="JsonReadException"/> class.
         /// </summary>
-        /// <param name="position">Exception position</param>
-        /// <param name="msg">Exception message</param>
+        /// <param name="position">The zero-based character position in the JSON text where the problem was detected</param>
+        /// <param name="msg">The error message</param>
         public JsonReadException(int position, string msg) : base(msg)
         {
             this._position = position;
         }
+
         /// <summary>
-        /// Initialize JSON read exception
+        /// Initializes a new instance of the <see cref="JsonReadException"/> class with an inner exception.
         /// </summary>
-        /// <param name="position">Exception position</param>
-        /// <param name="msg">Exception message</param>
-        /// <param name="innerExpcetion">Inner Exception</param>
-        public JsonReadException(int position, string msg, Exception innerExpcetion) : base(msg, innerExpcetion)
+        /// <param name="position">The zero-based character position in the JSON text where the problem was detected</param>
+        /// <param name="msg">The error message</param>
+        /// <param name="innerException">The exception that is the cause of this exception</param>
+        public JsonReadException(int position, string msg, Exception innerException) : base(msg, innerException)
         {
             this._position = position;
         }
+
         /// <summary>
-        /// Exception position
+        /// The zero-based character position in the JSON text where the problem was detected.
         /// </summary>
         public int Position { get { return _position; } }
     }

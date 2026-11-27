@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using LHZ.FastJson.Exceptions;
 using LHZ.FastJson.Json.Attributes;
 using NUnit.Framework;
 
@@ -422,8 +423,9 @@ namespace LHZ.FastJson.UnitTest
         {
             var node = new CycleNode();
             node.Next = node;
-            var ex = Assert.Catch<Exception>(() => Ser(node));
-            Assert.That(ex.Message, Does.Contain("循环引用"));
+            var ex = Assert.Throws<JsonSerializationException>(() => Ser(node));
+            Assert.That(ex.Message, Does.Contain("circular reference"));
+            Assert.That(ex.SerializedType, Is.EqualTo(typeof(CycleNode)));
         }
 
         [Test]
@@ -432,7 +434,7 @@ namespace LHZ.FastJson.UnitTest
             var a = new CycleNode();
             var b = new CycleNode { Next = a };
             a.Next = b;
-            Assert.Catch<Exception>(() => Ser(a));
+            Assert.Throws<JsonSerializationException>(() => Ser(a));
         }
 
         [Test]
@@ -440,11 +442,11 @@ namespace LHZ.FastJson.UnitTest
         {
             var dictionary = new Dictionary<string, object>();
             dictionary["self"] = dictionary;
-            Assert.Catch<Exception>(() => Ser(dictionary));
+            Assert.Throws<JsonSerializationException>(() => Ser(dictionary));
 
             var holder = new ListHolder();
             holder.Items = new List<object> { holder };
-            Assert.Catch<Exception>(() => Ser(holder));
+            Assert.Throws<JsonSerializationException>(() => Ser(holder));
         }
 
         /// <summary>
@@ -455,7 +457,7 @@ namespace LHZ.FastJson.UnitTest
         {
             var node = new CycleNode();
             node.Next = node;
-            Assert.Catch<Exception>(() => Ser(node));
+            Assert.Throws<JsonSerializationException>(() => Ser(node));
             Assert.That(Ser(new CycleNode()), Is.EqualTo("{\"Next\":null}"));
             Assert.That(Ser(new CycleNode { Next = new CycleNode() }), Is.EqualTo("{\"Next\":{\"Next\":null}}"));
         }

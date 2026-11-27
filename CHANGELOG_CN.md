@@ -6,13 +6,27 @@
 
 ## 未发布
 
+### 不兼容变更
+
+- 异常消息改为英文（原来是中文），并统一格式：问题描述 + 位置，例如 `Unterminated string at position 4.`。消息中的控制字符会被转义。依赖消息文本做判断的代码需要调整。
+- 序列化失败（循环引用，或两个属性映射到同一个 JSON 属性名）现在抛出新增的 `JsonSerializationException`，不再是裸的 `System.Exception`。它继承自 `Exception`，所以 `catch (Exception)` 仍然有效，出错的类型可通过 `SerializedType` 获取。
+- `JsonDirectDeserializationException` 现在继承自 `JsonDeserializationException`，后者继承自 `JsonReadException`。一个 `catch (JsonDeserializationException)` 就能处理所有"JSON 合法但类型不对"的错误，原有的 `catch` 写法不受影响。`JsonDeserializationException` 新增了接受位置参数的构造函数，不再依赖已解析的节点。
+- 转换值时的失败统一报告为 `JsonDeserializationException`（实际抛出 `JsonDirectDeserializationException`），带有位置、JSON 类型和目标类型，原始异常保存在 `InnerException`。以前这些情况会漏出 `OverflowException`、`FormatException`、`InvalidCastException` 或 `ArgumentException`：数字超出目标类型范围或格式不合法、枚举名或枚举值无效、Guid 无效、字典键无法转换、字典键重复，以及根本无法反序列化的类型（例如 `ReadOnlyCollection<T>`）。
+- `JsonContent.AddJsonProperty` 遇到重复属性时抛出带参数名的 `ArgumentException`；无类型解析（`JsonConvert.Deserialize(string)`）遇到输入中的重复属性名时抛出带位置的 `JsonReadException`。两者以前都是抛出裸的 `System.Exception`。
+
 ### 修复
 
 - 带类型的反序列化（`JsonConvert.Deserialize<T>`）现在接受标量值（数字、字符串、布尔、`null`、`DateTime`）后面的空白，空白之后可以是 `,`、`}` 或 `]`，缩进（格式化）的 JSON 因此可以被读取。以前只接受值前面的空白，`{"a":1 ,"b":2}`、`{\n  "a": 1\n}` 这类输入会抛出 `JsonReadException`。缺少逗号（`[1 2]`）以及以空白结尾的未完成输入仍然会被拒绝。
 - 输入在某个 token 中间结束时，现在一律抛出 `JsonReadException`，不再抛出 `IndexOutOfRangeException`：输入以属性名结尾（`{"a"`）、属性名之前的逗号后面直接结束（`{"a":1,`）、字符串在转义序列中间被截断（`"abc\` 或 `"\u12`）。
 
+- 数值类型的字典键使用固定区域设置（Invariant）转换，因此在用逗号作小数点的区域设置下，`Dictionary<double, T>` 也能正确读取 `{"1.5":1}`。
+- `JsonReader` 收到 null 或空字符串时，抛出的 `ArgumentNullException` 现在有正确的参数名和消息（以前是把消息当成参数名传入）。
+- 对象的值之后出现意外字符时，原来的错误提示写的是期望 `:` 或 `}`，现在改为 `,` 或 `}`。
+- NuGet 包的描述和发布说明改为英文。
+
 ### 测试
 
+- 新增异常契约测试（层次、位置、被包装的转换错误、英文消息），以及一个守卫测试：库源码中出现中文时测试失败。
 - 新增序列化、反序列化、往返、空白处理和截断输入测试（有效文档的每个真前缀都必须抛出 `JsonReadException`）。已确认但尚未修复的问题以被忽略的测试形式记录在 `KnownIssueTests.cs` 中。
 
 ## 3.0.0 - 2026-11-26

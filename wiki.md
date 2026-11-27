@@ -616,9 +616,12 @@ Student student = jsonString.FromJson<Student>();
 
 | 异常类 | 基类 | 说明 |
 |--------|------|------|
-| `JsonReadException` | `Exception` | JSON 解析错误，包含 `Position` 属性指示错误位置 |
-| `JsonDeserializationException` | `JsonReadException` | 反序列化类型错误，包含 `JsonType` 和 `TargetType` |
-| `JsonFormatterException` | `Exception` | 格式化错误（已废弃） |
+| `JsonReadException` | `Exception` | JSON 文本格式错误或意外结束，`Position` 属性为出错位置 |
+| `JsonDeserializationException` | `JsonReadException` | JSON 合法但无法转换为目标类型（类型不匹配、数字溢出、枚举名或 Guid 无效、字典键重复等），包含 `JsonType` 和 `TargetType`，原始异常保存在 `InnerException` |
+| `JsonDirectDeserializationException` | `JsonDeserializationException` | `JsonConvert.Deserialize<T>` 实际抛出的类型，捕获 `JsonDeserializationException` 即可 |
+| `JsonSerializationException` | `Exception` | 对象无法序列化（循环引用、两个属性映射到同一个 JSON 属性名），`SerializedType` 为出错的类型 |
+
+所有异常消息都是英文，格式统一为"问题描述 + 位置"，例如 `Unterminated string at position 4.`。
 
 ### 验证 JSON 有效性
 

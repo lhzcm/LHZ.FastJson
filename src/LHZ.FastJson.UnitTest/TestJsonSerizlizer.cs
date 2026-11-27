@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using LHZ.FastJson.Enum;
+using LHZ.FastJson.Exceptions;
 using LHZ.FastJson.Json;
 using LHZ.FastJson.Json.Attributes;
 using LHZ.FastJson.JsonClass;
@@ -60,17 +61,9 @@ namespace LHZ.FastJson.UnitTest
             TestObj testObj2 = new TestObj();
             testObj.Obj = testObj2;
             testObj2.Obj = testObj;
-            try
-            {
-                string obj = (new JsonSerializer(testObj)).Serialize();
-            }
-            catch (Exception ex)
-            {
-                ClassicAssert.AreEqual(ex.Message, "循环引用");
-                return;
-            }
-            throw new Exception("没有按照预期抛出 “循环引用” 异常");
-
+            var ex = Assert.Throws<JsonSerializationException>(() => (new JsonSerializer(testObj)).Serialize());
+            Assert.That(ex.Message, Does.Contain("circular reference"));
+            Assert.That(ex.SerializedType, Is.EqualTo(typeof(TestObj)));
         }
 
         /// <summary>

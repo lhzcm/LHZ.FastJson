@@ -27,7 +27,7 @@ namespace LHZ.FastJson.JsonClass
         {
             get
             {
-                throw new InvalidOperationException($"{this.Type}并非是{JsonType.Content}无法调用该索引方法！");
+                throw new InvalidOperationException($"The string indexer is only supported by a JSON {JsonType.Content}, but this node is a JSON {this.Type}.");
             }
         }
         /// <summary>
@@ -39,7 +39,7 @@ namespace LHZ.FastJson.JsonClass
         {
             get
             {
-                throw new InvalidOperationException($"{this.Type}并非是{JsonType.Array}或{JsonType.Content}无法调用该索引方法！");
+                throw new InvalidOperationException($"The numeric indexer is only supported by a JSON {JsonType.Array} or {JsonType.Content}, but this node is a JSON {this.Type}.");
             }
         }
         /// <summary>
@@ -51,7 +51,7 @@ namespace LHZ.FastJson.JsonClass
         {
             get
             {
-                throw new InvalidOperationException($"{this.Type}并非是{JsonType.Content}无法调用该索引方法！");
+                throw new InvalidOperationException($"The string indexer is only supported by a JSON {JsonType.Content}, but this node is a JSON {this.Type}.");
             }
         }
         /// <summary>
@@ -61,7 +61,7 @@ namespace LHZ.FastJson.JsonClass
         {
             get
             {
-                throw new InvalidOperationException("Internal Class Exclusive Property");
+                throw new InvalidOperationException("The position is only available on nodes created by the JSON reader.");
             }
         }
         /// <summary>

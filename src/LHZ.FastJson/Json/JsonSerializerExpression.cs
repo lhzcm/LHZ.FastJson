@@ -6,6 +6,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using LHZ.FastJson.Enum;
+using LHZ.FastJson.Exceptions;
 using LHZ.FastJson.Json.Attributes;
 using LHZ.FastJson.Json.Utils;
 
@@ -85,7 +86,7 @@ namespace LHZ.FastJson.Json
             //Check for duplicate property names
             if (JsonUtility.HasSameNameProperty(properties, caseStyle, out string samePropertyName))
             {
-                throw new Exception($"序列化失败，类型{type.FullName}不同的属性存在相同的属性名\"{samePropertyName}\"");
+                throw JsonExceptions.DuplicatePropertyName(type, samePropertyName);
             }
             //Add left brace for JSON object type
             expList.Add(Expression.Call(serializerObjParameter, typeof(JsonSerializer).GetMethod("AppendCharToStringBuilder", BindingFlags.NonPublic | BindingFlags.Instance), Expression.Constant('{')));

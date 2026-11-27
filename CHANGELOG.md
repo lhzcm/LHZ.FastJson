@@ -6,13 +6,27 @@ This document records important changes to LHZ.FastJson.
 
 ## Unreleased
 
+### Breaking changes
+
+- Exception messages are now in English (they were Chinese) and follow a single format, a description followed by the position, for example `Unterminated string at position 4.`. Control characters in messages are escaped. Code that matches on message text must be updated.
+- Serialization failures (a circular reference, or two properties that map to the same JSON property name) throw the new `JsonSerializationException` instead of a bare `System.Exception`. It derives from `Exception`, so `catch (Exception)` keeps working, and the offending type is available as `SerializedType`.
+- `JsonDirectDeserializationException` now derives from `JsonDeserializationException`, which derives from `JsonReadException`. One `catch (JsonDeserializationException)` handles every "valid JSON, wrong type" error, and existing `catch` clauses keep working. `JsonDeserializationException` gained constructors that take a position, so it no longer needs a parsed node.
+- Failures while converting a value are reported as `JsonDeserializationException` (thrown as `JsonDirectDeserializationException`) with the position, the JSON type and the target type, and the original exception as `InnerException`. They used to leak `OverflowException`, `FormatException`, `InvalidCastException` or `ArgumentException`: numbers that do not fit or are not valid for the target type, invalid enum names or values, invalid GUIDs, dictionary keys that cannot be converted, duplicate dictionary keys, and types that cannot be deserialized at all (for example `ReadOnlyCollection<T>`).
+- `JsonContent.AddJsonProperty` throws `ArgumentException` (with the parameter name) for a duplicate property, and the untyped parser (`JsonConvert.Deserialize(string)`) reports a duplicate property name in the input as `JsonReadException` with a position. Both used to throw a bare `System.Exception`.
+
 ### Fixes
 
 - Typed deserialization (`JsonConvert.Deserialize<T>`) now accepts whitespace after scalar values (numbers, strings, booleans, `null`, `DateTime`) before the next `,`, `}` or `]`, so indented (pretty-printed) JSON can be read. Previously only whitespace before a value was accepted, and input such as `{"a":1 ,"b":2}` or `{\n  "a": 1\n}` failed with `JsonReadException`. Missing commas (`[1 2]`) and unfinished input that ends in whitespace are still rejected.
 - Input that ends in the middle of a token now always throws `JsonReadException` instead of `IndexOutOfRangeException`: a property name at the end of the input (`{"a"`), a trailing comma before a property name (`{"a":1,`), and a string cut inside an escape sequence (`"abc\` or `"\u12`).
 
+- Dictionary keys of numeric types are converted with the invariant culture, so `{"1.5":1}` works for `Dictionary<double, T>` under cultures that use a comma as the decimal separator.
+- `JsonReader` with a null or empty string throws `ArgumentNullException` with a proper parameter name and message (the message used to be passed as the parameter name).
+- The error for an unexpected character after an object value said that `:` or `}` was expected; it now says `,` or `}`.
+- The package description and release notes in the NuGet metadata are in English.
+
 ### Tests
 
+- Added exception contract tests (hierarchy, position, wrapped conversion errors, English messages) and a guard test that fails when Chinese text appears in the library source.
 - Added serialization, deserialization, round-trip, whitespace and truncated-input tests (every proper prefix of a valid document must be rejected with `JsonReadException`). Problems that are confirmed but not fixed yet are recorded as ignored tests in `KnownIssueTests.cs`.
 
 ## 3.0.0 - 2026-11-26

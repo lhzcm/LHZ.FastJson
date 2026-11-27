@@ -42,12 +42,12 @@ namespace LHZ.FastJson.JsonClass
 #if NET5_0_OR_GREATER
             if (!_value.TryAdd(jsonPropertyName, value))
             {
-                throw new Exception($"Json对象中已经存在属性名为[{jsonPropertyName}]的属性，无法添加重复属性！");
+                throw new ArgumentException($"A property named '{jsonPropertyName}' already exists in the JSON object.", nameof(jsonPropertyName));
             }
 #else
             if (_value.ContainsKey(jsonPropertyName))
             {
-                throw new Exception($"Json对象中已经存在属性名为[{jsonPropertyName}]的属性，无法添加重复属性！");
+                throw new ArgumentException($"A property named '{jsonPropertyName}' already exists in the JSON object.", nameof(jsonPropertyName));
             }
             _value.Add(jsonPropertyName, value);
 #endif
@@ -133,7 +133,7 @@ namespace LHZ.FastJson.JsonClass
                     }
                     i++;
                 }
-                throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException(nameof(index), "The index is outside the bounds of the JSON object.");
             }
         }
         /// <summary>

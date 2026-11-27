@@ -240,7 +240,7 @@ namespace LHZ.FastJson.JsonClass.Internal
         }
         public object ToType(Type conversionType, IFormatProvider provider)
         {
-            throw new NotImplementedException();
+            throw new InvalidCastException("The value cannot be converted to " + conversionType.FullName + ".");
         }
     }
 }
