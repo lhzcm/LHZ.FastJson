@@ -22,7 +22,6 @@ namespace LHZ.FastJson.Json
     {
         private StringBuilder _jsonStrBuilder = new StringBuilder(128);
         private Stack<object> _objStack = new Stack<object>();
-        private static readonly Dictionary<Type, ObjectType> _objectTypes = JsonObjectType.GetObjectTypes();
         //Property names are baked into the compiled expressions,
         //so the delegates are cached per naming policy: indexed by (int)CaseStyle.
         private static readonly ConcurrentDictionary<Type, Action<JsonSerializer, object>>[] _serializationActions = CreateSerializationActionCaches();
@@ -135,110 +134,6 @@ namespace LHZ.FastJson.Json
             Expression exp = Expression.Call(typeof(JsonSerializerExpression<>).MakeGenericType(objType).GetMethod("Serialize", BindingFlags.Public | BindingFlags.Static), serializerObjParameter, obj);
             return Expression.Lambda<Action<JsonSerializer, object>>(exp, serializerObjParameter, objParameter);
         }
-        /// <summary>
-        /// Get the type of the object
-        /// </summary>
-        /// <param name="type">Serialization object type</param>
-        /// <returns>Object type</returns>
-        private static ObjectType GetObjectType(Type type)
-        {
-            ObjectType objType;
-            if (_objectTypes.TryGetValue(type, out objType))
-            {
-                return objType;
-            }
-
-            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
-                return ObjectType.Nullable;
-            else if (type.IsEnum)
-                return ObjectType.Enum;
-            else if (type == typeof(Guid))
-                return ObjectType.Guid;
-            else if (typeof(IDictionary).IsAssignableFrom(type) || IsGenericDictionary(type))
-                return ObjectType.Dictionary;
-            else if (typeof(IEnumerable).IsAssignableFrom(type))
-                return ObjectType.Enumerable;
-            else
-                return ObjectType.Object;
-        }
-
-        /// <summary>
-        /// Whether the type is, or implements, a generic dictionary interface
-        /// (IDictionary&lt;TKey,TValue&gt; or, when the target framework provides it,
-        /// IReadOnlyDictionary&lt;TKey,TValue&gt;). These types are not assignable to the
-        /// non-generic IDictionary, so they need the generic serializer.
-        /// </summary>
-        private static bool IsGenericDictionary(Type type)
-        {
-            Type keyType, valueType;
-            return TryGetDictionaryTypes(type, out keyType, out valueType);
-        }
-
-        /// <summary>
-        /// Get the key/value types of a type that is, or implements, a generic dictionary interface.
-        /// </summary>
-        private static bool TryGetDictionaryTypes(Type type, out Type keyType, out Type valueType)
-        {
-            if (IsGenericDictionaryInterface(type))
-            {
-                var arguments = type.GetGenericArguments();
-                keyType = arguments[0];
-                valueType = arguments[1];
-                return true;
-            }
-            foreach (var item in type.GetInterfaces())
-            {
-                if (IsGenericDictionaryInterface(item))
-                {
-                    var arguments = item.GetGenericArguments();
-                    keyType = arguments[0];
-                    valueType = arguments[1];
-                    return true;
-                }
-            }
-            keyType = null;
-            valueType = null;
-            return false;
-        }
-
-        private static bool IsGenericDictionaryInterface(Type type)
-        {
-            if (!type.IsGenericType)
-            {
-                return false;
-            }
-            var definition = type.GetGenericTypeDefinition();
-            if (definition == typeof(IDictionary<,>))
-            {
-                return true;
-            }
-#if NET45_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-            if (definition == typeof(IReadOnlyDictionary<,>))
-            {
-                return true;
-            }
-#endif
-            return false;
-        }
-
-        /// <summary>
-        /// Create the expression that serializes a dictionary value.
-        /// Types that are, or implement, a generic dictionary interface (a property declared
-        /// as IDictionary&lt;TKey,TValue&gt; for example) cannot be passed to the non-generic
-        /// overload, so the generic serializer is closed over the dictionary's key/value types.
-        /// </summary>
-        private static Expression CreateDictionarySerializationExpression(ParameterExpression thisObjParameter, Type dictionaryType, Expression value)
-        {
-            Type keyType, valueType;
-            if (TryGetDictionaryTypes(dictionaryType, out keyType, out valueType))
-            {
-                var pairType = typeof(KeyValuePair<,>).MakeGenericType(keyType, valueType);
-                var enumerableType = typeof(IEnumerable<>).MakeGenericType(pairType);
-                return Expression.Call(thisObjParameter, GenericDictionarySerializer.MakeGenericMethod(keyType, valueType), Expression.Convert(value, enumerableType));
-            }
-            return Expression.Call(thisObjParameter, DictionarySerializer, value);
-        }
-
         /// <summary>
         /// bool type serialization
         /// </summary>
@@ -520,25 +415,6 @@ namespace LHZ.FastJson.Json
             ReferenceStackPop();
         }
         
-        /// <summary>
-        /// Check if circular reference exists
-        /// </summary>
-        /// <param name="obj">Object to check</param>
-        /// <returns>Whether circular reference exists</returns>
-        private bool IsCircularReference(object obj)
-        {
-            foreach (var item in _objStack)
-            {
-                if (obj == item)
-                    return true;
-            }
-            return false;
-        }
-
-        private StringBuilder GetStringBuilder()
-        {
-            return _jsonStrBuilder;
-        }
         private void AppendCharToStringBuilder(char cvalue)
         {
             _jsonStrBuilder.Append(cvalue);
@@ -546,10 +422,6 @@ namespace LHZ.FastJson.Json
         private void AppendStringToStringBuilder(string str)
         {
             _jsonStrBuilder.Append(str);
-        }
-        private Stack<object> GetStack()
-        {
-            return _objStack;
         }
 
         /// <summary>
