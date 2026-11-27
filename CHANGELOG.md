@@ -4,6 +4,17 @@
 
 This document records important changes to LHZ.FastJson.
 
+## Unreleased
+
+### Fixes
+
+- Typed deserialization (`JsonConvert.Deserialize<T>`) now accepts whitespace after scalar values (numbers, strings, booleans, `null`, `DateTime`) before the next `,`, `}` or `]`, so indented (pretty-printed) JSON can be read. Previously only whitespace before a value was accepted, and input such as `{"a":1 ,"b":2}` or `{\n  "a": 1\n}` failed with `JsonReadException`. Missing commas (`[1 2]`) and unfinished input that ends in whitespace are still rejected.
+- Input that ends in the middle of a token now always throws `JsonReadException` instead of `IndexOutOfRangeException`: a property name at the end of the input (`{"a"`), a trailing comma before a property name (`{"a":1,`), and a string cut inside an escape sequence (`"abc\` or `"\u12`).
+
+### Tests
+
+- Added serialization, deserialization, round-trip, whitespace and truncated-input tests (every proper prefix of a valid document must be rejected with `JsonReadException`). Problems that are confirmed but not fixed yet are recorded as ignored tests in `KnownIssueTests.cs`.
+
 ## 3.0.0 - 2026-11-26
 
 This release removes custom converters to keep the library small, and compiles a strongly typed serializer for each type.
