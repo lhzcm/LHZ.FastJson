@@ -99,7 +99,7 @@ namespace LHZ.FastJson.Json
                 //Custom property name handling
                 string jsonPropertyName = JsonUtility.GetPropertyName(item, caseStyle);
                 //Add property name
-                expList.Add(Expression.Call(serializerObjParameter, typeof(JsonSerializer).GetMethod("SerializePropertyName", BindingFlags.NonPublic | BindingFlags.Instance), Expression.Constant(jsonPropertyName)));
+                expList.Add(Expression.Call(serializerObjParameter, typeof(JsonSerializer).GetMethod("AppendStringToStringBuilder", BindingFlags.NonPublic | BindingFlags.Instance), Expression.Constant($"\"{jsonPropertyName}\":")));
                 exp  = CallBaseTypeMethodExpression(propertyType, serializerObjParameter, Expression.Property(objParameter, item));
                 if (exp == null)
                 {
